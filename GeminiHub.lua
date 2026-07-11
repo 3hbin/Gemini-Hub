@@ -720,3 +720,33 @@ CloseBtn.Text = "Ẩn Bảng Menu"
 createCorner(CloseBtn, 8)
 
 CloseBtn.MouseButton1Click:Connect(function() MainFrame.Visible = false end)
+-- --- SERVER HOPPER (TỰ CHẠY LẠI SCRIPT KHI SANG SERVER MỚI) ---
+local function serverHop()
+    -- Lưu script của bạn lại để nó tự thực thi khi qua server mới
+    if syn and syn.queue_on_teleport then
+        syn.queue_on_teleport([[loadstring(game:HttpGet("https://raw.githubusercontent.com/3hbin/Gemini-Hub/refs/heads/main/GeminiHub.lua"))()]])
+    elseif queue_on_teleport then
+        queue_on_teleport([[loadstring(game:HttpGet("https://raw.githubusercontent.com/3hbin/Gemini-Hub/refs/heads/main/GeminiHub.lua"))()]])
+    end
+
+    -- Tìm server mới
+    local HttpService = game:GetService("HttpService")
+    local TPS = game:GetService("TeleportService")
+    local api = "https://games.roblox.com/v1/games/" .. game.PlaceId .. "/servers/Public?limit=100"
+    
+    local response = game:HttpGet(api)
+    local data = HttpService:JSONDecode(response)
+    
+    for _, v in pairs(data.data) do
+        if v.playing < v.maxPlayers and v.id ~= game.JobId then
+            TPS:TeleportToPlaceInstance(game.PlaceId, v.id, game.Players.LocalPlayer)
+            break
+        end
+    end
+end
+
+createToggle("Server Hopper", function(state)
+    if state then
+        serverHop()
+    end
+end)
