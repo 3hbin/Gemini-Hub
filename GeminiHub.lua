@@ -143,28 +143,95 @@ JobIdLabel.MouseButton1Click:Connect(function()
         task.wait(2)
         JobIdLabel.Text = oldText
     end
+local TopFrame = Instance.new("Frame", MainFrame)
+TopFrame.Size = UDim2.new(1, 0, 0, 135) -- Thu gọn chiều cao TopFrame xuống
+TopFrame.BackgroundTransparency = 1
+
+-- KHUNG CHỨA THÔNG TIN GAME (Thu nhỏ gọn gàng, vừa vặn 5 dòng chữ)
+local GameFrame = Instance.new("Frame", TopFrame)
+GameFrame.Size = UDim2.new(1, -20, 0, 85) -- Giảm chiều cao khung xuống còn 85
+GameFrame.Position = UDim2.new(0, 10, 0, 10)
+GameFrame.BackgroundColor3 = Color3.fromRGB(20, 30, 45)
+createCorner(GameFrame, 8)
+
+-- 1. Dòng Tên Game
+local GameNameLabel = Instance.new("TextLabel", GameFrame)
+GameNameLabel.Text = "🎮 Đang tải tên game..."
+GameNameLabel.Position = UDim2.new(0, 8, 0, 4)
+GameNameLabel.Size = UDim2.new(1, -16, 0, 16)
+GameNameLabel.TextColor3 = Color3.fromRGB(0, 255, 150)
+GameNameLabel.TextXAlignment = Enum.TextXAlignment.Left
+GameNameLabel.Font = Enum.Font.GothamBold
+GameNameLabel.TextSize = 11 -- Thu nhỏ cỡ chữ một chút cho tinh tế
+GameNameLabel.BackgroundTransparency = 1
+
+-- 2. Dòng ID Game
+local GameIdLabel = Instance.new("TextLabel", GameFrame)
+GameIdLabel.Text = "ID Game: " .. game.PlaceId
+GameIdLabel.Position = UDim2.new(0, 8, 0, 20)
+GameIdLabel.Size = UDim2.new(1, -16, 0, 14)
+GameIdLabel.TextColor3 = Color3.fromRGB(180, 180, 180)
+GameIdLabel.TextXAlignment = Enum.TextXAlignment.Left
+GameIdLabel.Font = Enum.Font.Code
+GameIdLabel.TextSize = 9
+GameIdLabel.BackgroundTransparency = 1
+
+-- 3. Dòng Khu Vực Quốc Gia
+local CountryLabel = Instance.new("TextLabel", GameFrame)
+local countryCode = "Unknown"
+pcall(function() 
+    countryCode = game:GetService("LocalizationService"):GetCountryRegionForPlayerAsync(LocalPlayer) 
+end)
+CountryLabel.Text = "Khu vực: " .. string.upper(countryCode)
+CountryLabel.Position = UDim2.new(0, 8, 0, 34)
+CountryLabel.Size = UDim2.new(1, -16, 0, 14)
+CountryLabel.TextColor3 = Color3.fromRGB(255, 200, 0)
+CountryLabel.TextXAlignment = Enum.TextXAlignment.Left
+CountryLabel.Font = Enum.Font.GothamBold
+CountryLabel.TextSize = 9
+CountryLabel.BackgroundTransparency = 1
+
+-- 4. Dòng IP Mạng
+local IPLabel = Instance.new("TextLabel", GameFrame)
+IPLabel.Text = "IP: Đang kiểm tra..."
+IPLabel.Position = UDim2.new(0, 8, 0, 48)
+IPLabel.Size = UDim2.new(1, -16, 0, 14)
+IPLabel.TextColor3 = Color3.fromRGB(255, 85, 85)
+IPLabel.TextXAlignment = Enum.TextXAlignment.Left
+IPLabel.Font = Enum.Font.Code
+IPLabel.TextSize = 9
+IPLabel.BackgroundTransparency = 1
+
+-- 5. Nút Bấm Copy JobId
+local JobIdLabel = Instance.new("TextButton", GameFrame)
+JobIdLabel.Text = "JobId: " .. game.JobId:sub(1, 12) .. "..."
+JobIdLabel.Position = UDim2.new(0, 8, 0, 62)
+JobIdLabel.Size = UDim2.new(1, -16, 0, 16)
+JobIdLabel.TextColor3 = Color3.fromRGB(160, 160, 160)
+JobIdLabel.TextXAlignment = Enum.TextXAlignment.Left
+JobIdLabel.BackgroundTransparency = 1
+JobIdLabel.Font = Enum.Font.Code
+JobIdLabel.TextSize = 9
+
+JobIdLabel.MouseButton1Click:Connect(function()
+    if setclipboard then
+        setclipboard(game.JobId)
+        local oldText = JobIdLabel.Text
+        JobIdLabel.Text = "✅ Đã copy JobID Server!"
+        task.wait(1.5)
+        JobIdLabel.Text = oldText
+    end
 end)
 
--- Các hàm chạy ngầm tải dữ liệu
-task.spawn(function()
-    local ip = "Không thể lấy IP"
-    pcall(function() ip = game:HttpGet("https://api.ipify.org") end)
-    IPLabel.Text = "IP: " .. ip
-end)
-
-task.spawn(function()
-    pcall(function()
-        local info = MarketplaceService:GetProductInfo(game.PlaceId)
-        if info then GameNameLabel.Text = "🎮 " .. info.Name end
-    end)
-end)
-
+-- Cập nhật vị trí ProfileFrame ngay phía dưới, cách khung game chỉ 5 pixel
 local ProfileFrame = Instance.new("Frame", TopFrame)
-ProfileFrame.Size = UDim2.new(1, -20, 0, math.floor(65 * ScaleFactor))
-ProfileFrame.Position = UDim2.new(0, 10, 0, 135)
+ProfileFrame.Size = UDim2.new(1, -20, 0, 40) -- Thu nhỏ chiều cao khung profile xuống 40
+ProfileFrame.Position = UDim2.new(0, 10, 0, 100) -- Vị trí vừa vặn, không bị đè chữ
 ProfileFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 35)
-createCorner(ProfileFrame, math.floor(10 * ScaleFactor))
+createCorner(ProfileFrame, 8)
 
+-- (Các đoạn code tạo ProfileImg, NameLabel, StatsLabel và task.spawn chạy ngầm bên dưới bạn giữ nguyên nhé)
+        
 local ProfileImg = Instance.new("ImageLabel", ProfileFrame)
 ProfileImg.Size = UDim2.new(0, math.floor(45 * ScaleFactor), 0, math.floor(45 * ScaleFactor))
 ProfileImg.Position = UDim2.new(0, 10, 0, math.floor(10 * ScaleFactor))
