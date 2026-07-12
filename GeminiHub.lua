@@ -220,10 +220,40 @@ BtnNext.Position = UDim2.new(0, 100, 0, 25)
 BtnNext.Text = ">" BtnNext.BackgroundColor3 = Color3.fromRGB(50, 50, 60) BtnNext.TextColor3 = Color3.new(1, 1, 1) createCorner(BtnNext, 4)
 BtnNext.MouseButton1Click:Connect(function() curSpecIndex = curSpecIndex + 1 if curSpecIndex > #playersList then curSpecIndex = 1 end updateSpec() end)
 
+-- VÙNG CUỘN CHỨA CÁC NÚT (Cập nhật CanvasSize tự động chính xác để cuộn hết nút)
 local GridScrollFrame = Instance.new("ScrollingFrame", MainFrame)
-GridScrollFrame.Size = UDim2.new(1, -20, 1, -235)
-GridScrollFrame.Position = UDim2.new(0, 10, 0, 185)
-GridScrollFrame.BackgroundTransparency = 1 GridScrollFrame.ScrollBarThickness = 4 GridScrollFrame.CanvasSize = UDim2.new(0, 0, 0, 0) 
+GridScrollFrame.Size = UDim2.new(1, -20, 1, -220)
+GridScrollFrame.Position = UDim2.new(0, 10, 0, 165)
+GridScrollFrame.BackgroundTransparency = 1
+GridScrollFrame.ScrollBarThickness = 4 
+GridScrollFrame.CanvasSize = UDim2.new(0, 0, 0, 0) 
+GridScrollFrame.ScrollBarImageColor3 = Color3.fromRGB(0, 150, 255)
+
+local Grid = Instance.new("UIGridLayout", GridScrollFrame)
+Grid.CellSize = UDim2.new(0.46, 0, 0, 38)
+Grid.CellPadding = UDim2.new(0.06, 0, 0, 10)
+Grid.SortOrder = Enum.SortOrder.LayoutOrder
+
+-- Hàm tự động tính toán lại độ dài vùng cuộn khi số lượng nút thay đổi
+local function recaculateCanvas()
+    local contentHeight = Grid.AbsoluteContentSize.Y
+    GridScrollFrame.CanvasSize = UDim2.new(0, 0, 0, contentHeight + 40)
+end
+
+Grid:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(recaculateCanvas)
+
+local function updateLayoutPositions()
+    local offset = 165
+    if SpectateFrame.Visible then offset = offset + 55 end
+    if ChatFrame.Visible then 
+        ChatFrame.Position = UDim2.new(0, 10, 0, SpectateFrame.Visible and 215 or 160)
+        offset = offset + 100 
+    end
+    GridScrollFrame.Position = UDim2.new(0, 10, 0, offset)
+    GridScrollFrame.Size = UDim2.new(1, -20, 1, -offset - 50)
+    task.defer(recaculateCanvas) -- Tính lại sau khi đổi vị trí khung
+end
+
 
 local Grid = Instance.new("UIGridLayout", GridScrollFrame)
 -- Sử dụng tỷ lệ phần trăm 0.45 (gần một nửa chiều ngang menu) thay vì số cố định
