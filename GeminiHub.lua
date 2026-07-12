@@ -39,14 +39,16 @@ end
 local IsMobile = UserInputService.TouchEnabled and not UserInputService.KeyboardEnabled
 local ScaleFactor = IsMobile and 0.7 or 1.1
 
+-- TỰ ĐỘNG THAY ĐỔI THEO THIẾT BỊ (Tối ưu dạng dọc cho điện thoại)
 local MainFrame = Instance.new("Frame", ScreenGui)
--- Sử dụng tỷ lệ 0.85 (85% màn hình) cho điện thoại và giới hạn kích thước trên PC
 if IsMobile then
-    MainFrame.Size = UDim2.new(0.85, 0, 0.85, 0)
-    MainFrame.Position = UDim2.new(0.075, 0, 0.075, 0)
+    -- Chiều ngang chiếm 80% và chiều dọc dài 90% màn hình để thành khung dọc
+    MainFrame.Size = UDim2.new(0.8, 0, 0.9, 0)
+    MainFrame.Position = UDim2.new(0.1, 0, 0.05, 0)
 else
-    MainFrame.Size = UDim2.new(0, 290, 0, 440)
-    MainFrame.Position = UDim2.new(0.5, -145, 0.5, -220)
+    -- Kích thước chuẩn trên PC
+    MainFrame.Size = UDim2.new(0, 290, 0, 460)
+    MainFrame.Position = UDim2.new(0.5, -145, 0.5, -230)
 end
 MainFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 20)
 MainFrame.BorderSizePixel = 0
@@ -254,11 +256,10 @@ local function updateLayoutPositions()
     task.defer(recaculateCanvas) -- Tính lại sau khi đổi vị trí khung
 end
 
-
-local Grid = Instance.new("UIGridLayout", GridScrollFrame)
--- Sử dụng tỷ lệ phần trăm 0.45 (gần một nửa chiều ngang menu) thay vì số cố định
-Grid.CellSize = UDim2.new(0.45, 0, 0, 40) 
-Grid.CellPadding = UDim2.new(0.04, 0, 0, 10) 
+ local Grid = Instance.new("UIGridLayout", GridScrollFrame)
+-- Chiều ngang chiếm 0.96 (gần hết khung) để các nút trải dài thành 1 hàng dọc
+Grid.CellSize = UDim2.new(0.96, 0, 0, 42) 
+Grid.CellPadding = UDim2.new(0, 0, 0, 8) -- Khoảng cách giữa các nút
 Grid.SortOrder = Enum.SortOrder.LayoutOrder
 
 local function createToggle(text, callback)
