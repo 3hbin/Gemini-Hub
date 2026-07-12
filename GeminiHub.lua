@@ -45,7 +45,7 @@ end
 
 local IsMobile = UserInputService.TouchEnabled and not UserInputService.KeyboardEnabled
 
--- KHUNG CHÍNH DẠNG DỌC (Tối ưu kích thước chuẩn thon dài)
+-- KHUNG CHÍNH DẠNG DỌC
 local MainFrame = Instance.new("Frame", ScreenGui)
 if IsMobile then
     MainFrame.Size = UDim2.new(0, 245, 0, 370)
@@ -67,7 +67,7 @@ UIStroke.Color = Color3.fromRGB(0, 150, 255)
 UIStroke.Thickness = 1.5
 UIStroke.Transparency = 0.3
 
--- KHUNG THÔNG TIN GAME & NGƯỜI CHƠI (Cố định chiều cao 75px)
+-- KHUNG THÔNG TIN GAME & STATS
 local TopFrame = Instance.new("Frame", MainFrame)
 TopFrame.Size = UDim2.new(1, 0, 0, 75)
 TopFrame.BackgroundTransparency = 1
@@ -148,7 +148,7 @@ local function updateSpec()
     end
     if target and target.Character then
         SpecName.Text = "Đang xem: " .. target.DisplayName
-        pcall(function() SpecAvatar.Image = Players:GetUserThumbnailAsync(target.UserId, Enum.ThumbnailType.HeadShot, Enum.ThumbnailSize.Size100x100) end)
+        SpecAvatar.Image = "rbxthumb://type=AvatarHeadShot&id=" .. target.UserId .. "&w=150&h=150"
         Camera.CameraSubject = target.Character:FindFirstChildOfClass("Humanoid") or target.Character
     end
 end
@@ -195,7 +195,7 @@ ResponseLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
 ResponseLabel.TextSize = 9
 ResponseLabel.Font = Enum.Font.Gotham
 ResponseLabel.TextWrapped = true
-ResponseLabel.TextYAlignment = Enum.TextYAlignment.Top
+ResponseLabel.TextYAlignment = Enum.TextXAlignment.Top
 ResponseLabel.TextXAlignment = Enum.TextXAlignment.Left
 
 local InputBox = Instance.new("TextBox", ChatFrame)
@@ -209,31 +209,28 @@ InputBox.TextSize = 9
 InputBox.Font = Enum.Font.Gotham
 createCorner(InputBox, 6)
 
+-- SỬ DỤNG LINK AI LÀM SẴN CÔNG CỘNG KHÔNG LỖI
 local function SendToAI(message)
     ResponseLabel.Text = "AI đang suy nghĩ..."
     task.spawn(function()
+        local url = "https://api.simsimi.vn/v1/simtalk"
+        local bodyData = "text=" .. game:GetService("HttpService"):UrlEncode(message) .. "&lc=vn"
+        
         local success, result = pcall(function()
-            local url = "https://gemini-x-ai.vn812013.workers.dev/chat" 
-            return game:HttpGetAsync(url .. "?msg=" .. game:GetService("HttpService"):UrlEncode(message))
+            return game:HttpPostAsync(url, bodyData, "application/x-www-form-urlencoded")
         end)
         
-        if not success then
-            success, result = pcall(function()
-                local url = "https://gemini-x-ai.vn812013.workers.dev/chat"
-                return request({
-                    Url = url,
-                    Method = "POST",
-                    Headers = { ["Content-Type"] = "application/json" },
-                    Body = HttpService:JSONEncode({ message = message })
-                }).Body
+        if success and result then
+            local dataSuccess, data = pcall(function()
+                return game:GetService("HttpService"):JSONDecode(result)
             end)
-        end
-        
-        if success then
-            local data = HttpService:JSONDecode(result)
-            ResponseLabel.Text = data.reply or "Không nhận được phản hồi."
+            if dataSuccess and data and data.message then
+                ResponseLabel.Text = data.message
+            else
+                ResponseLabel.Text = "🤖 AI: Tôi chưa hiểu ý bạn lắm."
+            end
         else
-            ResponseLabel.Text = "❌ Lỗi kết nối API!"
+            ResponseLabel.Text = "❌ Lỗi kết nối tới hệ thống AI!"
         end
     end)
 end
@@ -245,7 +242,7 @@ InputBox.FocusLost:Connect(function(enterPressed)
     end
 end)
 
--- VÙNG CUỘN CHỨA CÁC NÚT DỌC (1 CỘT DUY NHẤT)
+-- VÙNG CUỘN CHỨA CÁC NÚT CHỨC NĂNG DỌC (1 CỘT)
 local GridScrollFrame = Instance.new("ScrollingFrame", MainFrame)
 GridScrollFrame.BackgroundTransparency = 1
 GridScrollFrame.ScrollBarThickness = 4 
@@ -387,7 +384,7 @@ local function createButton(text, color, callback)
     Btn.MouseButton1Click:Connect(callback)
 end
 
--- NÚT MỞ MENU CHÍNH
+-- NÚT MỞ MENU CHÍNH (ICON)
 local ToggleBtn = Instance.new("TextButton", ScreenGui)
 ToggleBtn.Size = UDim2.new(0, 42, 0, 42)
 ToggleBtn.Position = UDim2.new(0, 15, 0.4, 0)
@@ -397,9 +394,45 @@ ToggleBtn.TextColor3 = Color3.new(1, 1, 1)
 ToggleBtn.TextSize = 18
 createCorner(ToggleBtn, 21)
 makeDraggable(ToggleBtn)
-ToggleBtn.MouseButton1Click:Connect(function() MainFrame.Visible = not MainFrame.Visible end)
 
--- CÁC CHỨC NĂNG HACK / SCRIPT LUA
+-- LƯU LẠI KÍCH THƯỚC CHUẨN CỦA MENU ĐỂ PHÓNG TO/THU NHỎ
+local OriginalSize = MainFrame.Size
+local TweenService = game:GetService("TweenService")
+
+-- Đổi AnchorPoint về tâm để menu bung ra từ giữa giống Galaxy S26 Ultra
+MainFrame.AnchorPoint = Vector2.new(0.5, 0.5)
+
+ToggleBtn.MouseButton1Click:Connect(function()
+    if not MainFrame.Visible then
+        -- HIỆU ỨNG MỞ (BUNG RA MƯỢT MÀ KIỂU SAMSUNG OS)
+        MainFrame.Size = UDim2.new(0, 0, 0, 0) -- Thu nhỏ về 0 trước khi mở
+        MainFrame.Visible = true
+        
+        local OpenTweenInfo = TweenInfo.new(
+            0.35, -- Thời gian mở (giây)
+            Enum.EasingStyle.Back, -- Kiểu nảy nhẹ cao cấp của Samsung
+            Enum.EasingDirection.Out
+        )
+        
+        TweenService:Create(MainFrame, OpenTweenInfo, {Size = OriginalSize}):Play()
+    else
+        -- HIỆU ỨNG THU NHỎ BIẾN MẤT
+        local CloseTweenInfo = TweenInfo.new(
+            0.25,
+            Enum.EasingStyle.Quad,
+            Enum.EasingDirection.In
+        )
+        
+        local closeTween = TweenService:Create(MainFrame, CloseTweenInfo, {Size = UDim2.new(0, 0, 0, 0)})
+        closeTween:Play()
+        closeTween.Completed:Connect(function()
+            MainFrame.Visible = false
+            MainFrame.Size = OriginalSize -- Reset lại kích thước gốc cho lần mở sau
+        end)
+    end
+end)
+
+-- CÁC CHỨC NĂNG HACK / LUA MECHANICS
 local Fly_Active = false
 local FlySpeed = 60
 local FlyConnection
@@ -710,16 +743,329 @@ createButton("Mở Infinite Yield", Color3.fromRGB(150, 50, 50), function()
     loadstring(game:HttpGet('https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source'))()
 end)
 
-createButton("Chuyển Server Khác", Color3.fromRGB(0, 150, 100), function()
-    if syn and syn.queue_on_teleport then syn.queue_on_teleport([[loadstring(game:HttpGet("https://raw.githubusercontent.com/3hbin/Gemini-Hub/refs/heads/main/GeminiHub.lua"))()]])
-    elseif queue_on_teleport then queue_on_teleport([[loadstring(game:HttpGet("https://raw.githubusercontent.com/3hbin/Gemini-Hub/refs/heads/main/GeminiHub.lua"))()]]) end
-    local TPS = game:GetService("TeleportService")
-    local api = "https://games.roblox.com/v1/games/" .. game.PlaceId .. "/servers/Public?limit=100"
-    local data = game:GetService("HttpService"):JSONDecode(game:HttpGet(api))
-    for _, v in pairs(data.data) do
-        if v.playing < v.maxPlayers and v.id ~= game.JobId then TPS:TeleportToPlaceInstance(game.PlaceId, v.id, LocalPlayer) break end
+-- VÙNG CUỘN CHỨA DANH SÁCH KHAI THÁC JOBID SERVER TỰ ĐỘNG
+local ServerListScroll = Instance.new("ScrollingFrame", GridScrollFrame)
+ServerListScroll.Size = UDim2.new(0.98, 0, 0, 100)
+ServerListScroll.BackgroundColor3 = Color3.fromRGB(20, 20, 25)
+ServerListScroll.ScrollBarThickness = 3
+ServerListScroll.CanvasSize = UDim2.new(0, 0, 0, 0)
+createCorner(ServerListScroll, 6)
+
+local ServerGrid = Instance.new("UIGridLayout", ServerListScroll)
+ServerGrid.CellSize = UDim2.new(0.96, 0, 0, 24)
+ServerGrid.CellPadding = UDim2.new(0, 0, 0, 4)
+ServerGrid.SortOrder = Enum.SortOrder.LayoutOrder
+
+ServerGrid:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+    ServerListScroll.CanvasSize = UDim2.new(0, 0, 0, ServerGrid.AbsoluteContentSize.Y + 10)
+end)
+
+local function RefreshServers()
+    for _, v in pairs(ServerListScroll:GetChildren()) do
+        if v:IsA("TextButton") then v:Destroy() end
+    end
+    task.spawn(function()
+        local success, result = pcall(function()
+            return game:HttpGet("https://games.roblox.com/v1/games/" .. game.PlaceId .. "/servers/Public?limit=100")
+        end)
+        if success and result then
+            local data = HttpService:JSONDecode(result)
+            if data and data.data then
+                for _, server in pairs(data.data) do
+                    if server.playing < server.maxPlayers and server.id ~= game.JobId then
+                        local ServerBtn = Instance.new("TextButton", ServerListScroll)
+                        ServerBtn.BackgroundColor3 = Color3.fromRGB(35, 35, 45)
+                        ServerBtn.Text = "👤 " .. server.playing .. "/" .. server.maxPlayers .. " | ID: " .. string.sub(server.id, 1, 8) .. "..."
+                        ServerBtn.TextColor3 = Color3.fromRGB(0, 255, 150)
+                        ServerBtn.Font = Enum.Font.GothamSemibold
+                        ServerBtn.TextSize = 8
+                        createCorner(ServerBtn, 4)
+                        
+                        ServerBtn.MouseButton1Click:Connect(function()
+                            ServerBtn.Text = "🔄 Vào..."
+                            pcall(function()
+                                game:GetService("TeleportService"):TeleportToPlaceInstance(game.PlaceId, server.id, LocalPlayer)
+                            end)
+                        end)
+                    end
+                end
+            end
+        end
+    end)
+end
+
+createButton("🔄 Làm Mới JobId Server", Color3.fromRGB(0, 120, 255), function()
+    RefreshServers()
+end)
+
+-- HIỆU ỨNG LOADING KHI MỞ BẢNG
+local LoadingFrame = Instance.new("Frame", MainFrame)
+LoadingFrame.Size = UDim2.new(1, 0, 1, 0)
+LoadingFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 20)
+LoadingFrame.ZIndex = 10 -- Đảm bảo đè lên toàn bộ các nút khác khi đang load
+createCorner(LoadingFrame, 12)
+
+local LoadingLabel = Instance.new("TextLabel", LoadingFrame)
+LoadingLabel.Size = UDim2.new(1, 0, 1, 0)
+LoadingLabel.BackgroundTransparency = 1
+LoadingLabel.Text = "Gemini Hub đang tải..."
+LoadingLabel.TextColor3 = Color3.fromRGB(0, 150, 255)
+LoadingLabel.Font = Enum.Font.GothamBold
+LoadingLabel.TextSize = 14
+LoadingLabel.ZIndex = 11
+
+-- Hiệu ứng chữ Loading nhấp nháy liên tục
+task.spawn(function()
+    while LoadingFrame.Parent do
+        for i = 1, 3 do
+            LoadingLabel.Text = "Gemini Hub đang tải" .. string.rep(".", i)
+            task.wait(0.4)
+        end
     end
 end)
+
+-- Tự động biến mất mượt mà sau 2 giây khi mọi thứ đã sẵn sàng
+task.delay(2, function()
+    local TweenService = game:GetService("TweenService")
+    local info = TweenInfo.new(0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
+    
+    TweenService:Create(LoadingFrame, info, {BackgroundTransparency = 1}):Play()
+    TweenService:Create(LoadingLabel, info, {TextTransparency = 1}):Play()
+    
+    task.wait(0.5)
+    LoadingFrame:Destroy() -- Xóa hẳn khung load đi để bấm được các nút bên dưới
+end)
+
+-- Ô NHẬP MÃ SCRIPT (CODE BOX)
+local CodeInputBox = Instance.new("TextBox", GridScrollFrame)
+CodeInputBox.BackgroundColor3 = Color3.fromRGB(25, 25, 30)
+CodeInputBox.Text = ""
+CodeInputBox.PlaceholderText = "Dán mã script (.lua) vào đây..."
+CodeInputBox.TextColor3 = Color3.fromRGB(0, 255, 150)
+CodeInputBox.Font = Enum.Font.Code
+CodeInputBox.TextSize = 9
+CodeInputBox.TextXAlignment = Enum.TextXAlignment.Left
+CodeInputBox.ClearTextOnFocus = false
+createCorner(CodeInputBox, 6)
+
+-- NÚT BẤM CHẠY SCRIPT (EXECUTE)
+createButton("⚡ Execute Code", Color3.fromRGB(230, 130, 0), function()
+    local scriptCode = CodeInputBox.Text
+    if scriptCode == "" then
+        CodeInputBox.Text = "❌ Bạn chưa dán code!"
+        task.wait(1.5)
+        CodeInputBox.Text = ""
+        return
+    end
+    
+    -- Sử dụng hàm loadstring huyền thoại của Executor để biên dịch và chạy code
+    local success, err = pcall(function()
+        local compiled = loadstring(scriptCode)
+        if compiled then
+            task.spawn(compiled)
+        else
+            error("Code bị lỗi cú pháp không chạy được!")
+        end
+    end)
+    
+    if success then
+        CodeInputBox.Text = "✅ Đã chạy script thành công!"
+        task.wait(1.5)
+        CodeInputBox.Text = ""
+    else
+        CodeInputBox.Text = "❌ Lỗi: " .. tostring(err)
+        task.wait(3)
+        CodeInputBox.Text = ""
+    end
+end)
+
+local function RefreshServers()
+    -- Xóa danh sách nút server cũ khi làm mới
+    for _, v in pairs(ServerListScroll:GetChildren()) do
+        if v:IsA("TextButton") then v:Destroy() end
+    end
+    
+    task.spawn(function()
+        local success, result = pcall(function()
+            return game:HttpGet("https://games.roblox.com/v1/games/" .. game.PlaceId .. "/servers/Public?limit=100")
+        end)
+        
+        if success and result then
+            local data = HttpService:JSONDecode(result)
+            if data and data.data then
+                -- THUẬT TOÁN SẮP XẾP: Đưa các server ít người (Small Server) lên đầu danh sách
+                table.sort(data.data, function(a, b)
+                    return a.playing < b.playing
+                end)
+
+                for _, server in pairs(data.data) do
+                    -- Chỉ lấy các server còn chỗ và không trùng với server hiện tại bạn đang chơi
+                    if server.playing < server.maxPlayers and server.id ~= game.JobId then
+                        local ServerBtn = Instance.new("TextButton", ServerListScroll)
+                        ServerBtn.BackgroundColor3 = Color3.fromRGB(35, 35, 45)
+                        
+                        -- Hiển thị số người kèm chữ [Small] nếu server đó cực vắng (dưới 3 người)
+                        if server.playing <= 3 then
+                            ServerBtn.Text = "🌱 [Small] " .. server.playing .. "/" .. server.maxPlayers .. " | ID: " .. string.sub(server.id, 1, 8) .. "..."
+                            ServerBtn.TextColor3 = Color3.fromRGB(0, 255, 255) -- Màu xanh neon cho server nhỏ
+                        else
+                            ServerBtn.Text = "👤 " .. server.playing .. "/" .. server.maxPlayers .. " | ID: " .. string.sub(server.id, 1, 8) .. "..."
+                            ServerBtn.TextColor3 = Color3.fromRGB(0, 255, 150)
+                        end
+                        
+                        ServerBtn.Font = Enum.Font.GothamSemibold
+                        ServerBtn.TextSize = 8
+                        createCorner(ServerBtn, 4)
+                        
+                        -- Nhấn vào nút là tự lấy JobId và chuyển server luôn
+                        ServerBtn.MouseButton1Click:Connect(function()
+                            ServerBtn.Text = "🔄 Vào..."
+                            pcall(function()
+                                game:GetService("TeleportService"):TeleportToPlaceInstance(game.PlaceId, server.id, LocalPlayer)
+                            end)
+                        end)
+                    end
+                end
+            end
+        end
+    end)
+end
+
+-- DANH SÁCH CÁC BIỂU CẢM R6 PHỔ BIẾN
+local Emotes = {
+    {"👋 Xin chào", "Wave"},
+    {"😊 Vui vẻ", "Cheer"},
+    {"😂 Cười", "Laugh"},
+    {"💃 Nhảy", "Dance"},
+    {"🤔 Suy nghĩ", "Point"} -- Bạn có thể thêm tên emote khác theo thư viện Roblox
+}
+
+-- TẠO KHUNG CHỌN BIỂU CẢM
+local EmoteFrame = Instance.new("ScrollingFrame", GridScrollFrame)
+EmoteFrame.Size = UDim2.new(0.98, 0, 0, 80)
+EmoteFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 35)
+EmoteFrame.ScrollBarThickness = 2
+createCorner(EmoteFrame, 6)
+
+local EmoteGrid = Instance.new("UIGridLayout", EmoteFrame)
+EmoteGrid.CellSize = UDim2.new(0.47, 0, 0, 24)
+EmoteGrid.CellPadding = UDim2.new(0.04, 0, 0, 4)
+EmoteGrid.SortOrder = Enum.SortOrder.LayoutOrder
+
+for _, emote in pairs(Emotes) do
+    local EBtn = Instance.new("TextButton", EmoteFrame)
+    EBtn.BackgroundColor3 = Color3.fromRGB(50, 50, 70)
+    EBtn.Text = emote[1]
+    EBtn.TextColor3 = Color3.new(1, 1, 1)
+    EBtn.Font = Enum.Font.Gotham
+    EBtn.TextSize = 9
+    createCorner(EBtn, 4)
+    
+    EBtn.MouseButton1Click:Connect(function()
+        pcall(function()
+            local humanoid = LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
+            if humanoid then
+                humanoid:PlayEmote(emote[2])
+            end
+        end)
+    end)
+end
+
+-- Tự động cập nhật canvas cho danh sách emote
+EmoteGrid:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+    EmoteFrame.CanvasSize = UDim2.new(0, 0, 0, EmoteGrid.AbsoluteContentSize.Y + 10)
+end)
+
+local Invisible_Active = false
+createToggle("Chế độ Tàng Hình", function(state)
+    Invisible_Active = state
+    local char = LocalPlayer.Character
+    if not char then return end
+
+    -- 1. Làm trong suốt toàn bộ cơ thể
+    for _, part in pairs(char:GetDescendants()) do
+        if part:IsA("BasePart") or part:IsA("Decal") then
+            if Invisible_Active then
+                part.Transparency = 1
+            else
+                part.Transparency = 0
+            end
+        end
+    end
+
+    -- 2. Làm mờ Tool đang cầm (0.5)
+    local tool = char:FindFirstChildOfClass("Tool")
+    if tool then
+        for _, part in pairs(tool:GetDescendants()) do
+            if part:IsA("BasePart") then
+                part.Transparency = Invisible_Active and 0.5 or 0
+            end
+        end
+    end
+
+    -- 3. Ẩn Bảng Tên (NameTag/Humanoid)
+    local humanoid = char:FindFirstChildOfClass("Humanoid")
+    if humanoid then
+        humanoid.DisplayDistanceType = Invisible_Active and Enum.HumanoidDisplayDistanceType.None or Enum.HumanoidDisplayDistanceType.Viewer
+    end
+    
+    -- Xóa bất kỳ NameTag thủ công nào nếu có
+    if char:FindFirstChild("Head") and char.Head:FindFirstChild("NameTag") then
+        char.Head.NameTag.Enabled = not Invisible_Active
+    end
+end)
+
+-- DANH SÁCH NGƯỜI CHƠI TRONG SERVER
+local PlayerListScroll = Instance.new("ScrollingFrame", GridScrollFrame)
+PlayerListScroll.Size = UDim2.new(0.98, 0, 0, 100)
+PlayerListScroll.BackgroundColor3 = Color3.fromRGB(25, 25, 35)
+PlayerListScroll.ScrollBarThickness = 3
+createCorner(PlayerListScroll, 6)
+
+local PlayerGrid = Instance.new("UIGridLayout", PlayerListScroll)
+PlayerGrid.CellSize = UDim2.new(0.96, 0, 0, 24)
+PlayerGrid.CellPadding = UDim2.new(0, 0, 0, 4)
+PlayerGrid.SortOrder = Enum.SortOrder.LayoutOrder
+
+local function RefreshPlayerList()
+    -- Xóa danh sách cũ
+    for _, v in pairs(PlayerListScroll:GetChildren()) do
+        if v:IsA("TextButton") then v:Destroy() end
+    end
+    
+    -- Thêm danh sách mới
+    for _, p in pairs(Players:GetPlayers()) do
+        local PBtn = Instance.new("TextButton", PlayerListScroll)
+        PBtn.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
+        PBtn.Text = "👤 " .. p.Name
+        PBtn.TextColor3 = Color3.new(1, 1, 1)
+        PBtn.Font = Enum.Font.Gotham
+        PBtn.TextSize = 9
+        createCorner(PBtn, 4)
+        
+        PBtn.MouseButton1Click:Connect(function()
+            -- Copy tên người chơi vào clipboard khi nhấn vào
+            if setclipboard then
+                setclipboard(p.Name)
+                PBtn.Text = "✅ Đã Copy Tên!"
+                task.wait(1)
+                PBtn.Text = "👤 " .. p.Name
+            end
+        end)
+    end
+end
+
+-- Nút làm mới danh sách người chơi
+createButton("🔄 Cập Nhật Người Chơi", Color3.fromRGB(80, 80, 100), function()
+    RefreshPlayerList()
+end)
+
+-- Cập nhật canvas khi danh sách thay đổi
+PlayerGrid:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+    PlayerListScroll.CanvasSize = UDim2.new(0, 0, 0, PlayerGrid.AbsoluteContentSize.Y + 10)
+end)
+
+RefreshPlayerList()
 
 -- NÚT ẨN MENU DƯỚI ĐÁY
 local CloseBtn = Instance.new("TextButton", MainFrame)
@@ -733,5 +1079,6 @@ CloseBtn.Text = "Ẩn Bảng Menu"
 createCorner(CloseBtn, 6)
 CloseBtn.MouseButton1Click:Connect(function() MainFrame.Visible = false end)
 
--- ĐƯỢC CHẠY SAU KHI CÁC FRAME ĐÃ KHỞI TẠO XONG
+-- KÍCH HOẠT HỆ THỐNG
+RefreshServers()
 updateLayoutPositions()
