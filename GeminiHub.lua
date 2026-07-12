@@ -384,53 +384,22 @@ local function createButton(text, color, callback)
     Btn.MouseButton1Click:Connect(callback)
 end
 
--- NÚT MỞ MENU CHÍNH (ICON)
+
+-- --- NÚT TRÒN MỞ MENU TO RÕ (70x70) ---
+local ButtonSize = math.floor(70 * ScaleFactor)
 local ToggleBtn = Instance.new("TextButton", ScreenGui)
-ToggleBtn.Size = UDim2.new(0, 42, 0, 42)
-ToggleBtn.Position = UDim2.new(0, 15, 0.4, 0)
+ToggleBtn.Size = UDim2.new(0, ButtonSize, 0, ButtonSize)
+ToggleBtn.Position = UDim2.new(0, 20, 0.4, 0)
 ToggleBtn.BackgroundColor3 = Color3.fromRGB(0, 120, 255)
 ToggleBtn.Text = "📜"
 ToggleBtn.TextColor3 = Color3.new(1, 1, 1)
-ToggleBtn.TextSize = 18
-createCorner(ToggleBtn, 21)
+ToggleBtn.TextSize = math.floor(32 * ScaleFactor)
+createCorner(ToggleBtn, ButtonSize / 2)
 makeDraggable(ToggleBtn)
 
--- LƯU LẠI KÍCH THƯỚC CHUẨN CỦA MENU ĐỂ PHÓNG TO/THU NHỎ
-local OriginalSize = MainFrame.Size
-local TweenService = game:GetService("TweenService")
-
--- Đổi AnchorPoint về tâm để menu bung ra từ giữa giống Galaxy S26 Ultra
-MainFrame.AnchorPoint = Vector2.new(0.5, 0.5)
-
-ToggleBtn.MouseButton1Click:Connect(function()
-    if not MainFrame.Visible then
-        -- HIỆU ỨNG MỞ (BUNG RA MƯỢT MÀ KIỂU SAMSUNG OS)
-        MainFrame.Size = UDim2.new(0, 0, 0, 0) -- Thu nhỏ về 0 trước khi mở
-        MainFrame.Visible = true
-        
-        local OpenTweenInfo = TweenInfo.new(
-            0.35, -- Thời gian mở (giây)
-            Enum.EasingStyle.Back, -- Kiểu nảy nhẹ cao cấp của Samsung
-            Enum.EasingDirection.Out
-        )
-        
-        TweenService:Create(MainFrame, OpenTweenInfo, {Size = OriginalSize}):Play()
-    else
-        -- HIỆU ỨNG THU NHỎ BIẾN MẤT
-        local CloseTweenInfo = TweenInfo.new(
-            0.25,
-            Enum.EasingStyle.Quad,
-            Enum.EasingDirection.In
-        )
-        
-        local closeTween = TweenService:Create(MainFrame, CloseTweenInfo, {Size = UDim2.new(0, 0, 0, 0)})
-        closeTween:Play()
-        closeTween.Completed:Connect(function()
-            MainFrame.Visible = false
-            MainFrame.Size = OriginalSize -- Reset lại kích thước gốc cho lần mở sau
-        end)
-    end
-end)
+local ButtonStroke = Instance.new("UIStroke", ToggleBtn)
+ButtonStroke.Color = Color3.fromRGB(255, 255, 255)
+ButtonStroke.Thickness = math.max(1.5, 2 * ScaleFactor)
 
 -- CÁC CHỨC NĂNG HACK / LUA MECHANICS
 local Fly_Active = false
