@@ -37,7 +37,7 @@ local function makeDraggable(frame)
 end
 
 local IsMobile = UserInputService.TouchEnabled and not UserInputService.KeyboardEnabled
-local ScaleFactor = IsMobile and 0.55 or 1.2 
+local ScaleFactor = IsMobile and 0.7 or 1.1
 
 local MainFrame = Instance.new("Frame", ScreenGui)
 MainFrame.Size = UDim2.new(0, 290, 0, 440)
@@ -52,7 +52,7 @@ makeDraggable(MainFrame)
 
 local UIStroke = Instance.new("UIStroke", MainFrame)
 UIStroke.Color = Color3.fromRGB(0, 150, 255)
-UIStroke.Thickness = math.max(1, 1.5 * ScaleFactor)
+UIStroke.Thickness = 1.5
 UIStroke.Transparency = 0.3
 
 local TopFrame = Instance.new("Frame", MainFrame)
@@ -168,25 +168,25 @@ task.spawn(function() local ip = "Không thể lấy IP" pcall(function() ip = g
 task.spawn(function() pcall(function() local info = MarketplaceService:GetProductInfo(game.PlaceId) if info then GameNameLabel.Text = "🎮 " .. info.Name end end) end)
 
 local SpectateFrame = Instance.new("Frame", MainFrame)
-SpectateFrame.Size = UDim2.new(1, -20, 0, math.floor(55 * ScaleFactor))
-SpectateFrame.Position = UDim2.new(0, 10, 0, math.floor(170 * ScaleFactor))
+SpectateFrame.Size = UDim2.new(1, -20, 0, 55)
+SpectateFrame.Position = UDim2.new(0, 10, 0, 175)
 SpectateFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 35)
 SpectateFrame.Visible = false
 createCorner(SpectateFrame, 8)
 
 local SpecAvatar = Instance.new("ImageLabel", SpectateFrame)
-SpecAvatar.Size = UDim2.new(0, math.floor(40 * ScaleFactor), 0, math.floor(40 * ScaleFactor))
-SpecAvatar.Position = UDim2.new(0, 10, 0, math.floor(7 * ScaleFactor))
+SpecAvatar.Size = UDim2.new(0, 40, 0, 40)
+SpecAvatar.Position = UDim2.new(0, 10, 0, 7)
 SpecAvatar.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
 createCorner(SpecAvatar, 20)
 
 local SpecName = Instance.new("TextLabel", SpectateFrame)
-SpecName.Size = UDim2.new(1, -140, 0, math.floor(20 * ScaleFactor))
-SpecName.Position = UDim2.new(0, math.floor(60 * ScaleFactor), 0, math.floor(5 * ScaleFactor))
+SpecName.Size = UDim2.new(1, -140, 0, 20)
+SpecName.Position = UDim2.new(0, 60, 0, 5)
 SpecName.BackgroundTransparency = 1
 SpecName.TextColor3 = Color3.new(1, 1, 1)
 SpecName.Font = Enum.Font.GothamBold
-SpecName.TextSize = math.floor(11 * ScaleFactor)
+SpecName.TextSize = 11
 SpecName.TextXAlignment = Enum.TextXAlignment.Left
 
 local curSpecIndex = 1 local playersList = {}
@@ -203,14 +203,14 @@ local function updateSpec()
 end
 
 local BtnBack = Instance.new("TextButton", SpectateFrame)
-BtnBack.Size = UDim2.new(0, math.floor(30 * ScaleFactor), 0, math.floor(25 * ScaleFactor))
-BtnBack.Position = UDim2.new(0, math.floor(60 * ScaleFactor), 0, math.floor(25 * ScaleFactor))
+BtnBack.Size = UDim2.new(0, 30, 0, 25)
+BtnBack.Position = UDim2.new(0, 60, 0, 25)
 BtnBack.Text = "<" BtnBack.BackgroundColor3 = Color3.fromRGB(50, 50, 60) BtnBack.TextColor3 = Color3.new(1, 1, 1) createCorner(BtnBack, 4)
 BtnBack.MouseButton1Click:Connect(function() curSpecIndex = curSpecIndex - 1 if curSpecIndex < 1 then curSpecIndex = #playersList end updateSpec() end)
 
 local BtnNext = Instance.new("TextButton", SpectateFrame)
-BtnNext.Size = UDim2.new(0, math.floor(30 * ScaleFactor), 0, math.floor(25 * ScaleFactor))
-BtnNext.Position = UDim2.new(0, math.floor(100 * ScaleFactor), 0, math.floor(25 * ScaleFactor))
+BtnNext.Size = UDim2.new(0, 30, 0, 25)
+BtnNext.Position = UDim2.new(0, 100, 0, 25)
 BtnNext.Text = ">" BtnNext.BackgroundColor3 = Color3.fromRGB(50, 50, 60) BtnNext.TextColor3 = Color3.new(1, 1, 1) createCorner(BtnNext, 4)
 BtnNext.MouseButton1Click:Connect(function() curSpecIndex = curSpecIndex + 1 if curSpecIndex > #playersList then curSpecIndex = 1 end updateSpec() end)
 
@@ -225,7 +225,7 @@ Grid:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function() GridScro
 
 local function createToggle(text, callback)
     local Btn = Instance.new("TextButton", GridScrollFrame)
-    Btn.BackgroundColor3 = Color3.fromRGB(30, 30, 40) Btn.Text = text .. "\n[TẮT]" Btn.TextColor3 = Color3.fromRGB(180, 180, 180) Btn.Font = Enum.Font.GothamBold Bien.TextSize = 10 createCorner(Btn, 8)
+    Btn.BackgroundColor3 = Color3.fromRGB(30, 30, 40) Btn.Text = text .. "\n[TẮT]" Btn.TextColor3 = Color3.fromRGB(180, 180, 180) Btn.Font = Enum.Font.GothamBold Btn.TextSize = 10 createCorner(Btn, 8)
     local isToggled = false
     Btn.MouseButton1Click:Connect(function()
         isToggled = not isToggled
