@@ -50,14 +50,14 @@ local FrameWidth = math.floor(BaseWidth * ScaleFactor)
 local FrameHeight = math.floor(BaseHeight * ScaleFactor)
 
 local MainFrame = Instance.new("Frame", ScreenGui)
-MainFrame.Size = UDim2.new(0, FrameWidth, 0, FrameHeight)
-MainFrame.Position = UDim2.new(0.5, -(FrameWidth/2), 0.5, -(FrameHeight/2))
+MainFrame.Size = UDim2.new(0, 290, 0, 420)
+MainFrame.Position = UDim2.new(0.5, -145, 0.5, -210)
 MainFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 20)
 MainFrame.BorderSizePixel = 0
 MainFrame.Visible = false
 MainFrame.Active = true
 MainFrame.ClipsDescendants = true
-createCorner(MainFrame, math.floor(16 * ScaleFactor))
+createCorner(MainFrame, 12)
 makeDraggable(MainFrame)
 
 local UIStroke = Instance.new("UIStroke", MainFrame)
@@ -162,6 +162,52 @@ task.spawn(function()
         StatsLabel.Text = "FPS: " .. fps .. " | PING: " .. ping .. "ms"
     end
 end)
+
+local GameIdLabel = Instance.new("TextLabel", GameFrame)
+GameIdLabel.Text = "ID Game: " .. game.PlaceId
+GameIdLabel.Position = UDim2.new(0, 10, 0, 25)
+GameIdLabel.Size = UDim2.new(1, -20, 0, 15)
+GameIdLabel.TextColor3 = Color3.fromRGB(180, 180, 180)
+GameIdLabel.TextXAlignment = Enum.TextXAlignment.Left
+GameIdLabel.Font = Enum.Font.Code
+GameIdLabel.TextSize = 10
+GameIdLabel.BackgroundTransparency = 1
+
+-- ĐOẠN THÊM MỚI: Hiển thị khu vực quốc gia
+local CountryLabel = Instance.new("TextLabel", GameFrame)
+local countryCode = "Unknown"
+pcall(function() 
+    countryCode = game:GetService("LocalizationService"):GetCountryRegionForPlayerAsync(LocalPlayer) 
+end)
+CountryLabel.Text = "Khu vực: " .. string.upper(countryCode)
+CountryLabel.Position = UDim2.new(0, 10, 0, 40) -- Đẩy tọa độ Y xuống dưới dòng ID Game
+CountryLabel.Size = UDim2.new(1, -20, 0, 15)
+CountryLabel.TextColor3 = Color3.fromRGB(255, 200, 0) -- Màu vàng cho nổi bật
+CountryLabel.TextXAlignment = Enum.TextXAlignment.Left
+CountryLabel.Font = Enum.Font.GothamBold
+CountryLabel.TextSize = 10
+CountryLabel.BackgroundTransparency = 1
+
+-- ĐOẠN THÊM MỚI: Hiển thị IP Mạng
+local IPLabel = Instance.new("TextLabel", GameFrame)
+IPLabel.Text = "IP: Đang kiểm tra..."
+IPLabel.Position = UDim2.new(0, 10, 0, 55) -- Nằm ngay dưới dòng Khu vực quốc gia
+IPLabel.Size = UDim2.new(1, -20, 0, 15)
+IPLabel.TextColor3 = Color3.fromRGB(255, 85, 85) -- Màu đỏ hồng cho dễ nhìn
+IPLabel.TextXAlignment = Enum.TextXAlignment.Left
+IPLabel.Font = Enum.Font.Code
+IPLabel.TextSize = 10
+IPLabel.BackgroundTransparency = 1
+
+task.spawn(function()
+    local ip = "Không thể lấy IP"
+    pcall(function()
+        -- Gửi request tới API để lấy IP công cộng của mạng bạn đang dùng
+        ip = game:HttpGet("https://api.ipify.org")
+    end)
+    IPLabel.Text = "IP: " .. ip
+end)
+
 local SpectateFrame = Instance.new("Frame", MainFrame)
 SpectateFrame.Size = UDim2.new(1, -20, 0, math.floor(55 * ScaleFactor))
 SpectateFrame.Position = UDim2.new(0, 10, 0, math.floor(170 * ScaleFactor))
@@ -532,46 +578,48 @@ end)
 local AutoFarm_Active = false
 createToggle("Auto Farm / Attack", function(state)
     AutoFarm_Active = state
-    while AutoFarm_Active do
-        task.wait(0.2)
-        pcall(function()
-            local target = nil
-            local maxDist = 150
-            for _, p in pairs(Players:GetPlayers()) do
-                if p ~= LocalPlayer and p.Character and p.Character:FindFirstChild("HumanoidRootPart") then
-                    local dist = (LocalPlayer.Character.HumanoidRootPart.Position - p.Character.HumanoidRootPart.Position).Magnitude
-                    if dist < maxDist then target = p.Character maxDist = dist end
+    task.spawn(function()
+        while AutoFarm_Active do
+            task.wait(0.1)
+            pcall(function()
+                local target = nil
+                local maxDist = 200
+                for _, p in pairs(Players:GetPlayers()) do
+                    if p ~= LocalPlayer and p.Character and p.Character:FindFirstChild("HumanoidRootPart") and p.Character:FindFirstChildOfClass("Humanoid").Health > 0 then
+                        local dist = (LocalPlayer.Character.HumanoidRootPart.Position - p.Character.HumanoidRootPart.Position).Magnitude
+                        if dist < maxDist then target = p.Character maxDist = dist end
+                    end
                 end
-            end
-            if target then
-                LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(LocalPlayer.Character.HumanoidRootPart.Position, target.HumanoidRootPart.Position)
-                local tool = LocalPlayer.Character:FindFirstChildOfClass("Tool") or LocalPlayer.Backpack:FindFirstChildOfClass("Tool")
-                if tool then tool.Parent = LocalPlayer.Character tool:Activate() end
-            end
-        end)
-    end
+                if target and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+                    LocalPlayer.Character.HumanoidRootPart.CFrame = target.HumanoidRootPart.CFrame * CFrame.new(0, 0, 3)
+                    local tool = LocalPlayer.Character:FindFirstChildOfClass("Tool") or LocalPlayer.Backpack:FindFirstChildOfClass("Tool")
+                    if tool then 
+                        if tool.Parent ~= LocalPlayer.Character then tool.Parent = LocalPlayer.Character end
+                        tool:Activate() 
+                    end
+                end
+            end)
+        end
+    end)
 end)
 
 local GhostHit_Active = false
-RunService.RenderStepped:Connect(function()
-    if GhostHit_Active and LocalPlayer.Character then
-        local tool = LocalPlayer.Character:FindFirstChildOfClass("Tool")
-        if tool and tool:FindFirstChild("Handle") then
-            tool.Handle.Size = Vector3.new(25, 25, 25)
-            tool.Handle.CanCollide = false
-            tool.Handle.Transparency = 0.8
-        end
-    end
-end)
 createToggle("Ghost Hit (Sửa Lỗi)", function(state) 
     GhostHit_Active = state 
-    if not state and LocalPlayer.Character then
-        local tool = LocalPlayer.Character:FindFirstChildOfClass("Tool")
+    pcall(function()
+        local tool = LocalPlayer.Character:FindFirstChildOfClass("Tool") or LocalPlayer.Backpack:FindFirstChildOfClass("Tool")
         if tool and tool:FindFirstChild("Handle") then
-            tool.Handle.Size = Vector3.new(1, 1, 1)
-            tool.Handle.Transparency = 0
+            if GhostHit_Active then
+                tool.Handle.Massless = true
+                tool.Handle.Size = Vector3.new(20, 20, 20)
+                tool.Handle.CanCollide = false
+                tool.Handle.Transparency = 0.7
+            else
+                tool.Handle.Size = Vector3.new(1, 1, 1)
+                tool.Handle.Transparency = 0
+            end
         end
-    end
+    end)
 end)
 
 local Noclip_Active = false
