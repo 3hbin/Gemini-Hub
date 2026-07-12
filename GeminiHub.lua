@@ -66,51 +66,74 @@ UIStroke.Thickness = math.max(1, 1.5 * ScaleFactor)
 UIStroke.Transparency = 0.3
 
 local TopFrame = Instance.new("Frame", MainFrame)
-TopFrame.Size = UDim2.new(1, 0, 0, math.floor(165 * ScaleFactor))
+TopFrame.Size = UDim2.new(1, 0, 0, 180) -- Tăng chiều cao TopFrame để vừa khung game mới
 TopFrame.BackgroundTransparency = 1
 
+-- KHUNG CHỨA THÔNG TIN GAME (Tăng chiều cao lên 115 để chứa đủ 5 dòng chữ)
 local GameFrame = Instance.new("Frame", TopFrame)
-GameFrame.Size = UDim2.new(1, -20, 0, math.floor(75 * ScaleFactor))
+GameFrame.Size = UDim2.new(1, -20, 0, 115)
 GameFrame.Position = UDim2.new(0, 10, 0, 10)
 GameFrame.BackgroundColor3 = Color3.fromRGB(20, 30, 45)
-createCorner(GameFrame, math.floor(10 * ScaleFactor))
+createCorner(GameFrame, 8)
 
+-- 1. Dòng Tên Game
 local GameNameLabel = Instance.new("TextLabel", GameFrame)
 GameNameLabel.Text = "🎮 Đang tải tên game..."
-GameNameLabel.Position = UDim2.new(0, 10, 0, math.floor(6 * ScaleFactor))
-GameNameLabel.Size = UDim2.new(1, -20, 0, math.floor(20 * ScaleFactor))
+GameNameLabel.Position = UDim2.new(0, 10, 0, 5)
+GameNameLabel.Size = UDim2.new(1, -20, 0, 20)
 GameNameLabel.TextColor3 = Color3.fromRGB(0, 255, 150)
 GameNameLabel.TextXAlignment = Enum.TextXAlignment.Left
 GameNameLabel.Font = Enum.Font.GothamBold
-GameNameLabel.TextSize = math.floor(13 * ScaleFactor)
+GameNameLabel.TextSize = 12
 GameNameLabel.BackgroundTransparency = 1
 
+-- 2. Dòng ID Game
 local GameIdLabel = Instance.new("TextLabel", GameFrame)
 GameIdLabel.Text = "ID Game: " .. game.PlaceId
-GameIdLabel.Position = UDim2.new(0, 10, 0, math.floor(26 * ScaleFactor))
-GameIdLabel.Size = UDim2.new(1, -20, 0, math.floor(20 * ScaleFactor))
-GameIdLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
+GameIdLabel.Position = UDim2.new(0, 10, 0, 27)
+GameIdLabel.Size = UDim2.new(1, -20, 0, 15)
+GameIdLabel.TextColor3 = Color3.fromRGB(180, 180, 180)
 GameIdLabel.TextXAlignment = Enum.TextXAlignment.Left
 GameIdLabel.Font = Enum.Font.Code
-GameIdLabel.TextSize = math.floor(11 * ScaleFactor)
+GameIdLabel.TextSize = 10
 GameIdLabel.BackgroundTransparency = 1
 
+-- 3. Dòng Khu Vực Quốc Gia
+local CountryLabel = Instance.new("TextLabel", GameFrame)
+local countryCode = "Unknown"
+pcall(function() 
+    countryCode = game:GetService("LocalizationService"):GetCountryRegionForPlayerAsync(LocalPlayer) 
+end)
+CountryLabel.Text = "Khu vực: " .. string.upper(countryCode)
+CountryLabel.Position = UDim2.new(0, 10, 0, 47)
+CountryLabel.Size = UDim2.new(1, -20, 0, 15)
+CountryLabel.TextColor3 = Color3.fromRGB(255, 200, 0)
+CountryLabel.TextXAlignment = Enum.TextXAlignment.Left
+CountryLabel.Font = Enum.Font.GothamBold
+CountryLabel.TextSize = 10
+CountryLabel.BackgroundTransparency = 1
+
+-- 4. Dòng IP Mạng
+local IPLabel = Instance.new("TextLabel", GameFrame)
+IPLabel.Text = "IP: Đang kiểm tra..."
+IPLabel.Position = UDim2.new(0, 10, 0, 67)
+IPLabel.Size = UDim2.new(1, -20, 0, 15)
+IPLabel.TextColor3 = Color3.fromRGB(255, 85, 85)
+IPLabel.TextXAlignment = Enum.TextXAlignment.Left
+IPLabel.Font = Enum.Font.Code
+IPLabel.TextSize = 10
+IPLabel.BackgroundTransparency = 1
+
+-- 5. Nút Bấm Copy JobId (ĐÃ THÊM LẠI Ở ĐÂY)
 local JobIdLabel = Instance.new("TextButton", GameFrame)
 JobIdLabel.Text = "JobId: " .. game.JobId:sub(1, 12) .. "..."
-JobIdLabel.Position = UDim2.new(0, 10, 0, math.floor(46 * ScaleFactor))
-JobIdLabel.Size = UDim2.new(1, -20, 0, math.floor(20 * ScaleFactor))
+JobIdLabel.Position = UDim2.new(0, 10, 0, 87)
+JobIdLabel.Size = UDim2.new(1, -20, 0, 20)
 JobIdLabel.TextColor3 = Color3.fromRGB(160, 160, 160)
 JobIdLabel.TextXAlignment = Enum.TextXAlignment.Left
 JobIdLabel.BackgroundTransparency = 1
 JobIdLabel.Font = Enum.Font.Code
-JobIdLabel.TextSize = math.floor(11 * ScaleFactor)
-
-task.spawn(function()
-    pcall(function()
-        local success, info = pcall(function() return MarketplaceService:GetProductInfo(game.PlaceId) end)
-        if success and info then GameNameLabel.Text = "🎮 " .. info.Name end
-    end)
-end)
+JobIdLabel.TextSize = 10
 
 JobIdLabel.MouseButton1Click:Connect(function()
     if setclipboard then
@@ -122,9 +145,23 @@ JobIdLabel.MouseButton1Click:Connect(function()
     end
 end)
 
+-- Các hàm chạy ngầm tải dữ liệu
+task.spawn(function()
+    local ip = "Không thể lấy IP"
+    pcall(function() ip = game:HttpGet("https://api.ipify.org") end)
+    IPLabel.Text = "IP: " .. ip
+end)
+
+task.spawn(function()
+    pcall(function()
+        local info = MarketplaceService:GetProductInfo(game.PlaceId)
+        if info then GameNameLabel.Text = "🎮 " .. info.Name end
+    end)
+end)
+
 local ProfileFrame = Instance.new("Frame", TopFrame)
 ProfileFrame.Size = UDim2.new(1, -20, 0, math.floor(65 * ScaleFactor))
-ProfileFrame.Position = UDim2.new(0, 10, 0, math.floor(95 * ScaleFactor))
+ProfileFrame.Position = UDim2.new(0, 10, 0, 135)
 ProfileFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 35)
 createCorner(ProfileFrame, math.floor(10 * ScaleFactor))
 
@@ -161,51 +198,6 @@ task.spawn(function()
         pcall(function() ping = math.floor(game:GetService("Stats").Network.ServerStatsItem["Data Ping"]:GetValue()) end)
         StatsLabel.Text = "FPS: " .. fps .. " | PING: " .. ping .. "ms"
     end
-end)
-
-local GameIdLabel = Instance.new("TextLabel", GameFrame)
-GameIdLabel.Text = "ID Game: " .. game.PlaceId
-GameIdLabel.Position = UDim2.new(0, 10, 0, 25)
-GameIdLabel.Size = UDim2.new(1, -20, 0, 15)
-GameIdLabel.TextColor3 = Color3.fromRGB(180, 180, 180)
-GameIdLabel.TextXAlignment = Enum.TextXAlignment.Left
-GameIdLabel.Font = Enum.Font.Code
-GameIdLabel.TextSize = 10
-GameIdLabel.BackgroundTransparency = 1
-
--- ĐOẠN THÊM MỚI: Hiển thị khu vực quốc gia
-local CountryLabel = Instance.new("TextLabel", GameFrame)
-local countryCode = "Unknown"
-pcall(function() 
-    countryCode = game:GetService("LocalizationService"):GetCountryRegionForPlayerAsync(LocalPlayer) 
-end)
-CountryLabel.Text = "Khu vực: " .. string.upper(countryCode)
-CountryLabel.Position = UDim2.new(0, 10, 0, 40) -- Đẩy tọa độ Y xuống dưới dòng ID Game
-CountryLabel.Size = UDim2.new(1, -20, 0, 15)
-CountryLabel.TextColor3 = Color3.fromRGB(255, 200, 0) -- Màu vàng cho nổi bật
-CountryLabel.TextXAlignment = Enum.TextXAlignment.Left
-CountryLabel.Font = Enum.Font.GothamBold
-CountryLabel.TextSize = 10
-CountryLabel.BackgroundTransparency = 1
-
--- ĐOẠN THÊM MỚI: Hiển thị IP Mạng
-local IPLabel = Instance.new("TextLabel", GameFrame)
-IPLabel.Text = "IP: Đang kiểm tra..."
-IPLabel.Position = UDim2.new(0, 10, 0, 55) -- Nằm ngay dưới dòng Khu vực quốc gia
-IPLabel.Size = UDim2.new(1, -20, 0, 15)
-IPLabel.TextColor3 = Color3.fromRGB(255, 85, 85) -- Màu đỏ hồng cho dễ nhìn
-IPLabel.TextXAlignment = Enum.TextXAlignment.Left
-IPLabel.Font = Enum.Font.Code
-IPLabel.TextSize = 10
-IPLabel.BackgroundTransparency = 1
-
-task.spawn(function()
-    local ip = "Không thể lấy IP"
-    pcall(function()
-        -- Gửi request tới API để lấy IP công cộng của mạng bạn đang dùng
-        ip = game:HttpGet("https://api.ipify.org")
-    end)
-    IPLabel.Text = "IP: " .. ip
 end)
 
 local SpectateFrame = Instance.new("Frame", MainFrame)
@@ -460,6 +452,52 @@ UserInputService.InputBegan:Connect(function(input, gpe)
     end
 end)
 
+-- 1. NÚT INF HP (BẤT TỬ MÁU CLIENT)
+local InfHP_Active = false
+createToggle("Vô Hạn Máu (Inf HP)", function(state)
+    InfHP_Active = state
+    if state then
+        task.spawn(function()
+            while InfHP_Active do
+                task.wait()
+                pcall(function()
+                    local char = LocalPlayer.Character
+                    if char and char:FindFirstChildOfClass("Humanoid") then
+                        local hum = char:FindFirstChildOfClass("Humanoid")
+                        -- Giữ máu luôn ở mức tối đa trên giao diện của bạn
+                        hum.Health = hum.MaxHealth
+                    end
+                end)
+            end
+        end)
+    end
+end)
+
+-- 2. NÚT INF JUMP (NHẢY VÔ HẠN)
+local InfJump_Active = false
+local JumpConnection
+createToggle("Nhảy Vô Hạn (Inf Jump)", function(state)
+    InfJump_Active = state
+    if InfJump_Active then
+        JumpConnection = UserInputService.JumpRequest:Connect(function()
+            pcall(function()
+                local char = LocalPlayer.Character
+                if char and char:FindFirstChildOfClass("Humanoid") then
+                    char:FindFirstChildOfClass("Humanoid"):ChangeState(Enum.HumanoidStateType.Jumping)
+                end
+            end)
+        end)
+    else
+        if JumpConnection then JumpConnection:Disconnect() end
+    end
+end)
+
+-- 3. NÚT TỰ LÙI KHI CHIẾN ĐẤU (HIT & RUN / KITE)
+local AutoKite_Active = false
+createToggle("Tự Lùi Khi Đánh", function(state)
+    AutoKite_Active = state
+end)
+
 local ESP_Active = false
 local function updateESP()
     for _, p in pairs(Players:GetPlayers()) do
@@ -584,14 +622,29 @@ createToggle("Auto Farm / Attack", function(state)
             pcall(function()
                 local target = nil
                 local maxDist = 200
+                
+                -- Tìm kiếm đối thủ gần nhất còn sống
                 for _, p in pairs(Players:GetPlayers()) do
                     if p ~= LocalPlayer and p.Character and p.Character:FindFirstChild("HumanoidRootPart") and p.Character:FindFirstChildOfClass("Humanoid").Health > 0 then
                         local dist = (LocalPlayer.Character.HumanoidRootPart.Position - p.Character.HumanoidRootPart.Position).Magnitude
                         if dist < maxDist then target = p.Character maxDist = dist end
                     end
                 end
+                
+                -- Thực hiện di chuyển và tấn công
                 if target and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
-                    LocalPlayer.Character.HumanoidRootPart.CFrame = target.HumanoidRootPart.CFrame * CFrame.new(0, 0, 3)
+                    local HRP = LocalPlayer.Character.HumanoidRootPart
+                    
+                    if AutoKite_Active then
+                        -- Nếu bật Tự Lùi: Giật lùi ra sau lưng đối thủ 6 studs để né chiêu
+                        HRP.CFrame = target.HumanoidRootPart.CFrame * CFrame.new(0, 0, 6)
+                        task.wait(0.05) -- Khựng lại một nhịp rất ngắn rồi lại lao vào
+                    else
+                        -- Nếu tắt Tự Lùi: Áp sát mượt mà sau lưng đối thủ 3 studs như cũ
+                        HRP.CFrame = target.HumanoidRootPart.CFrame * CFrame.new(0, 0, 3)
+                    end
+                    
+                    -- Tự động lấy vũ khí ra chém
                     local tool = LocalPlayer.Character:FindFirstChildOfClass("Tool") or LocalPlayer.Backpack:FindFirstChildOfClass("Tool")
                     if tool then 
                         if tool.Parent ~= LocalPlayer.Character then tool.Parent = LocalPlayer.Character end
