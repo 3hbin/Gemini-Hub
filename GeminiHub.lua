@@ -435,5 +435,78 @@ createSlider("Tốc Độ Click", 1, 10, 2, function(val)
     ClickSpeed = 1 / val
 end)
 
+local HttpService = game:GetService("HttpService")
+local ChatAI_Active = false
+
+-- Khung hiển thị AI Chat
+local ChatFrame = Instance.new("Frame", MainFrame)
+ChatFrame.Size = UDim2.new(1, -20, 0, 110)
+ChatFrame.Position = UDim2.new(0, 10, 0, 175)
+ChatFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 30)
+ChatFrame.Visible = false
+createCorner(ChatFrame, 8)
+
+local ResponseLabel = Instance.new("TextLabel", ChatFrame)
+ResponseLabel.Size = UDim2.new(1, -16, 0, 65)
+ResponseLabel.Position = UDim2.new(0, 8, 0, 5)
+ResponseLabel.BackgroundTransparency = 1
+ResponseLabel.Text = "Nhập tin nhắn bên dưới để chat với AI..."
+ResponseLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
+ResponseLabel.TextSize = 10
+ResponseLabel.Font = Enum.Font.Gotham
+ResponseLabel.TextWrapped = true
+ResponseLabel.TextYAlignment = Enum.TextYAlignment.Top
+ResponseLabel.TextXAlignment = Enum.TextXAlignment.Left
+
+local InputBox = Instance.new("TextBox", ChatFrame)
+InputBox.Size = UDim2.new(1, -16, 0, 25)
+InputBox.Position = UDim2.new(0, 8, 1, -33)
+InputBox.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
+InputBox.Text = ""
+InputBox.PlaceholderText = "Nhập nội dung..."
+InputBox.TextColor3 = Color3.new(1, 1, 1)
+InputBox.TextSize = 10
+InputBox.Font = Enum.Font.Gotham
+createCorner(InputBox, 6)
+
+local function SendToAI(message)
+    ResponseLabel.Text = "AI đang suy nghĩ..."
+    task.spawn(function()
+        local success, result = pcall(function()
+            -- Thay URL Cloudflare Worker của bạn vào đây
+            local url = " https://gemini-x-ai.vn812013.workers.dev/" 
+            local headers = { ["Content-Type"] = "application/json" }
+            local body = HttpService:JSONEncode({ message = message })
+            return HttpService:PostAsync(url, body, Enum.HttpContentType.ApplicationJson, false, headers)
+        end)
+        
+        if success then
+            local data = HttpService:JSONDecode(result)
+            ResponseLabel.Text = data.reply or "Không nhận được phản hồi."
+        else
+            ResponseLabel.Text = "❌ Lỗi kết nối API! Vui lòng kiểm tra lại proxy/worker."
+        end
+    end)
+end
+
+InputBox.FocusLost:Connect(function(enterPressed)
+    if enterPressed and InputBox.Text ~= "" then
+        SendToAI(InputBox.Text)
+        InputBox.Text = ""
+    end
+end)
+
+-- Nút Bật/Tắt Khung Chat trên Menu chính
+createToggle("Bật Khung Chat AI", function(state)
+    ChatAI_Active = state
+    ChatFrame.Visible = state
+    -- Đẩy khung Spectate xuống nếu cả hai cùng bật
+    if state and SpectateFrame.Visible then
+        ChatFrame.Position = UDim2.new(0, 10, 0, 235)
+    else
+        ChatFrame.Position = UDim2.new(0, 10, 0, 175)
+    end
+end)
+
 local CloseBtn = Instance.new("TextButton", MainFrame) CloseBtn.Size = UDim2.new(1, -20, 0, 30) CloseBtn.Position = UDim2.new(0, 10, 1, -40) CloseBtn.BackgroundColor3 = Color3.fromRGB(220, 50, 50) CloseBtn.TextColor3 = Color3.new(1, 1, 1) CloseBtn.Font = Enum.Font.GothamBold CloseBtn.TextSize = 11 CloseBtn.Text = "Ẩn Bảng Menu" createCorner(CloseBtn, 8)
 CloseBtn.MouseButton1Click:Connect(function() MainFrame.Visible = false end)
