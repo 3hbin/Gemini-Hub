@@ -195,7 +195,7 @@ ResponseLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
 ResponseLabel.TextSize = 9
 ResponseLabel.Font = Enum.Font.Gotham
 ResponseLabel.TextWrapped = true
-ResponseLabel.TextYAlignment = Enum.TextXAlignment.Top
+ResponseLabel.TextYAlignment = Enum.TextYAlignment.Top
 ResponseLabel.TextXAlignment = Enum.TextXAlignment.Left
 
 local InputBox = Instance.new("TextBox", ChatFrame)
@@ -266,12 +266,12 @@ Grid:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(recaculateCanvas)
 local function updateLayoutPositions()
     local currentY = 75 
     
-    if SpectateFrame.Visible then
+    if SpectateFrame and SpectateFrame.Visible then
         SpectateFrame.Position = UDim2.new(0, 8, 0, currentY)
         currentY = currentY + SpectateFrame.Size.Y.Offset + 8
     end
     
-    if ChatFrame.Visible then 
+    if ChatFrame and ChatFrame.Visible then 
         ChatFrame.Position = UDim2.new(0, 8, 0, currentY)
         currentY = currentY + ChatFrame.Size.Y.Offset + 8
     end
@@ -733,5 +733,5 @@ CloseBtn.Text = "Ẩn Bảng Menu"
 createCorner(CloseBtn, 6)
 CloseBtn.MouseButton1Click:Connect(function() MainFrame.Visible = false end)
 
--- CHẠY LẦN ĐẦU ĐỂ THIẾT LẬP VỊ TRÍ CHUẨN ĐỒNG BỘ
+-- ĐƯỢC CHẠY SAU KHI CÁC FRAME ĐÃ KHỞI TẠO XONG
 updateLayoutPositions()
