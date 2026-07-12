@@ -4,6 +4,7 @@ local UserInputService = game:GetService("UserInputService")
 local MarketplaceService = game:GetService("MarketplaceService")
 local VirtualUser = game:GetService("VirtualUser")
 local SocialService = game:GetService("SocialService")
+local HttpService = game:GetService("HttpService")
 local LocalPlayer = Players.LocalPlayer
 local Camera = workspace.CurrentCamera
 
@@ -23,11 +24,17 @@ local function makeDraggable(frame)
     local dragging, dragInput, dragStart, startPos
     frame.InputBegan:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-            dragging = true dragStart = input.Position startPos = frame.Position
-            input.Changed:Connect(function() if input.UserInputState == Enum.UserInputState.End then dragging = false end end)
+            dragging = true
+            dragStart = input.Position
+            startPos = frame.Position
+            input.Changed:Connect(function()
+                if input.UserInputState == Enum.UserInputState.End then dragging = false end
+            end)
         end
     end)
-    frame.InputChanged:Connect(function(input) if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then dragInput = input end end)
+    frame.InputChanged:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then dragInput = input end
+    end)
     UserInputService.InputChanged:Connect(function(input)
         if input == dragInput and dragging then
             local delta = input.Position - dragStart
@@ -37,18 +44,15 @@ local function makeDraggable(frame)
 end
 
 local IsMobile = UserInputService.TouchEnabled and not UserInputService.KeyboardEnabled
-local ScaleFactor = IsMobile and 0.7 or 1.1
 
--- TỰ ĐỘNG THAY ĐỔI THEO THIẾT BỊ (Tối ưu dạng dọc cho điện thoại)
+-- KHUNG CHÍNH DẠNG DỌC (Tối ưu kích thước chuẩn thon dài)
 local MainFrame = Instance.new("Frame", ScreenGui)
 if IsMobile then
-    -- Chiều ngang chiếm 80% và chiều dọc dài 90% màn hình để thành khung dọc
-    MainFrame.Size = UDim2.new(0.8, 0, 0.9, 0)
-    MainFrame.Position = UDim2.new(0.1, 0, 0.05, 0)
+    MainFrame.Size = UDim2.new(0, 245, 0, 370)
+    MainFrame.Position = UDim2.new(0.05, 0, 0.1, 0)
 else
-    -- Kích thước chuẩn trên PC
-    MainFrame.Size = UDim2.new(0, 290, 0, 460)
-    MainFrame.Position = UDim2.new(0.5, -145, 0.5, -230)
+    MainFrame.Size = UDim2.new(0, 255, 0, 440)
+    MainFrame.Position = UDim2.new(0.5, -127, 0.5, -220)
 end
 MainFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 20)
 MainFrame.BorderSizePixel = 0
@@ -63,101 +67,30 @@ UIStroke.Color = Color3.fromRGB(0, 150, 255)
 UIStroke.Thickness = 1.5
 UIStroke.Transparency = 0.3
 
+-- KHUNG THÔNG TIN GAME & NGƯỜI CHƠI (Cố định chiều cao 75px)
 local TopFrame = Instance.new("Frame", MainFrame)
-TopFrame.Size = UDim2.new(1, 0, 0, 185)
+TopFrame.Size = UDim2.new(1, 0, 0, 75)
 TopFrame.BackgroundTransparency = 1
 
 local GameFrame = Instance.new("Frame", TopFrame)
-GameFrame.Size = UDim2.new(1, -20, 0, 110)
-GameFrame.Position = UDim2.new(0, 10, 0, 10)
+GameFrame.Size = UDim2.new(1, -16, 0, 60)
+GameFrame.Position = UDim2.new(0, 8, 0, 8)
 GameFrame.BackgroundColor3 = Color3.fromRGB(20, 30, 45)
 createCorner(GameFrame, 8)
 
 local GameNameLabel = Instance.new("TextLabel", GameFrame)
 GameNameLabel.Text = "🎮 Đang tải tên game..."
-GameNameLabel.Position = UDim2.new(0, 10, 0, 6)
-GameNameLabel.Size = UDim2.new(1, -20, 0, 16)
+GameNameLabel.Position = UDim2.new(0, 8, 0, 8)
+GameNameLabel.Size = UDim2.new(1, -16, 0, 16)
 GameNameLabel.TextColor3 = Color3.fromRGB(0, 255, 150)
 GameNameLabel.TextXAlignment = Enum.TextXAlignment.Left
 GameNameLabel.Font = Enum.Font.GothamBold
 GameNameLabel.TextSize = 11
 GameNameLabel.BackgroundTransparency = 1
 
-local GameIdLabel = Instance.new("TextLabel", GameFrame)
-GameIdLabel.Text = "ID Game: " .. game.PlaceId
-GameIdLabel.Position = UDim2.new(0, 10, 0, 26)
-GameIdLabel.Size = UDim2.new(1, -20, 0, 14)
-GameIdLabel.TextColor3 = Color3.fromRGB(180, 180, 180)
-GameIdLabel.TextXAlignment = Enum.TextXAlignment.Left
-GameIdLabel.Font = Enum.Font.Code
-GameIdLabel.TextSize = 9
-GameIdLabel.BackgroundTransparency = 1
-
-local CountryLabel = Instance.new("TextLabel", GameFrame)
-local countryCode = "Unknown"
-pcall(function() countryCode = game:GetService("LocalizationService"):GetCountryRegionForPlayerAsync(LocalPlayer) end)
-CountryLabel.Text = "Khu vực: " .. string.upper(countryCode)
-CountryLabel.Position = UDim2.new(0, 10, 0, 46)
-CountryLabel.Size = UDim2.new(1, -20, 0, 14)
-CountryLabel.TextColor3 = Color3.fromRGB(255, 200, 0)
-CountryLabel.TextXAlignment = Enum.TextXAlignment.Left
-CountryLabel.Font = Enum.Font.GothamBold
-CountryLabel.TextSize = 9
-CountryLabel.BackgroundTransparency = 1
-
-local IPLabel = Instance.new("TextLabel", GameFrame)
-IPLabel.Text = "IP: Đang kiểm tra..."
-IPLabel.Position = UDim2.new(0, 10, 0, 66)
-IPLabel.Size = UDim2.new(1, -20, 0, 14)
-IPLabel.TextColor3 = Color3.fromRGB(255, 85, 85)
-IPLabel.TextXAlignment = Enum.TextXAlignment.Left
-IPLabel.Font = Enum.Font.Code
-IPLabel.TextSize = 9
-IPLabel.BackgroundTransparency = 1
-
-local JobIdLabel = Instance.new("TextButton", GameFrame)
-JobIdLabel.Text = "JobId: " .. game.JobId:sub(1, 12) .. "..."
-JobIdLabel.Position = UDim2.new(0, 10, 0, 86)
-JobIdLabel.Size = UDim2.new(1, -20, 0, 16)
-JobIdLabel.TextColor3 = Color3.fromRGB(160, 160, 160)
-JobIdLabel.TextXAlignment = Enum.TextXAlignment.Left
-JobIdLabel.BackgroundTransparency = 1
-JobIdLabel.Font = Enum.Font.Code
-JobIdLabel.TextSize = 9
-
-JobIdLabel.MouseButton1Click:Connect(function()
-    if setclipboard then
-        setclipboard(game.JobId) local oldText = JobIdLabel.Text
-        JobIdLabel.Text = "✅ Đã copy JobID Server!" task.wait(1.5) JobIdLabel.Text = oldText
-    end
-end)
-
-local ProfileFrame = Instance.new("Frame", TopFrame)
-ProfileFrame.Size = UDim2.new(1, -20, 0, 42)
-ProfileFrame.Position = UDim2.new(0, 10, 0, 130)
-ProfileFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 35)
-createCorner(ProfileFrame, 8)
-
-local ProfileImg = Instance.new("ImageLabel", ProfileFrame)
-ProfileImg.Size = UDim2.new(0, 30, 0, 30)
-ProfileImg.Position = UDim2.new(0, 8, 0, 6)
-ProfileImg.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
-createCorner(ProfileImg, 15)
-pcall(function() ProfileImg.Image = Players:GetUserThumbnailAsync(LocalPlayer.UserId, Enum.ThumbnailType.HeadShot, Enum.ThumbnailSize.Size100x100) end)
-
-local NameLabel = Instance.new("TextLabel", ProfileFrame)
-NameLabel.Text = LocalPlayer.DisplayName or LocalPlayer.Name
-NameLabel.Position = UDim2.new(0, 46, 0, 4)
-NameLabel.Size = UDim2.new(1, -56, 0, 16)
-NameLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-NameLabel.TextXAlignment = Enum.TextXAlignment.Left
-NameLabel.Font = Enum.Font.GothamBold
-NameLabel.TextSize = 11
-NameLabel.BackgroundTransparency = 1
-
-local StatsLabel = Instance.new("TextLabel", ProfileFrame)
-StatsLabel.Position = UDim2.new(0, 46, 0, 22)
-StatsLabel.Size = UDim2.new(1, -56, 0, 14)
+local StatsLabel = Instance.new("TextLabel", GameFrame)
+StatsLabel.Position = UDim2.new(0, 8, 0, 28)
+StatsLabel.Size = UDim2.new(1, -16, 0, 14)
 StatsLabel.TextColor3 = Color3.fromRGB(0, 200, 255)
 StatsLabel.TextXAlignment = Enum.TextXAlignment.Left
 StatsLabel.Font = Enum.Font.Code
@@ -165,44 +98,54 @@ StatsLabel.TextSize = 9
 StatsLabel.BackgroundTransparency = 1
 
 task.spawn(function()
+    pcall(function()
+        local info = MarketplaceService:GetProductInfo(game.PlaceId)
+        if info then GameNameLabel.Text = "🎮 " .. info.Name end
+    end)
+end)
+
+task.spawn(function()
     while task.wait(0.5) do
-        local fps = math.floor(1 / RunService.RenderStepped:Wait()) local ping = 0
+        local fps = math.floor(1 / RunService.RenderStepped:Wait())
+        local ping = 0
         pcall(function() ping = math.floor(game:GetService("Stats").Network.ServerStatsItem["Data Ping"]:GetValue()) end)
         StatsLabel.Text = "FPS: " .. fps .. " | PING: " .. ping .. "ms"
     end
 end)
 
-task.spawn(function() local ip = "Không thể lấy IP" pcall(function() ip = game:HttpGet("https://api.ipify.org") end) IPLabel.Text = "IP: " .. ip end)
-task.spawn(function() pcall(function() local info = MarketplaceService:GetProductInfo(game.PlaceId) if info then GameNameLabel.Text = "🎮 " .. info.Name end end) end)
-
+-- KHUNG THEO DÕI (SPECTATE)
 local SpectateFrame = Instance.new("Frame", MainFrame)
-SpectateFrame.Size = UDim2.new(1, -20, 0, 55)
-SpectateFrame.Position = UDim2.new(0, 10, 0, 175)
+SpectateFrame.Size = UDim2.new(1, -16, 0, 45)
 SpectateFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 35)
 SpectateFrame.Visible = false
 createCorner(SpectateFrame, 8)
 
 local SpecAvatar = Instance.new("ImageLabel", SpectateFrame)
-SpecAvatar.Size = UDim2.new(0, 40, 0, 40)
-SpecAvatar.Position = UDim2.new(0, 10, 0, 7)
+SpecAvatar.Size = UDim2.new(0, 32, 0, 32)
+SpecAvatar.Position = UDim2.new(0, 6, 0, 6)
 SpecAvatar.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
-createCorner(SpecAvatar, 20)
+createCorner(SpecAvatar, 16)
 
 local SpecName = Instance.new("TextLabel", SpectateFrame)
-SpecName.Size = UDim2.new(1, -140, 0, 20)
-SpecName.Position = UDim2.new(0, 60, 0, 5)
+SpecName.Size = UDim2.new(1, -120, 0, 16)
+SpecName.Position = UDim2.new(0, 45, 0, 4)
 SpecName.BackgroundTransparency = 1
 SpecName.TextColor3 = Color3.new(1, 1, 1)
 SpecName.Font = Enum.Font.GothamBold
-SpecName.TextSize = 11
+SpecName.TextSize = 9
 SpecName.TextXAlignment = Enum.TextXAlignment.Left
 
-local curSpecIndex = 1 local playersList = {}
+local curSpecIndex = 1
+local playersList = {}
+
 local function updateSpec()
     playersList = Players:GetPlayers()
     if #playersList <= 1 then SpecName.Text = "Không có người chơi khác" return end
     local target = playersList[curSpecIndex]
-    if target == LocalPlayer then curSpecIndex = (curSpecIndex % #playersList) + 1 target = playersList[curSpecIndex] end
+    if target == LocalPlayer then
+        curSpecIndex = (curSpecIndex % #playersList) + 1
+        target = playersList[curSpecIndex]
+    end
     if target and target.Character then
         SpecName.Text = "Đang xem: " .. target.DisplayName
         pcall(function() SpecAvatar.Image = Players:GetUserThumbnailAsync(target.UserId, Enum.ThumbnailType.HeadShot, Enum.ThumbnailSize.Size100x100) end)
@@ -211,129 +154,340 @@ local function updateSpec()
 end
 
 local BtnBack = Instance.new("TextButton", SpectateFrame)
-BtnBack.Size = UDim2.new(0, 30, 0, 25)
-BtnBack.Position = UDim2.new(0, 60, 0, 25)
-BtnBack.Text = "<" BtnBack.BackgroundColor3 = Color3.fromRGB(50, 50, 60) BtnBack.TextColor3 = Color3.new(1, 1, 1) createCorner(BtnBack, 4)
-BtnBack.MouseButton1Click:Connect(function() curSpecIndex = curSpecIndex - 1 if curSpecIndex < 1 then curSpecIndex = #playersList end updateSpec() end)
+BtnBack.Size = UDim2.new(0, 22, 0, 18)
+BtnBack.Position = UDim2.new(0, 45, 0, 22)
+BtnBack.Text = "<"
+BtnBack.BackgroundColor3 = Color3.fromRGB(50, 50, 60)
+BtnBack.TextColor3 = Color3.new(1, 1, 1)
+createCorner(BtnBack, 4)
+BtnBack.MouseButton1Click:Connect(function()
+    curSpecIndex = curSpecIndex - 1
+    if curSpecIndex < 1 then curSpecIndex = #playersList end
+    updateSpec()
+end)
 
 local BtnNext = Instance.new("TextButton", SpectateFrame)
-BtnNext.Size = UDim2.new(0, 30, 0, 25)
-BtnNext.Position = UDim2.new(0, 100, 0, 25)
-BtnNext.Text = ">" BtnNext.BackgroundColor3 = Color3.fromRGB(50, 50, 60) BtnNext.TextColor3 = Color3.new(1, 1, 1) createCorner(BtnNext, 4)
-BtnNext.MouseButton1Click:Connect(function() curSpecIndex = curSpecIndex + 1 if curSpecIndex > #playersList then curSpecIndex = 1 end updateSpec() end)
+BtnNext.Size = UDim2.new(0, 22, 0, 18)
+BtnNext.Position = UDim2.new(0, 72, 0, 22)
+BtnNext.Text = ">"
+BtnNext.BackgroundColor3 = Color3.fromRGB(50, 50, 60)
+BtnNext.TextColor3 = Color3.new(1, 1, 1)
+createCorner(BtnNext, 4)
+BtnNext.MouseButton1Click:Connect(function()
+    curSpecIndex = curSpecIndex + 1
+    if curSpecIndex > #playersList then curSpecIndex = 1 end
+    updateSpec()
+end)
 
--- VÙNG CUỘN CHỨA CÁC NÚT (Cập nhật CanvasSize tự động chính xác để cuộn hết nút)
+-- KHUNG CHAT AI
+local ChatFrame = Instance.new("Frame", MainFrame)
+ChatFrame.Size = UDim2.new(1, -16, 0, 90)
+ChatFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 30)
+ChatFrame.Visible = false
+createCorner(ChatFrame, 8)
+
+local ResponseLabel = Instance.new("TextLabel", ChatFrame)
+ResponseLabel.Size = UDim2.new(1, -12, 0, 55)
+ResponseLabel.Position = UDim2.new(0, 6, 0, 4)
+ResponseLabel.BackgroundTransparency = 1
+ResponseLabel.Text = "Nhập tin nhắn bên dưới để chat với AI..."
+ResponseLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
+ResponseLabel.TextSize = 9
+ResponseLabel.Font = Enum.Font.Gotham
+ResponseLabel.TextWrapped = true
+ResponseLabel.TextYAlignment = Enum.TextXAlignment.Top
+ResponseLabel.TextXAlignment = Enum.TextXAlignment.Left
+
+local InputBox = Instance.new("TextBox", ChatFrame)
+InputBox.Size = UDim2.new(1, -12, 0, 20)
+InputBox.Position = UDim2.new(0, 6, 1, -24)
+InputBox.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
+InputBox.Text = ""
+InputBox.PlaceholderText = "Nhập nội dung..."
+InputBox.TextColor3 = Color3.new(1, 1, 1)
+InputBox.TextSize = 9
+InputBox.Font = Enum.Font.Gotham
+createCorner(InputBox, 6)
+
+local function SendToAI(message)
+    ResponseLabel.Text = "AI đang suy nghĩ..."
+    task.spawn(function()
+        local success, result = pcall(function()
+            local url = "https://gemini-x-ai.vn812013.workers.dev/chat" 
+            return game:HttpGetAsync(url .. "?msg=" .. game:GetService("HttpService"):UrlEncode(message))
+        end)
+        
+        if not success then
+            success, result = pcall(function()
+                local url = "https://gemini-x-ai.vn812013.workers.dev/chat"
+                return request({
+                    Url = url,
+                    Method = "POST",
+                    Headers = { ["Content-Type"] = "application/json" },
+                    Body = HttpService:JSONEncode({ message = message })
+                }).Body
+            end)
+        end
+        
+        if success then
+            local data = HttpService:JSONDecode(result)
+            ResponseLabel.Text = data.reply or "Không nhận được phản hồi."
+        else
+            ResponseLabel.Text = "❌ Lỗi kết nối API!"
+        end
+    end)
+end
+
+InputBox.FocusLost:Connect(function(enterPressed)
+    if enterPressed and InputBox.Text ~= "" then
+        SendToAI(InputBox.Text)
+        InputBox.Text = ""
+    end
+end)
+
+-- VÙNG CUỘN CHỨA CÁC NÚT DỌC (1 CỘT DUY NHẤT)
 local GridScrollFrame = Instance.new("ScrollingFrame", MainFrame)
-GridScrollFrame.Size = UDim2.new(1, -20, 1, -220)
-GridScrollFrame.Position = UDim2.new(0, 10, 0, 165)
 GridScrollFrame.BackgroundTransparency = 1
 GridScrollFrame.ScrollBarThickness = 4 
 GridScrollFrame.CanvasSize = UDim2.new(0, 0, 0, 0) 
 GridScrollFrame.ScrollBarImageColor3 = Color3.fromRGB(0, 150, 255)
 
 local Grid = Instance.new("UIGridLayout", GridScrollFrame)
-Grid.CellSize = UDim2.new(0.46, 0, 0, 38)
-Grid.CellPadding = UDim2.new(0.06, 0, 0, 10)
+Grid.CellSize = UDim2.new(0.98, 0, 0, 36)
+Grid.CellPadding = UDim2.new(0, 0, 0, 8)
 Grid.SortOrder = Enum.SortOrder.LayoutOrder
 
--- Hàm tự động tính toán lại độ dài vùng cuộn khi số lượng nút thay đổi
 local function recaculateCanvas()
-    local contentHeight = Grid.AbsoluteContentSize.Y
-    GridScrollFrame.CanvasSize = UDim2.new(0, 0, 0, contentHeight + 40)
+    GridScrollFrame.CanvasSize = UDim2.new(0, 0, 0, Grid.AbsoluteContentSize.Y + 20)
 end
-
 Grid:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(recaculateCanvas)
 
+-- LOGIC XẾP HÀNG DỌC TỰ ĐỘNG THÔNG MINH
 local function updateLayoutPositions()
-    local offset = 165
-    if SpectateFrame.Visible then offset = offset + 55 end
-    if ChatFrame.Visible then 
-        ChatFrame.Position = UDim2.new(0, 10, 0, SpectateFrame.Visible and 215 or 160)
-        offset = offset + 100 
+    local currentY = 75 
+    
+    if SpectateFrame.Visible then
+        SpectateFrame.Position = UDim2.new(0, 8, 0, currentY)
+        currentY = currentY + SpectateFrame.Size.Y.Offset + 8
     end
-    GridScrollFrame.Position = UDim2.new(0, 10, 0, offset)
-    GridScrollFrame.Size = UDim2.new(1, -20, 1, -offset - 50)
-    task.defer(recaculateCanvas) -- Tính lại sau khi đổi vị trí khung
+    
+    if ChatFrame.Visible then 
+        ChatFrame.Position = UDim2.new(0, 8, 0, currentY)
+        currentY = currentY + ChatFrame.Size.Y.Offset + 8
+    end
+    
+    GridScrollFrame.Position = UDim2.new(0, 8, 0, currentY)
+    local remainingHeight = MainFrame.Size.Y.Offset - currentY - 45
+    GridScrollFrame.Size = UDim2.new(1, -16, 0, remainingHeight)
+    
+    task.defer(recaculateCanvas)
 end
-
- local Grid = Instance.new("UIGridLayout", GridScrollFrame)
--- Chiều ngang chiếm 0.96 (gần hết khung) để các nút trải dài thành 1 hàng dọc
-Grid.CellSize = UDim2.new(0.96, 0, 0, 42) 
-Grid.CellPadding = UDim2.new(0, 0, 0, 8) -- Khoảng cách giữa các nút
-Grid.SortOrder = Enum.SortOrder.LayoutOrder
 
 local function createToggle(text, callback)
     local Btn = Instance.new("TextButton", GridScrollFrame)
-    Btn.BackgroundColor3 = Color3.fromRGB(30, 30, 40) Btn.Text = text .. "\n[TẮT]" Btn.TextColor3 = Color3.fromRGB(180, 180, 180) Btn.Font = Enum.Font.GothamBold Btn.TextSize = 10 createCorner(Btn, 8)
+    Btn.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
+    Btn.Text = text .. " : [TẮT]"
+    Btn.TextColor3 = Color3.fromRGB(180, 180, 180)
+    Btn.Font = Enum.Font.GothamBold
+    Btn.TextSize = 10
+    createCorner(Btn, 6)
+    
     local isToggled = false
     Btn.MouseButton1Click:Connect(function()
         isToggled = not isToggled
-        if isToggled then Btn.BackgroundColor3 = Color3.fromRGB(0, 120, 255) Btn.Text = text .. "\n[BẬT]" Btn.TextColor3 = Color3.new(1, 1, 1)
-        else Btn.BackgroundColor3 = Color3.fromRGB(30, 30, 40) Btn.Text = text .. "\n[TẮT]" Btn.TextColor3 = Color3.fromRGB(180, 180, 180) end
+        if isToggled then
+            Btn.BackgroundColor3 = Color3.fromRGB(0, 120, 255)
+            Btn.Text = text .. " : [BẬT]"
+            Btn.TextColor3 = Color3.new(1, 1, 1)
+        else
+            Btn.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
+            Btn.Text = text .. " : [TẮT]"
+            Btn.TextColor3 = Color3.fromRGB(180, 180, 180)
+        end
         callback(isToggled)
     end)
-    return function(extState) isToggled = extState if isToggled then Btn.BackgroundColor3 = Color3.fromRGB(0, 120, 255) Btn.Text = text .. "\n[BẬT]" Btn.TextColor3 = Color3.new(1, 1, 1) else Btn.BackgroundColor3 = Color3.fromRGB(30, 30, 40) Btn.Text = text .. "\n[TẮT]" Btn.TextColor3 = Color3.fromRGB(180, 180, 180) end end
+    return function(extState) 
+        isToggled = extState 
+        if isToggled then 
+            Btn.BackgroundColor3 = Color3.fromRGB(0, 120, 255) 
+            Btn.Text = text .. " : [BẬT]" 
+            Btn.TextColor3 = Color3.new(1, 1, 1) 
+        else 
+            Btn.BackgroundColor3 = Color3.fromRGB(30, 30, 40) 
+            Btn.Text = text .. " : [TẮT]" 
+            Btn.TextColor3 = Color3.fromRGB(180, 180, 180) 
+        end 
+    end
 end
 
 local function createSlider(text, minVal, maxVal, defaultVal, callback)
-    local SliderBox = Instance.new("Frame", GridScrollFrame) SliderBox.BackgroundColor3 = Color3.fromRGB(25, 25, 35) createCorner(SliderBox, 8)
-    local Title = Instance.new("TextLabel", SliderBox) Title.Size = UDim2.new(1, -10, 0, 16) Title.Position = UDim2.new(0, 8, 0, 4) Title.BackgroundTransparency = 1 Title.Text = text .. ": " .. defaultVal Title.TextColor3 = Color3.fromRGB(0, 220, 255) Title.Font = Enum.Font.GothamSemibold Title.TextSize = 9 Title.TextXAlignment = Enum.TextXAlignment.Left
-    local Track = Instance.new("TextButton", SliderBox) Track.Size = UDim2.new(1, -16, 0, 4) Track.Position = UDim2.new(0, 8, 1, -10) Track.BackgroundColor3 = Color3.fromRGB(50, 50, 60) Track.Text = "" Track.AutoButtonColor = false createCorner(Track, 2)
-    local Fill = Instance.new("Frame", Track) Fill.Size = UDim2.new((defaultVal - minVal)/(maxVal - minVal), 0, 1, 0) Fill.BackgroundColor3 = Color3.fromRGB(0, 150, 255) createCorner(Fill, 2)
-    local Knob = Instance.new("Frame", Track) local kDim = 8 Knob.Size = UDim2.new(0, kDim, 0, kDim) Knob.Position = UDim2.new((defaultVal - minVal)/(maxVal - minVal), -kDim/2, 0.5, -kDim/2) Knob.BackgroundColor3 = Color3.new(1, 1, 1) createCorner(Knob, kDim/2)
+    local SliderBox = Instance.new("Frame", GridScrollFrame)
+    SliderBox.BackgroundColor3 = Color3.fromRGB(25, 25, 35)
+    createCorner(SliderBox, 6)
+    
+    local Title = Instance.new("TextLabel", SliderBox)
+    Title.Size = UDim2.new(1, -10, 0, 14)
+    Title.Position = UDim2.new(0, 8, 0, 2)
+    Title.BackgroundTransparency = 1
+    Title.Text = text .. ": " .. defaultVal
+    Title.TextColor3 = Color3.fromRGB(0, 220, 255)
+    Title.Font = Enum.Font.GothamSemibold
+    Title.TextSize = 9
+    Title.TextXAlignment = Enum.TextXAlignment.Left
+
+    local Track = Instance.new("TextButton", SliderBox)
+    Track.Size = UDim2.new(1, -16, 0, 4)
+    Track.Position = UDim2.new(0, 8, 1, -8)
+    Track.BackgroundColor3 = Color3.fromRGB(50, 50, 60)
+    Track.Text = ""
+    Track.AutoButtonColor = false
+    createCorner(Track, 2)
+
+    local Fill = Instance.new("Frame", Track)
+    Fill.Size = UDim2.new((defaultVal - minVal)/(maxVal - minVal), 0, 1, 0)
+    Fill.BackgroundColor3 = Color3.fromRGB(0, 150, 255)
+    createCorner(Fill, 2)
+
+    local Knob = Instance.new("Frame", Track)
+    local kDim = 8
+    Knob.Size = UDim2.new(0, kDim, 0, kDim)
+    Knob.Position = UDim2.new((defaultVal - minVal)/(maxVal - minVal), -kDim/2, 0.5, -kDim/2)
+    Knob.BackgroundColor3 = Color3.new(1, 1, 1)
+    createCorner(Knob, kDim/2)
+
     local dragging = false
     local function updateSlider(inputX)
-        local percentage = math.clamp((inputX - Track.AbsolutePosition.X) / Track.AbsoluteSize.X, 0, 1) local value = math.floor(minVal + (percentage * (maxVal - minVal)))
-        Title.Text = text .. ": " .. value Fill.Size = UDim2.new(percentage, 0, 1, 0) Knob.Position = UDim2.new(percentage, -kDim/2, 0.5, -kDim/2) callback(value)
+        local percentage = math.clamp((inputX - Track.AbsolutePosition.X) / Track.AbsoluteSize.X, 0, 1)
+        local value = math.floor(minVal + (percentage * (maxVal - minVal)))
+        Title.Text = text .. ": " .. value
+        Fill.Size = UDim2.new(percentage, 0, 1, 0)
+        Knob.Position = UDim2.new(percentage, -kDim/2, 0.5, -kDim/2)
+        callback(value)
     end
-    Track.InputBegan:Connect(function(input) if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then dragging = true updateSlider(input.Position.X) end end)
-    UserInputService.InputChanged:Connect(function(input) if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then updateSlider(input.Position.X) end end)
-    UserInputService.InputEnded:Connect(function(input) if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then dragging = false end end)
+
+    Track.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then dragging = true updateSlider(input.Position.X) end
+    end)
+    UserInputService.InputChanged:Connect(function(input)
+        if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then updateSlider(input.Position.X) end
+    end)
+    UserInputService.InputEnded:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then dragging = false end
+    end)
 end
 
 local function createButton(text, color, callback)
-    local Btn = Instance.new("TextButton", GridScrollFrame) Btn.BackgroundColor3 = color Btn.Text = text Btn.TextColor3 = Color3.new(1, 1, 1) Btn.Font = Enum.Font.GothamBold Btn.TextSize = 10 createCorner(Btn, 8) Btn.MouseButton1Click:Connect(callback)
+    local Btn = Instance.new("TextButton", GridScrollFrame)
+    Btn.BackgroundColor3 = color
+    Btn.Text = text
+    Btn.TextColor3 = Color3.new(1, 1, 1)
+    Btn.Font = Enum.Font.GothamBold
+    Btn.TextSize = 10
+    createCorner(Btn, 6)
+    Btn.MouseButton1Click:Connect(callback)
 end
 
-local ButtonSize = 45 local ToggleBtn = Instance.new("ScreenGui"):FindFirstChild("ToggleBtn") or Instance.new("TextButton", ScreenGui)
-ToggleBtn.Size = UDim2.new(0, ButtonSize, 0, ButtonSize) ToggleBtn.Position = UDim2.new(0, 20, 0.4, 0) ToggleBtn.BackgroundColor3 = Color3.fromRGB(0, 120, 255) ToggleBtn.Text = "📜" ToggleBtn.TextColor3 = Color3.new(1, 1, 1) ToggleBtn.TextSize = 22 createCorner(ToggleBtn, ButtonSize / 2) makeDraggable(ToggleBtn)
+-- NÚT MỞ MENU CHÍNH
+local ToggleBtn = Instance.new("TextButton", ScreenGui)
+ToggleBtn.Size = UDim2.new(0, 42, 0, 42)
+ToggleBtn.Position = UDim2.new(0, 15, 0.4, 0)
+ToggleBtn.BackgroundColor3 = Color3.fromRGB(0, 120, 255)
+ToggleBtn.Text = "📜"
+ToggleBtn.TextColor3 = Color3.new(1, 1, 1)
+ToggleBtn.TextSize = 18
+createCorner(ToggleBtn, 21)
+makeDraggable(ToggleBtn)
 ToggleBtn.MouseButton1Click:Connect(function() MainFrame.Visible = not MainFrame.Visible end)
 
-local Fly_Active = false local FlySpeed = 60 local FlyConnection
+-- CÁC CHỨC NĂNG HACK / SCRIPT LUA
+local Fly_Active = false
+local FlySpeed = 60
+local FlyConnection
+
 local function StartFly()
     if not LocalPlayer.Character or not LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then return end
-    local HRP = LocalPlayer.Character.HumanoidRootPart local Humanoid = LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
-    local BV = Instance.new("BodyVelocity", HRP) BV.Name = "FlyVelocity" BV.MaxForce = Vector3.new(math.huge, math.huge, math.huge) BV.Velocity = Vector3.new(0, 0, 0) Humanoid.PlatformStand = true
+    local HRP = LocalPlayer.Character.HumanoidRootPart
+    local Humanoid = LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
+    local BV = Instance.new("BodyVelocity", HRP)
+    BV.Name = "FlyVelocity"
+    BV.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
+    BV.Velocity = Vector3.new(0, 0, 0)
+    Humanoid.PlatformStand = true
+
     FlyConnection = RunService.RenderStepped:Connect(function()
         if Fly_Active and HRP and Humanoid then
             local moveDir = Humanoid.MoveDirection
             if moveDir.Magnitude > 0 then
-                local look = Camera.CFrame.LookVector local right = Camera.CFrame.RightVector
+                local look = Camera.CFrame.LookVector
+                local right = Camera.CFrame.RightVector
                 local forwardAmount = moveDir:Dot(CFrame.new(Camera.CFrame.Position, Camera.CFrame.Position + Vector3.new(look.X, 0, look.Z)).LookVector)
                 local sideAmount = moveDir:Dot(CFrame.new(Camera.CFrame.Position, Camera.CFrame.Position + Vector3.new(look.X, 0, look.Z)).RightVector)
                 BV.Velocity = (look * forwardAmount * FlySpeed) + (right * sideAmount * FlySpeed)
-            else BV.Velocity = Vector3.new(0, 0, 0) end
+            else 
+                BV.Velocity = Vector3.new(0, 0, 0) 
+            end
             HRP.CFrame = CFrame.new(HRP.Position, HRP.Position + Camera.CFrame.LookVector)
         end
     end)
 end
-local function StopFly() Fly_Active = false if FlyConnection then FlyConnection:Disconnect() end pcall(function() LocalPlayer.Character.HumanoidRootPart.FlyVelocity:Destroy() end) pcall(function() LocalPlayer.Character:FindFirstChildOfClass("Humanoid").PlatformStand = false end) end
 
-local setFlyToggle = createToggle("Chế Độ Bay", function(state) Fly_Active = state if Fly_Active then StartFly() else StopFly() end end)
+local function StopFly()
+    Fly_Active = false
+    if FlyConnection then FlyConnection:Disconnect() end
+    pcall(function() LocalPlayer.Character.HumanoidRootPart.FlyVelocity:Destroy() end)
+    pcall(function() LocalPlayer.Character:FindFirstChildOfClass("Humanoid").PlatformStand = false end)
+end
+
+local setFlyToggle = createToggle("Chế Độ Bay", function(state)
+    Fly_Active = state
+    if Fly_Active then StartFly() else StopFly() end
+end)
+
 createSlider("Tốc Độ Bay", 20, 300, FlySpeed, function(val) FlySpeed = val end)
-UserInputService.InputBegan:Connect(function(input, gpe) if not gpe and input.KeyCode == Enum.KeyCode.E then Fly_Active = not Fly_Active setFlyToggle(Fly_Active) if Fly_Active then StartFly() else StopFly() end end end)
+
+UserInputService.InputBegan:Connect(function(input, gpe)
+    if gpe then return end
+    if input.KeyCode == Enum.KeyCode.E then
+        Fly_Active = not Fly_Active
+        setFlyToggle(Fly_Active)
+        if Fly_Active then StartFly() else StopFly() end
+    end
+end)
 
 local InfHP_Active = false
 createToggle("Vô Hạn Máu (Inf HP)", function(state)
     InfHP_Active = state
-    if state then task.spawn(function() while InfHP_Active do task.wait() pcall(function() local char = LocalPlayer.Character if char and char:FindFirstChildOfClass("Humanoid") then char:FindFirstChildOfClass("Humanoid").Health = char:FindFirstChildOfClass("Humanoid").MaxHealth end end) end end) end
+    if state then
+        task.spawn(function()
+            while InfHP_Active do
+                task.wait()
+                pcall(function()
+                    local char = LocalPlayer.Character
+                    if char and char:FindFirstChildOfClass("Humanoid") then
+                        char:FindFirstChildOfClass("Humanoid").Health = char:FindFirstChildOfClass("Humanoid").MaxHealth
+                    end
+                end)
+            end
+        end)
+    end
 end)
 
-local InfJump_Active = false local JumpConnection
+local InfJump_Active = false
+local JumpConnection
 createToggle("Nhảy Vô Hạn (Inf Jump)", function(state)
     InfJump_Active = state
-    if InfJump_Active then JumpConnection = UserInputService.JumpRequest:Connect(function() pcall(function() local char = LocalPlayer.Character if char and char:FindFirstChildOfClass("Humanoid") then char:FindFirstChildOfClass("Humanoid"):ChangeState(Enum.HumanoidStateType.Jumping) end end) end)
-    else if JumpConnection then JumpConnection:Disconnect() end end
+    if InfJump_Active then
+        JumpConnection = UserInputService.JumpRequest:Connect(function()
+            pcall(function()
+                local char = LocalPlayer.Character
+                if char and char:FindFirstChildOfClass("Humanoid") then
+                    char:FindFirstChildOfClass("Humanoid"):ChangeState(Enum.HumanoidStateType.Jumping)
+                end
+            end)
+        end)
+    else
+        if JumpConnection then JumpConnection:Disconnect() end
+    end
 end)
 
 local AutoKite_Active = false
@@ -343,11 +497,29 @@ local ESP_Active = false
 local function updateESP()
     for _, p in pairs(Players:GetPlayers()) do
         if p ~= LocalPlayer and p.Character then
-            pcall(function() p.Character.ESPHighlight:Destroy() end) pcall(function() p.Character.Head:FindFirstChild("ESP_NameTag"):Destroy() end)
+            pcall(function() p.Character.ESPHighlight:Destroy() end)
+            pcall(function() p.Character.Head:FindFirstChild("ESP_NameTag"):Destroy() end)
+
             if ESP_Active then
-                local hl = Instance.new("Highlight", p.Character) hl.Name = "ESPHighlight" hl.FillColor = Color3.fromRGB(0, 255, 150) hl.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
-                local bill = Instance.new("BillboardGui", p.Character.Head) bill.Name = "ESP_NameTag" bill.Size = UDim2.new(0, 200, 0, 50) bill.StudsOffset = Vector3.new(0, 2, 0) bill.AlwaysOnTop = true
-                local name = Instance.new("TextLabel", bill) name.Size = UDim2.new(1, 0, 1, 0) name.Text = p.DisplayName or p.Name name.TextColor3 = Color3.fromRGB(255, 255, 255) name.TextStrokeTransparency = 0 name.BackgroundTransparency = 1 name.Font = Enum.Font.GothamBold name.TextSize = 12
+                local hl = Instance.new("Highlight", p.Character)
+                hl.Name = "ESPHighlight"
+                hl.FillColor = Color3.fromRGB(0, 255, 150)
+                hl.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
+
+                local bill = Instance.new("BillboardGui", p.Character.Head)
+                bill.Name = "ESP_NameTag"
+                bill.Size = UDim2.new(0, 200, 0, 50)
+                bill.StudsOffset = Vector3.new(0, 2, 0)
+                bill.AlwaysOnTop = true
+
+                local name = Instance.new("TextLabel", bill)
+                name.Size = UDim2.new(1, 0, 1, 0)
+                name.Text = p.DisplayName or p.Name
+                name.TextColor3 = Color3.fromRGB(255, 255, 255)
+                name.TextStrokeTransparency = 0
+                name.BackgroundTransparency = 1
+                name.Font = Enum.Font.GothamBold
+                name.TextSize = 12
             end
         end
     end
@@ -356,30 +528,90 @@ createToggle("ESP Khung + Tên", function(state) ESP_Active = state updateESP() 
 Players.PlayerAdded:Connect(function(p) p.CharacterAdded:Connect(function() task.wait(1) if ESP_Active then updateESP() end end) end)
 
 local AntiKick_Active = false
-task.spawn(function() local oldKick pcall(function() oldKick = hookfunction(LocalPlayer.Kick, function(self, reason) if AntiKick_Active then return nil end return oldKick(self, reason) end) end) end)
+task.spawn(function()
+    local oldKick
+    pcall(function()
+        oldKick = hookfunction(LocalPlayer.Kick, function(self, reason)
+            if AntiKick_Active then return nil end
+            return oldKick(self, reason)
+        end)
+    end)
+end)
 createToggle("Chống Máy Châu Kick", function(state) AntiKick_Active = state end)
 
 if IsMobile then
-    local ShiftLock_Active = false createToggle("Khóa Tâm Mobile", function(state) ShiftLock_Active = state if not state then UserInputService.MouseBehavior = Enum.MouseBehavior.Default end end)
-    RunService.RenderStepped:Connect(function() if ShiftLock_Active and IsMobile and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then UserInputService.MouseBehavior = Enum.MouseBehavior.LockCenter local HRP = LocalPlayer.Character.HumanoidRootPart HRP.CFrame = CFrame.new(HRP.Position, HRP.Position + Vector3.new(Camera.CFrame.LookVector.X, 0, Camera.CFrame.LookVector.Z)) end end)
+    local ShiftLock_Active = false
+    createToggle("Khóa Tâm Mobile", function(state) 
+        ShiftLock_Active = state 
+        if not state then UserInputService.MouseBehavior = Enum.MouseBehavior.Default end 
+    end)
+    RunService.RenderStepped:Connect(function()
+        if ShiftLock_Active and IsMobile and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+            UserInputService.MouseBehavior = Enum.MouseBehavior.LockCenter
+            local HRP = LocalPlayer.Character.HumanoidRootPart
+            HRP.CFrame = CFrame.new(HRP.Position, HRP.Position + Vector3.new(Camera.CFrame.LookVector.X, 0, Camera.CFrame.LookVector.Z))
+        end
+    end)
 end
 
-createButton("✉️ Mời Bạn Bè Chơi", Color3.fromRGB(35, 140, 75), function() pcall(function() SocialService:PromptGameInvite(LocalPlayer) end) end)
-createToggle("Bật Khung Theo Dõi", function(state) SpectateFrame.Visible = state if state then updateSpec() else Camera.CameraSubject = LocalPlayer.Character:FindFirstChildOfClass("Humanoid") end end)
+local AutoClick_Active = false
+local ClickSpeed = 0.1
+createToggle("Auto Click Chuột", function(state)
+    AutoClick_Active = state
+    if state then
+        task.spawn(function()
+            while AutoClick_Active do
+                task.wait(ClickSpeed)
+                pcall(function() VirtualUser:ClickButton1(Vector2.new(0, 0), Camera.CFrame) end)
+            end
+        end)
+    end
+end)
+createSlider("Tốc Độ Click", 1, 10, 2, function(val) ClickSpeed = 1 / val end)
+
+createToggle("Bật Khung Chat AI", function(state)
+    ChatFrame.Visible = state
+    updateLayoutPositions()
+end)
+
+createButton("✉️ Mời Bạn Bè Chơi", Color3.fromRGB(35, 140, 75), function()
+    pcall(function() SocialService:PromptGameInvite(LocalPlayer) end)
+end)
+
+createToggle("Bật Khung Theo Dõi", function(state)
+    SpectateFrame.Visible = state
+    updateLayoutPositions()
+    if state then updateSpec() else Camera.CameraSubject = LocalPlayer.Character:FindFirstChildOfClass("Humanoid") end
+end)
 
 local AI_Active = false
 RunService.RenderStepped:Connect(function()
     if AI_Active and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
-        local HRP = LocalPlayer.Character.HumanoidRootPart local Humanoid = LocalPlayer.Character.Humanoid local nearestPlayer = nil local shortestDistance = 300
-        for _, p in pairs(Players:GetPlayers()) do if p ~= LocalPlayer and p.Character and p.Character:FindFirstChild("HumanoidRootPart") then local distance = (p.Character.HumanoidRootPart.Position - HRP.Position).Magnitude if distance < shortestDistance then nearestPlayer = p shortestDistance = distance end end end
+        local HRP = LocalPlayer.Character.HumanoidRootPart
+        local Humanoid = LocalPlayer.Character.Humanoid
+        local nearestPlayer = nil
+        local shortestDistance = 300
+        for _, p in pairs(Players:GetPlayers()) do
+            if p ~= LocalPlayer and p.Character and p.Character:FindFirstChild("HumanoidRootPart") then
+                local distance = (p.Character.HumanoidRootPart.Position - HRP.Position).Magnitude
+                if distance < shortestDistance then nearestPlayer = p shortestDistance = distance end
+            end
+        end
         if nearestPlayer then Humanoid:MoveTo(nearestPlayer.Character.HumanoidRootPart.Position) end
     end
 end)
 createToggle("Chế Độ AI Bot", function(state) AI_Active = state end)
-createButton("🔗 Copy Link Game", Color3.fromRGB(80, 50, 150), function() if setclipboard then setclipboard("https://www.roblox.com/games/" .. game.PlaceId) end end)
+
+createButton("🔗 Copy Link Game", Color3.fromRGB(80, 50, 150), function()
+    if setclipboard then setclipboard("https://www.roblox.com/games/" .. game.PlaceId) end
+end)
 
 local Spin_Active = false
-RunService.RenderStepped:Connect(function() if Spin_Active and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then LocalPlayer.Character.HumanoidRootPart.CFrame = LocalPlayer.Character.HumanoidRootPart.CFrame * CFrame.Angles(0, math.rad(45), 0) end end)
+RunService.RenderStepped:Connect(function()
+    if Spin_Active and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+        LocalPlayer.Character.HumanoidRootPart.CFrame = LocalPlayer.Character.HumanoidRootPart.CFrame * CFrame.Angles(0, math.rad(45), 0)
+    end
+end)
 createToggle("Xoay Tròn (Spin)", function(state) Spin_Active = state end)
 
 local AutoObby_Active = false
@@ -388,7 +620,10 @@ createToggle("Auto Obby (Tự Chơi)", function(state)
     while AutoObby_Active and task.wait(0.4) do
         pcall(function()
             for _, obj in pairs(workspace:GetDescendants()) do
-                if (obj.Name:lower():find("checkpoint") or obj.Name:lower():find("finish")) and obj:IsA("BasePart") then LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(obj.Position + Vector3.new(0, 3, 0)) task.wait(0.2) end
+                if (obj.Name:lower():find("checkpoint") or obj.Name:lower():find("finish")) and obj:IsA("BasePart") then
+                    LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(obj.Position + Vector3.new(0, 3, 0))
+                    task.wait(0.2)
+                end
             end
         end)
     end
@@ -401,13 +636,27 @@ createToggle("Auto Farm / Attack", function(state)
         while AutoFarm_Active do
             task.wait(0.1)
             pcall(function()
-                local target = nil local maxDist = 200
-                for _, p in pairs(Players:GetPlayers()) do if p ~= LocalPlayer and p.Character and p.Character:FindFirstChild("HumanoidRootPart") and p.Character:FindFirstChildOfClass("Humanoid").Health > 0 then local dist = (LocalPlayer.Character.HumanoidRootPart.Position - p.Character.HumanoidRootPart.Position).Magnitude if dist < maxDist then target = p.Character maxDist = dist end end end
+                local target = nil
+                local maxDist = 200
+                for _, p in pairs(Players:GetPlayers()) do
+                    if p ~= LocalPlayer and p.Character and p.Character:FindFirstChild("HumanoidRootPart") and p.Character:FindFirstChildOfClass("Humanoid").Health > 0 then
+                        local dist = (LocalPlayer.Character.HumanoidRootPart.Position - p.Character.HumanoidRootPart.Position).Magnitude
+                        if dist < maxDist then target = p.Character maxDist = dist end
+                    end
+                end
                 if target and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
                     local HRP = LocalPlayer.Character.HumanoidRootPart
-                    if AutoKite_Active then HRP.CFrame = target.HumanoidRootPart.CFrame * CFrame.new(0, 0, 6) task.wait(0.05) else HRP.CFrame = target.HumanoidRootPart.CFrame * CFrame.new(0, 0, 3) end
+                    if AutoKite_Active then
+                        HRP.CFrame = target.HumanoidRootPart.CFrame * CFrame.new(0, 0, 6)
+                        task.wait(0.05)
+                    else
+                        HRP.CFrame = target.HumanoidRootPart.CFrame * CFrame.new(0, 0, 3)
+                    end
                     local tool = LocalPlayer.Character:FindFirstChildOfClass("Tool") or LocalPlayer.Backpack:FindFirstChildOfClass("Tool")
-                    if tool then if tool.Parent ~= LocalPlayer.Character then tool.Parent = LocalPlayer.Character end tool:Activate() end
+                    if tool then 
+                        if tool.Parent ~= LocalPlayer.Character then tool.Parent = LocalPlayer.Character end
+                        tool:Activate() 
+                    end
                 end
             end)
         end
@@ -420,124 +669,69 @@ createToggle("Ghost Hit (Sửa Lỗi)", function(state)
     pcall(function()
         local tool = LocalPlayer.Character:FindFirstChildOfClass("Tool") or LocalPlayer.Backpack:FindFirstChildOfClass("Tool")
         if tool and tool:FindFirstChild("Handle") then
-            if GhostHit_Active then tool.Handle.Massless = true tool.Handle.Size = Vector3.new(20, 20, 20) tool.Handle.CanCollide = false tool.Handle.Transparency = 0.7 else tool.Handle.Size = Vector3.new(1, 1, 1) tool.Handle.Transparency = 0 end
+            if GhostHit_Active then
+                tool.Handle.Massless = true
+                tool.Handle.Size = Vector3.new(20, 20, 20)
+                tool.Handle.CanCollide = false
+                tool.Handle.Transparency = 0.7
+            else
+                tool.Handle.Size = Vector3.new(1, 1, 1)
+                tool.Handle.Transparency = 0
+            end
         end
     end)
 end)
 
 local Noclip_Active = false
-RunService.Stepped:Connect(function() if (Noclip_Active or Fly_Active) and LocalPlayer.Character then for _, v in pairs(LocalPlayer.Character:GetDescendants()) do if v:IsA("BasePart") then v.CanCollide = false end end end end)
+RunService.Stepped:Connect(function()
+    if (Noclip_Active or Fly_Active) and LocalPlayer.Character then
+        for _, v in pairs(LocalPlayer.Character:GetDescendants()) do if v:IsA("BasePart") then v.CanCollide = false end end
+    end
+end)
 createToggle("Xuyên Tường", function(state) Noclip_Active = state end)
 
 local AFK_Active = false
 LocalPlayer.Idled:Connect(function() if AFK_Active then VirtualUser:Button2Down(Vector2.new(0,0), Camera.CFrame) task.wait(1) VirtualUser:Button2Up(Vector2.new(0,0), Camera.CFrame) end end)
 createToggle("Treo Máy (Anti-AFK)", function(state) AFK_Active = state end)
 
-local JumpPower = 50 createSlider("Chỉnh Lực Nhảy", 50, 300, JumpPower, function(val) JumpPower = val if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then LocalPlayer.Character.Humanoid.JumpPower = val end end)
-local Speed_Val = 16 createSlider("Chỉnh Tốc Độ", 16, 150, Speed_Val, function(val) Speed_Val = val if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then LocalPlayer.Character.Humanoid.WalkSpeed = val end end)
+local JumpPower = 50
+createSlider("Chỉnh Lực Nhảy", 50, 300, JumpPower, function(val)
+    JumpPower = val
+    if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then LocalPlayer.Character.Humanoid.JumpPower = val end
+end)
 
-createButton("Mở Infinite Yield", Color3.fromRGB(150, 50, 50), function() loadstring(game:HttpGet('https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source'))() end)
+local Speed_Val = 16
+createSlider("Chỉnh Tốc Độ", 16, 150, Speed_Val, function(val)
+    Speed_Val = val
+    if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then LocalPlayer.Character.Humanoid.WalkSpeed = val end
+end)
+
+createButton("Mở Infinite Yield", Color3.fromRGB(150, 50, 50), function()
+    loadstring(game:HttpGet('https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source'))()
+end)
+
 createButton("Chuyển Server Khác", Color3.fromRGB(0, 150, 100), function()
-    if syn and syn.queue_on_teleport then syn.queue_on_teleport([[loadstring(game:HttpGet("https://raw.githubusercontent.com/3hbin/Gemini-Hub/main/GeminiHub.lua"))()]]) elseif queue_on_teleport then queue_on_teleport([[loadstring(game:HttpGet("https://raw.githubusercontent.com/3hbin/Gemini-Hub/main/GeminiHub.lua"))()]]) end
-    local TPS = game:GetService("TeleportService") local api = "https://games.roblox.com/v1/games/" .. game.PlaceId .. "/servers/Public?limit=100" local data = game:GetService("HttpService"):JSONDecode(game:HttpGet(api))
-    for _, v in pairs(data.data) do if v.playing < v.maxPlayers and v.id ~= game.JobId then TPS:TeleportToPlaceInstance(game.PlaceId, v.id, LocalPlayer) break end end
-end)
-
-local AutoClick_Active = false
-local ClickSpeed = 0.1 -- Khoảng cách giữa các lần click (giây)
-
-createToggle("Auto Click Chuột", function(state)
-    AutoClick_Active = state
-    if state then
-        task.spawn(function()
-            while AutoClick_Active do
-                task.wait(ClickSpeed)
-                pcall(function()
-                    -- Tự động nhấn chuột trái/nhấp màn hình bằng VirtualUser
-                    VirtualUser:ClickButton1(Vector2.new(0, 0), Camera.CFrame)
-                end)
-            end
-        end)
+    if syn and syn.queue_on_teleport then syn.queue_on_teleport([[loadstring(game:HttpGet("https://raw.githubusercontent.com/3hbin/Gemini-Hub/refs/heads/main/GeminiHub.lua"))()]])
+    elseif queue_on_teleport then queue_on_teleport([[loadstring(game:HttpGet("https://raw.githubusercontent.com/3hbin/Gemini-Hub/refs/heads/main/GeminiHub.lua"))()]]) end
+    local TPS = game:GetService("TeleportService")
+    local api = "https://games.roblox.com/v1/games/" .. game.PlaceId .. "/servers/Public?limit=100"
+    local data = game:GetService("HttpService"):JSONDecode(game:HttpGet(api))
+    for _, v in pairs(data.data) do
+        if v.playing < v.maxPlayers and v.id ~= game.JobId then TPS:TeleportToPlaceInstance(game.PlaceId, v.id, LocalPlayer) break end
     end
 end)
 
-createSlider("Tốc Độ Click", 1, 10, 2, function(val)
-    -- Chia tỷ lệ để đổi từ thanh trượt thành giây (Số càng lớn click càng nhanh)
-    ClickSpeed = 1 / val
-end)
-
-local HttpService = game:GetService("HttpService")
-local ChatAI_Active = false
-
--- Khung hiển thị AI Chat
-local ChatFrame = Instance.new("Frame", MainFrame)
-ChatFrame.Size = UDim2.new(1, -20, 0, 110)
-ChatFrame.Position = UDim2.new(0, 10, 0, 175)
-ChatFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 30)
-ChatFrame.Visible = false
-createCorner(ChatFrame, 8)
-
-local ResponseLabel = Instance.new("TextLabel", ChatFrame)
-ResponseLabel.Size = UDim2.new(1, -16, 0, 65)
-ResponseLabel.Position = UDim2.new(0, 8, 0, 5)
-ResponseLabel.BackgroundTransparency = 1
-ResponseLabel.Text = "Nhập tin nhắn bên dưới để chat với AI..."
-ResponseLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
-ResponseLabel.TextSize = 10
-ResponseLabel.Font = Enum.Font.Gotham
-ResponseLabel.TextWrapped = true
-ResponseLabel.TextYAlignment = Enum.TextYAlignment.Top
-ResponseLabel.TextXAlignment = Enum.TextXAlignment.Left
-
-local InputBox = Instance.new("TextBox", ChatFrame)
-InputBox.Size = UDim2.new(1, -16, 0, 25)
-InputBox.Position = UDim2.new(0, 8, 1, -33)
-InputBox.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
-InputBox.Text = ""
-InputBox.PlaceholderText = "Nhập nội dung..."
-InputBox.TextColor3 = Color3.new(1, 1, 1)
-InputBox.TextSize = 10
-InputBox.Font = Enum.Font.Gotham
-createCorner(InputBox, 6)
-
-local function SendToAI(message)
-    ResponseLabel.Text = "AI đang suy nghĩ..."
-    task.spawn(function()
-        local success, result = pcall(function()
-            -- Thay URL Cloudflare Worker của bạn vào đây
-            local url = " https://gemini-x-ai.vn812013.workers.dev/" 
-            local headers = { ["Content-Type"] = "application/json" }
-            local body = HttpService:JSONEncode({ message = message })
-            return HttpService:PostAsync(url, body, Enum.HttpContentType.ApplicationJson, false, headers)
-        end)
-        
-        if success then
-            local data = HttpService:JSONDecode(result)
-            ResponseLabel.Text = data.reply or "Không nhận được phản hồi."
-        else
-            ResponseLabel.Text = "❌ Lỗi kết nối API! Vui lòng kiểm tra lại proxy/worker."
-        end
-    end)
-end
-
-InputBox.FocusLost:Connect(function(enterPressed)
-    if enterPressed and InputBox.Text ~= "" then
-        SendToAI(InputBox.Text)
-        InputBox.Text = ""
-    end
-end)
-
--- Nút Bật/Tắt Khung Chat trên Menu chính
-createToggle("Bật Khung Chat AI", function(state)
-    ChatAI_Active = state
-    ChatFrame.Visible = state
-    -- Đẩy khung Spectate xuống nếu cả hai cùng bật
-    if state and SpectateFrame.Visible then
-        ChatFrame.Position = UDim2.new(0, 10, 0, 235)
-    else
-        ChatFrame.Position = UDim2.new(0, 10, 0, 175)
-    end
-end)
-
-local CloseBtn = Instance.new("TextButton", MainFrame) CloseBtn.Size = UDim2.new(1, -20, 0, 30) CloseBtn.Position = UDim2.new(0, 10, 1, -40) CloseBtn.BackgroundColor3 = Color3.fromRGB(220, 50, 50) CloseBtn.TextColor3 = Color3.new(1, 1, 1) CloseBtn.Font = Enum.Font.GothamBold CloseBtn.TextSize = 11 CloseBtn.Text = "Ẩn Bảng Menu" createCorner(CloseBtn, 8)
+-- NÚT ẨN MENU DƯỚI ĐÁY
+local CloseBtn = Instance.new("TextButton", MainFrame)
+CloseBtn.Size = UDim2.new(1, -16, 0, 28)
+CloseBtn.Position = UDim2.new(0, 8, 1, -36)
+CloseBtn.BackgroundColor3 = Color3.fromRGB(220, 50, 50)
+CloseBtn.TextColor3 = Color3.new(1, 1, 1)
+CloseBtn.Font = Enum.Font.GothamBold
+CloseBtn.TextSize = 10
+CloseBtn.Text = "Ẩn Bảng Menu"
+createCorner(CloseBtn, 6)
 CloseBtn.MouseButton1Click:Connect(function() MainFrame.Visible = false end)
+
+-- CHẠY LẦN ĐẦU ĐỂ THIẾT LẬP VỊ TRÍ CHUẨN ĐỒNG BỘ
+updateLayoutPositions()
