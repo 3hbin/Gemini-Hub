@@ -120,72 +120,44 @@ task.spawn(function()
     end
 end)
 
--- SPECTATE
+-- KHUNG THEO DÕI (SPECTATE) - ĐÃ FIX LỖI GIAO DIỆN
 local SpectateFrame = Instance.new("Frame", MainFrame)
-SpectateFrame.Size = UDim2.new(1, -16, 0, 45)
+SpectateFrame.Size = UDim2.new(1, -16, 0, 60) -- Tăng chiều cao để chứa Avatar
 SpectateFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 35)
 SpectateFrame.Visible = false
+SpectateFrame.Position = UDim2.new(0, 8, 0, 75)
 createCorner(SpectateFrame, 8)
 
+-- Avatar: Căn giữa theo chiều dọc của khung (0.5, -20)
 local SpecAvatar = Instance.new("ImageLabel", SpectateFrame)
-SpecAvatar.Size = UDim2.new(0, 32, 0, 32)
-SpecAvatar.Position = UDim2.new(0, 6, 0, 6)
+SpecAvatar.Size = UDim2.new(0, 40, 0, 40)
+SpecAvatar.Position = UDim2.new(0, 10, 0.5, -20)
 SpecAvatar.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
-createCorner(SpecAvatar, 16)
+createCorner(SpecAvatar, 20) -- Hình tròn
 
+-- Tên: Căn giữa theo chiều dọc của khung
 local SpecName = Instance.new("TextLabel", SpectateFrame)
-SpecName.Size = UDim2.new(1, -120, 0, 16)
-SpecName.Position = UDim2.new(0, 45, 0, 4)
+SpecName.Size = UDim2.new(1, -120, 0, 40)
+SpecName.Position = UDim2.new(0, 60, 0.5, -20) -- Căn cùng hàng với Avatar
 SpecName.BackgroundTransparency = 1
 SpecName.TextColor3 = Color3.new(1, 1, 1)
 SpecName.Font = Enum.Font.GothamBold
-SpecName.TextSize = 9
+SpecName.TextSize = 12
 SpecName.TextXAlignment = Enum.TextXAlignment.Left
+SpecName.TextYAlignment = Enum.TextYAlignment.Center -- Căn giữa dọc
 
-local curSpecIndex = 1
-local playersList = {}
-
-local function updateSpec()
-    playersList = Players:GetPlayers()
-    -- build a players list excluding LocalPlayer for navigation simplicity
-    local viewable = {}
-    for _, p in ipairs(playersList) do
-        if p ~= LocalPlayer then table.insert(viewable, p) end
-    end
-    if #viewable == 0 then
-        SpecName.Text = "Không có người chơi khác"
-        return
-    end
-    -- Clamp curSpecIndex
-    if curSpecIndex < 1 then curSpecIndex = 1 end
-    if curSpecIndex > #viewable then curSpecIndex = 1 end
-
-    local target = viewable[curSpecIndex]
-    if target and target.Character and target.Character.Parent then
-        SpecName.Text = "Đang xem: " .. (target.DisplayName or target.Name)
-        SpecAvatar.Image = "rbxthumb://type=AvatarHeadShot&id=" .. target.UserId .. "&w=150&h=150"
-        local hum = target.Character:FindFirstChildOfClass("Humanoid")
-        Camera.CameraSubject = hum or target.Character
-    else
-        SpecName.Text = "Người chơi không có character"
-    end
-end
-
+-- Nút Back/Next: Căn giữa dọc khung
 local BtnBack = Instance.new("TextButton", SpectateFrame)
-BtnBack.Size = UDim2.new(0, 22, 0, 18)
-BtnBack.Position = UDim2.new(0, 45, 0, 22)
+BtnBack.Size = UDim2.new(0, 25, 0, 25)
+BtnBack.Position = UDim2.new(1, -60, 0.5, -12) -- Căn phải khung
 BtnBack.Text = "<"
 BtnBack.BackgroundColor3 = Color3.fromRGB(50, 50, 60)
 BtnBack.TextColor3 = Color3.new(1, 1, 1)
 createCorner(BtnBack, 4)
-BtnBack.MouseButton1Click:Connect(function()
-    curSpecIndex = curSpecIndex - 1
-    updateSpec()
-end)
 
 local BtnNext = Instance.new("TextButton", SpectateFrame)
-BtnNext.Size = UDim2.new(0, 22, 0, 18)
-BtnNext.Position = UDim2.new(0, 72, 0, 22)
+BtnNext.Size = UDim2.new(0, 25, 0, 25)
+BtnNext.Position = UDim2.new(1, -30, 0.5, -12)
 BtnNext.Text = ">"
 BtnNext.BackgroundColor3 = Color3.fromRGB(50, 50, 60)
 BtnNext.TextColor3 = Color3.new(1, 1, 1)
