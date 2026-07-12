@@ -40,8 +40,14 @@ local IsMobile = UserInputService.TouchEnabled and not UserInputService.Keyboard
 local ScaleFactor = IsMobile and 0.7 or 1.1
 
 local MainFrame = Instance.new("Frame", ScreenGui)
-MainFrame.Size = UDim2.new(0, 290, 0, 440)
-MainFrame.Position = UDim2.new(0.5, -145, 0.5, -220)
+-- Sử dụng tỷ lệ 0.85 (85% màn hình) cho điện thoại và giới hạn kích thước trên PC
+if IsMobile then
+    MainFrame.Size = UDim2.new(0.85, 0, 0.85, 0)
+    MainFrame.Position = UDim2.new(0.075, 0, 0.075, 0)
+else
+    MainFrame.Size = UDim2.new(0, 290, 0, 440)
+    MainFrame.Position = UDim2.new(0.5, -145, 0.5, -220)
+end
 MainFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 20)
 MainFrame.BorderSizePixel = 0
 MainFrame.Visible = false
@@ -220,8 +226,10 @@ GridScrollFrame.Position = UDim2.new(0, 10, 0, 185)
 GridScrollFrame.BackgroundTransparency = 1 GridScrollFrame.ScrollBarThickness = 4 GridScrollFrame.CanvasSize = UDim2.new(0, 0, 0, 0) 
 
 local Grid = Instance.new("UIGridLayout", GridScrollFrame)
-Grid.CellSize = UDim2.new(0.5, -6, 0, 42) Grid.CellPadding = UDim2.new(0, 12, 0, 12) Grid.SortOrder = Enum.SortOrder.LayoutOrder
-Grid:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function() GridScrollFrame.CanvasSize = UDim2.new(0, 0, 0, Grid.AbsoluteContentSize.Y + 20) end)
+-- Sử dụng tỷ lệ phần trăm 0.45 (gần một nửa chiều ngang menu) thay vì số cố định
+Grid.CellSize = UDim2.new(0.45, 0, 0, 40) 
+Grid.CellPadding = UDim2.new(0.04, 0, 0, 10) 
+Grid.SortOrder = Enum.SortOrder.LayoutOrder
 
 local function createToggle(text, callback)
     local Btn = Instance.new("TextButton", GridScrollFrame)
@@ -402,6 +410,29 @@ createButton("Chuyển Server Khác", Color3.fromRGB(0, 150, 100), function()
     if syn and syn.queue_on_teleport then syn.queue_on_teleport([[loadstring(game:HttpGet("https://raw.githubusercontent.com/3hbin/Gemini-Hub/main/GeminiHub.lua"))()]]) elseif queue_on_teleport then queue_on_teleport([[loadstring(game:HttpGet("https://raw.githubusercontent.com/3hbin/Gemini-Hub/main/GeminiHub.lua"))()]]) end
     local TPS = game:GetService("TeleportService") local api = "https://games.roblox.com/v1/games/" .. game.PlaceId .. "/servers/Public?limit=100" local data = game:GetService("HttpService"):JSONDecode(game:HttpGet(api))
     for _, v in pairs(data.data) do if v.playing < v.maxPlayers and v.id ~= game.JobId then TPS:TeleportToPlaceInstance(game.PlaceId, v.id, LocalPlayer) break end end
+end)
+
+local AutoClick_Active = false
+local ClickSpeed = 0.1 -- Khoảng cách giữa các lần click (giây)
+
+createToggle("Auto Click Chuột", function(state)
+    AutoClick_Active = state
+    if state then
+        task.spawn(function()
+            while AutoClick_Active do
+                task.wait(ClickSpeed)
+                pcall(function()
+                    -- Tự động nhấn chuột trái/nhấp màn hình bằng VirtualUser
+                    VirtualUser:ClickButton1(Vector2.new(0, 0), Camera.CFrame)
+                end)
+            end
+        end)
+    end
+end)
+
+createSlider("Tốc Độ Click", 1, 10, 2, function(val)
+    -- Chia tỷ lệ để đổi từ thanh trượt thành giây (Số càng lớn click càng nhanh)
+    ClickSpeed = 1 / val
 end)
 
 local CloseBtn = Instance.new("TextButton", MainFrame) CloseBtn.Size = UDim2.new(1, -20, 0, 30) CloseBtn.Position = UDim2.new(0, 10, 1, -40) CloseBtn.BackgroundColor3 = Color3.fromRGB(220, 50, 50) CloseBtn.TextColor3 = Color3.new(1, 1, 1) CloseBtn.Font = Enum.Font.GothamBold CloseBtn.TextSize = 11 CloseBtn.Text = "Ẩn Bảng Menu" createCorner(CloseBtn, 8)
