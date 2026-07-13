@@ -49,107 +49,165 @@ local BaseHeight = IsMobile and 560 or 510
 local FrameWidth = math.floor(BaseWidth * ScaleFactor)
 local FrameHeight = math.floor(BaseHeight * ScaleFactor)
 
+-- MAIN FRAME - Cải thiện
 local MainFrame = Instance.new("Frame", ScreenGui)
-MainFrame.Size = UDim2.new(0, 290, 0, 420)
-MainFrame.Position = UDim2.new(0.5, -145, 0.5, -210)
-MainFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 20)
+MainFrame.Size = UDim2.new(0, IsMobile and 180 or 320, 0, IsMobile and 330 or 550)
+MainFrame.Position = UDim2.new(0.5, IsMobile and -90 or -160, 0.5, IsMobile and -165 or -275)
+MainFrame.BackgroundColor3 = Color3.fromRGB(10, 10, 15)
 MainFrame.BorderSizePixel = 0
 MainFrame.Visible = false
 MainFrame.Active = true
 MainFrame.ClipsDescendants = true
-createCorner(MainFrame, 12)
+createCorner(MainFrame, 15)
 makeDraggable(MainFrame)
 
+-- Gradient-like effect với UIStroke
 local UIStroke = Instance.new("UIStroke", MainFrame)
-UIStroke.Color = Color3.fromRGB(0, 150, 255)
-UIStroke.Thickness = math.max(1, 1.5 * ScaleFactor)
-UIStroke.Transparency = 0.3
+UIStroke.Color = Color3.fromRGB(0, 180, 255)
+UIStroke.Thickness = 2
+UIStroke.Transparency = 0.2
 
+-- HEADER FRAME - Phần tiêu đề đẹp hơn
+local HeaderFrame = Instance.new("Frame", MainFrame)
+HeaderFrame.Size = UDim2.new(1, 0, 0, IsMobile and 30 or 50)
+HeaderFrame.BackgroundColor3 = Color3.fromRGB(0, 120, 200)
+HeaderFrame.BorderSizePixel = 0
+HeaderFrame.Position = UDim2.new(0, 0, 0, 0)
+createCorner(HeaderFrame, 15)
+
+local HeaderLabel = Instance.new("TextLabel", HeaderFrame)
+HeaderLabel.TextSize = IsMobile and 11 or 18
+HeaderLabel.Position = UDim2.new(0, 10, 0, 0)
+HeaderLabel.BackgroundTransparency = 1
+HeaderLabel.Text = "🎮 GEMINI HUB"
+HeaderLabel.TextColor3 = Color3.new(1, 1, 1)
+HeaderLabel.Font = Enum.Font.GothamBold
+HeaderLabel.TextSize = IsMobile and 13 or 18
+HeaderLabel.TextXAlignment = Enum.TextXAlignment.Left
+HeaderLabel.TextYAlignment = Enum.TextYAlignment.Center
+
+-- NÚT KHÓA GUI
+local LockBtn = Instance.new("TextButton", HeaderFrame)
+LockBtn.Size = UDim2.new(0, 35, 1, 0)
+LockBtn.Position = UDim2.new(1, -40, 0, 0)
+LockBtn.BackgroundTransparency = 0.3
+LockBtn.BackgroundColor3 = Color3.fromRGB(0, 100, 160)
+LockBtn.Text = "🔓"
+LockBtn.TextColor3 = Color3.new(1, 1, 1)
+LockBtn.Font = Enum.Font.GothamBold
+LockBtn.TextSize = 16
+LockBtn.BorderSizePixel = 0
+createCorner(LockBtn, 8)
+
+local GuiLocked = false
+
+LockBtn.MouseButton1Click:Connect(function()
+    GuiLocked = not GuiLocked
+    if GuiLocked then
+        LockBtn.Text = "🔒"
+        LockBtn.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
+        MainFrame.Active = false
+    else
+        LockBtn.Text = "🔓"
+        LockBtn.BackgroundColor3 = Color3.fromRGB(0, 100, 160)
+        MainFrame.Active = true
+    end
+end)
+
+-- TOP FRAME - Thông tin game
 local TopFrame = Instance.new("Frame", MainFrame)
-TopFrame.Size = UDim2.new(1, 0, 0, 180) -- Tăng chiều cao TopFrame để vừa khung game mới
+TopFrame.Size = UDim2.new(1, 0, 0, IsMobile and 140 or 180)
+TopFrame.Position = UDim2.new(0, 0, 0, IsMobile and 35 or 50)
 TopFrame.BackgroundTransparency = 1
 
--- KHUNG CHỨA THÔNG TIN GAME (Tăng chiều cao lên 115 để chứa đủ 5 dòng chữ)
+-- KHUNG CHỨA THÔNG TIN GAME
 local GameFrame = Instance.new("Frame", TopFrame)
-GameFrame.Size = UDim2.new(1, -20, 0, 115)
-GameFrame.Position = UDim2.new(0, 10, 0, 10)
-GameFrame.BackgroundColor3 = Color3.fromRGB(20, 30, 45)
-createCorner(GameFrame, 8)
+GameFrame.Size = UDim2.new(1, -16, 0, IsMobile and 85 or 110)
+GameFrame.Position = UDim2.new(0, 8, 0, 8)
+GameFrame.BackgroundColor3 = Color3.fromRGB(20, 25, 40)
+createCorner(GameFrame, 10)
+
+local UIStroke2 = Instance.new("UIStroke", GameFrame)
+UIStroke2.Color = Color3.fromRGB(0, 150, 200)
+UIStroke2.Thickness = 1
+UIStroke2.Transparency = 0.5
 
 -- 1. Dòng Tên Game
 local GameNameLabel = Instance.new("TextLabel", GameFrame)
 GameNameLabel.Text = "🎮 Đang tải tên game..."
-GameNameLabel.Position = UDim2.new(0, 10, 0, 5)
-GameNameLabel.Size = UDim2.new(1, -20, 0, 20)
-GameNameLabel.TextColor3 = Color3.fromRGB(0, 255, 150)
+GameNameLabel.Position = UDim2.new(0, 10, 0, 4)
+GameNameLabel.Size = UDim2.new(1, -20, 0, IsMobile and 14 or 18)
+GameNameLabel.TextColor3 = Color3.fromRGB(100, 255, 150)
 GameNameLabel.TextXAlignment = Enum.TextXAlignment.Left
 GameNameLabel.Font = Enum.Font.GothamBold
-GameNameLabel.TextSize = 12
+GameNameLabel.TextSize = IsMobile and 10 or 13
 GameNameLabel.BackgroundTransparency = 1
 
 -- 2. Dòng ID Game
 local GameIdLabel = Instance.new("TextLabel", GameFrame)
-GameIdLabel.Text = "ID Game: " .. game.PlaceId
-GameIdLabel.Position = UDim2.new(0, 10, 0, 27)
-GameIdLabel.Size = UDim2.new(1, -20, 0, 15)
-GameIdLabel.TextColor3 = Color3.fromRGB(180, 180, 180)
+GameIdLabel.Text = "ID: " .. game.PlaceId
+GameIdLabel.Position = UDim2.new(0, 10, 0, IsMobile and 19 or 26)
+GameIdLabel.Size = UDim2.new(1, -20, 0, 12)
+GameIdLabel.TextColor3 = Color3.fromRGB(150, 150, 150)
 GameIdLabel.TextXAlignment = Enum.TextXAlignment.Left
 GameIdLabel.Font = Enum.Font.Code
-GameIdLabel.TextSize = 10
+GameIdLabel.TextSize = IsMobile and 8 or 9
 GameIdLabel.BackgroundTransparency = 1
 
--- 3. Dòng Khu Vực Quốc Gia
+-- 3. Dòng Khu Vực
 local CountryLabel = Instance.new("TextLabel", GameFrame)
 local countryCode = "Unknown"
 pcall(function() 
     countryCode = game:GetService("LocalizationService"):GetCountryRegionForPlayerAsync(LocalPlayer) 
 end)
-CountryLabel.Text = "Khu vực: " .. string.upper(countryCode)
-CountryLabel.Position = UDim2.new(0, 10, 0, 47)
-CountryLabel.Size = UDim2.new(1, -20, 0, 15)
-CountryLabel.TextColor3 = Color3.fromRGB(255, 200, 0)
+CountryLabel.Text = "📍 Khu vực: " .. string.upper(countryCode)
+CountryLabel.Position = UDim2.new(0, 10, 0, IsMobile and 32 or 41)
+CountryLabel.Size = UDim2.new(1, -20, 0, 12)
+CountryLabel.TextColor3 = Color3.fromRGB(255, 220, 80)
 CountryLabel.TextXAlignment = Enum.TextXAlignment.Left
-CountryLabel.Font = Enum.Font.GothamBold
-CountryLabel.TextSize = 10
+CountryLabel.Font = Enum.Font.GothamSemibold
+CountryLabel.TextSize = IsMobile and 8 or 9
 CountryLabel.BackgroundTransparency = 1
 
--- 4. Dòng IP Mạng
+-- 4. Dòng IP
 local IPLabel = Instance.new("TextLabel", GameFrame)
-IPLabel.Text = "IP: Đang kiểm tra..."
-IPLabel.Position = UDim2.new(0, 10, 0, 67)
-IPLabel.Size = UDim2.new(1, -20, 0, 15)
-IPLabel.TextColor3 = Color3.fromRGB(255, 85, 85)
+IPLabel.Text = "🌐 IP: Đang kiểm tra..."
+IPLabel.Position = UDim2.new(0, 10, 0, IsMobile and 45 or 56)
+IPLabel.Size = UDim2.new(1, -20, 0, 12)
+IPLabel.TextColor3 = Color3.fromRGB(255, 120, 120)
 IPLabel.TextXAlignment = Enum.TextXAlignment.Left
 IPLabel.Font = Enum.Font.Code
-IPLabel.TextSize = 10
+IPLabel.TextSize = IsMobile and 8 or 9
 IPLabel.BackgroundTransparency = 1
 
--- 5. Nút Bấm Copy JobId (ĐÃ THÊM LẠI Ở ĐÂY)
+-- 5. JobId Button
 local JobIdLabel = Instance.new("TextButton", GameFrame)
-JobIdLabel.Text = "JobId: " .. game.JobId:sub(1, 12) .. "..."
-JobIdLabel.Position = UDim2.new(0, 10, 0, 87)
-JobIdLabel.Size = UDim2.new(1, -20, 0, 20)
-JobIdLabel.TextColor3 = Color3.fromRGB(160, 160, 160)
+JobIdLabel.Text = "🔗 JobId: " .. game.JobId:sub(1, 8) .. "... [TAP]"
+JobIdLabel.Position = UDim2.new(0, 10, 0, IsMobile and 58 or 71)
+JobIdLabel.Size = UDim2.new(1, -20, 0, IsMobile and 14 or 18)
+JobIdLabel.TextColor3 = Color3.fromRGB(150, 180, 255)
 JobIdLabel.TextXAlignment = Enum.TextXAlignment.Left
-JobIdLabel.BackgroundTransparency = 1
+JobIdLabel.BackgroundTransparency = 0.7
+JobIdLabel.BackgroundColor3 = Color3.fromRGB(30, 50, 80)
 JobIdLabel.Font = Enum.Font.Code
-JobIdLabel.TextSize = 10
+JobIdLabel.TextSize = IsMobile and 8 or 9
+createCorner(JobIdLabel, 5)
 
 JobIdLabel.MouseButton1Click:Connect(function()
     if setclipboard then
         setclipboard(game.JobId)
         local oldText = JobIdLabel.Text
-        JobIdLabel.Text = "✅ Đã copy JobID Server!"
+        JobIdLabel.Text = "✅ Đã copy!"
         task.wait(2)
         JobIdLabel.Text = oldText
     end
 end)
 
--- Các hàm chạy ngầm tải dữ liệu
+-- Async load IP và Game Name
 task.spawn(function()
-    local ip = "Không thể lấy IP"
+    local ip = "Không thể lấy"
     pcall(function() ip = game:HttpGet("https://api.ipify.org") end)
-    IPLabel.Text = "IP: " .. ip
+    IPLabel.Text = "🌐 IP: " .. ip
 end)
 
 task.spawn(function()
@@ -159,36 +217,42 @@ task.spawn(function()
     end)
 end)
 
+-- PROFILE FRAME
 local ProfileFrame = Instance.new("Frame", TopFrame)
-ProfileFrame.Size = UDim2.new(1, -20, 0, math.floor(65 * ScaleFactor))
-ProfileFrame.Position = UDim2.new(0, 10, 0, 135)
-ProfileFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 35)
-createCorner(ProfileFrame, math.floor(10 * ScaleFactor))
+ProfileFrame.Size = UDim2.new(1, -16, 0, IsMobile and 45 or 55)
+ProfileFrame.Position = UDim2.new(0, 8, 0, IsMobile and 100 or 125)
+ProfileFrame.BackgroundColor3 = Color3.fromRGB(20, 25, 40)
+createCorner(ProfileFrame, 10)
+
+local UIStroke3 = Instance.new("UIStroke", ProfileFrame)
+UIStroke3.Color = Color3.fromRGB(0, 150, 200)
+UIStroke3.Thickness = 1
+UIStroke3.Transparency = 0.5
 
 local ProfileImg = Instance.new("ImageLabel", ProfileFrame)
-ProfileImg.Size = UDim2.new(0, math.floor(45 * ScaleFactor), 0, math.floor(45 * ScaleFactor))
-ProfileImg.Position = UDim2.new(0, 10, 0, math.floor(10 * ScaleFactor))
+ProfileImg.Size = UDim2.new(0, IsMobile and 35 or 40, 0, IsMobile and 35 or 40)
+ProfileImg.Position = UDim2.new(0, 7, 0.5, IsMobile and -17 or -20)
 ProfileImg.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
-createCorner(ProfileImg, math.floor(22 * ScaleFactor))
+createCorner(ProfileImg, IsMobile and 17 or 20)
 pcall(function() ProfileImg.Image = Players:GetUserThumbnailAsync(LocalPlayer.UserId, Enum.ThumbnailType.HeadShot, Enum.ThumbnailSize.Size100x100) end)
 
 local NameLabel = Instance.new("TextLabel", ProfileFrame)
 NameLabel.Text = LocalPlayer.DisplayName or LocalPlayer.Name
-NameLabel.Position = UDim2.new(0, math.floor(65 * ScaleFactor), 0, math.floor(12 * ScaleFactor))
-NameLabel.Size = UDim2.new(0, math.floor(170 * ScaleFactor), 0, math.floor(20 * ScaleFactor))
-NameLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+NameLabel.Position = UDim2.new(0, IsMobile and 48 or 56, 0.5, IsMobile and -20 or -22)
+NameLabel.Size = UDim2.new(1, IsMobile and -70 or -70, 0, IsMobile and 16 or 18)
+NameLabel.TextColor3 = Color3.new(1, 1, 1)
 NameLabel.TextXAlignment = Enum.TextXAlignment.Left
 NameLabel.Font = Enum.Font.GothamBold
-NameLabel.TextSize = math.floor(13 * ScaleFactor)
+NameLabel.TextSize = IsMobile and 11 or 13
 NameLabel.BackgroundTransparency = 1
 
 local StatsLabel = Instance.new("TextLabel", ProfileFrame)
-StatsLabel.Position = UDim2.new(0, math.floor(65 * ScaleFactor), 0, math.floor(32 * ScaleFactor))
-StatsLabel.Size = UDim2.new(0, math.floor(170 * ScaleFactor), 0, math.floor(20 * ScaleFactor))
-StatsLabel.TextColor3 = Color3.fromRGB(0, 200, 255)
+StatsLabel.Position = UDim2.new(0, IsMobile and 48 or 56, 0.5, 0)
+StatsLabel.Size = UDim2.new(1, IsMobile and -70 or -70, 0, IsMobile and 16 or 18)
+StatsLabel.TextColor3 = Color3.fromRGB(100, 220, 255)
 StatsLabel.TextXAlignment = Enum.TextXAlignment.Left
 StatsLabel.Font = Enum.Font.Code
-StatsLabel.TextSize = math.floor(11 * ScaleFactor)
+StatsLabel.TextSize = IsMobile and 8 or 10
 StatsLabel.BackgroundTransparency = 1
 
 task.spawn(function()
@@ -196,92 +260,130 @@ task.spawn(function()
         local fps = math.floor(1 / RunService.RenderStepped:Wait())
         local ping = 0
         pcall(function() ping = math.floor(game:GetService("Stats").Network.ServerStatsItem["Data Ping"]:GetValue()) end)
-        StatsLabel.Text = "FPS: " .. fps .. " | PING: " .. ping .. "ms"
+        StatsLabel.Text = "FPS: " .. fps .. " | Ping: " .. ping .. "ms"
     end
 end)
 
--- KHUNG THEO DÕI (SPECTATE) - ĐÃ FIX LỖI GIAO DIỆN
+-- SPECTATE FRAME
 local SpectateFrame = Instance.new("Frame", MainFrame)
-SpectateFrame.Size = UDim2.new(1, -16, 0, 60) -- Tăng chiều cao để chứa Avatar
-SpectateFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 35)
+SpectateFrame.Size = UDim2.new(1, -16, 0, IsMobile and 45 or 55)
+SpectateFrame.BackgroundColor3 = Color3.fromRGB(20, 25, 40)
 SpectateFrame.Visible = false
-SpectateFrame.Position = UDim2.new(0, 8, 0, 75)
-createCorner(SpectateFrame, 8)
+SpectateFrame.Position = UDim2.new(0, 8, 0, IsMobile and 190 or 235)
+createCorner(SpectateFrame, 10)
 
--- Avatar: Căn giữa theo chiều dọc của khung (0.5, -20)
+local UIStroke4 = Instance.new("UIStroke", SpectateFrame)
+UIStroke4.Color = Color3.fromRGB(0, 150, 200)
+UIStroke4.Thickness = 1
+UIStroke4.Transparency = 0.5
+
 local SpecAvatar = Instance.new("ImageLabel", SpectateFrame)
-SpecAvatar.Size = UDim2.new(0, 40, 0, 40)
-SpecAvatar.Position = UDim2.new(0, 10, 0.5, -20)
+SpecAvatar.Size = UDim2.new(0, IsMobile and 33 or 38, 0, IsMobile and 33 or 38)
+SpecAvatar.Position = UDim2.new(0, 7, 0.5, IsMobile and -16 or -19)
 SpecAvatar.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
-createCorner(SpecAvatar, 20) -- Hình tròn
+createCorner(SpecAvatar, IsMobile and 16 or 19)
 
--- Tên: Căn giữa theo chiều dọc của khung
 local SpecName = Instance.new("TextLabel", SpectateFrame)
-SpecName.Size = UDim2.new(1, -120, 0, 40)
-SpecName.Position = UDim2.new(0, 60, 0.5, -20) -- Căn cùng hàng với Avatar
+SpecName.Size = UDim2.new(1, IsMobile and -130 or -120, 0, IsMobile and 33 or 38)
+SpecName.Position = UDim2.new(0, IsMobile and 48 or 54, 0.5, IsMobile and -16 or -19)
 SpecName.BackgroundTransparency = 1
 SpecName.TextColor3 = Color3.new(1, 1, 1)
 SpecName.Font = Enum.Font.GothamBold
-SpecName.TextSize = 12
+SpecName.TextSize = IsMobile and 10 or 11
 SpecName.TextXAlignment = Enum.TextXAlignment.Left
-SpecName.TextYAlignment = Enum.TextYAlignment.Center -- Căn giữa dọc
+SpecName.TextYAlignment = Enum.TextYAlignment.Center
 
--- Nút Back/Next: Căn giữa dọc khung
 local BtnBack = Instance.new("TextButton", SpectateFrame)
-BtnBack.Size = UDim2.new(0, 25, 0, 25)
-BtnBack.Position = UDim2.new(1, -60, 0.5, -12) -- Căn phải khung
-BtnBack.Text = "<"
-BtnBack.BackgroundColor3 = Color3.fromRGB(50, 50, 60)
+BtnBack.Size = UDim2.new(0, 20, 0, 20)
+BtnBack.Position = UDim2.new(1, IsMobile and -48 or -58, 0.5, -10)
+BtnBack.Text = "◀"
+BtnBack.BackgroundColor3 = Color3.fromRGB(0, 100, 180)
 BtnBack.TextColor3 = Color3.new(1, 1, 1)
+BtnBack.Font = Enum.Font.GothamBold
+BtnBack.TextSize = 10
 createCorner(BtnBack, 4)
 
 local BtnNext = Instance.new("TextButton", SpectateFrame)
-BtnNext.Size = UDim2.new(0, 25, 0, 25)
-BtnNext.Position = UDim2.new(1, -30, 0.5, -12)
-BtnNext.Text = ">"
-BtnNext.BackgroundColor3 = Color3.fromRGB(50, 50, 60)
+BtnNext.Size = UDim2.new(0, 20, 0, 20)
+BtnNext.Position = UDim2.new(1, IsMobile and -22 or -28, 0.5, -10)
+BtnNext.Text = "▶"
+BtnNext.BackgroundColor3 = Color3.fromRGB(0, 100, 180)
 BtnNext.TextColor3 = Color3.new(1, 1, 1)
+BtnNext.Font = Enum.Font.GothamBold
+BtnNext.TextSize = 10
 createCorner(BtnNext, 4)
+
+local playersList = {}
+local curSpecIndex = 1
+local function updateSpec()
+    playersList = {}
+    for _, p in pairs(Players:GetPlayers()) do
+        if p ~= LocalPlayer then table.insert(playersList, p) end
+    end
+    if #playersList == 0 then return end
+    if curSpecIndex > #playersList then curSpecIndex = 1 end
+    local p = playersList[curSpecIndex]
+    SpecName.Text = p.DisplayName or p.Name
+    if p.Character then
+        pcall(function() SpecAvatar.Image = Players:GetUserThumbnailAsync(p.UserId, Enum.ThumbnailType.HeadShot, Enum.ThumbnailSize.Size100x100) end)
+        Camera.CameraSubject = p.Character:FindFirstChildOfClass("Humanoid")
+    end
+end
+
+BtnBack.MouseButton1Click:Connect(function()
+    curSpecIndex = curSpecIndex - 1
+    if curSpecIndex < 1 then curSpecIndex = #playersList end
+    updateSpec()
+end)
+
 BtnNext.MouseButton1Click:Connect(function()
     curSpecIndex = curSpecIndex + 1
     if curSpecIndex > #playersList then curSpecIndex = 1 end
     updateSpec()
 end)
 
-local GridScrollFrame = Instance.new("ScrollingFrame", MainFrame)
-GridScrollFrame.Size = UDim2.new(1, -20, 1, math.floor(-290 * ScaleFactor))
-GridScrollFrame.Position = UDim2.new(0, 10, 0, math.floor(235 * ScaleFactor))
+-- GRID SCROLL FRAME
+local GridScrollFrame = Instance.new("ScrollingFRAMEFRAMEFrame", MainFrame)
+GridScrollFrame.Size = UDim2.new(1, -12, 1, IsMobile and -220 or -305)
+GridScrollFrame.Position = UDim2.new(0, 6, 0, IsMobile and 200 or 300)
 GridScrollFrame.BackgroundTransparency = 1
-GridScrollFrame.ScrollBarThickness = 4 
-GridScrollFrame.CanvasSize = UDim2.new(0, 0, 0, 0) 
+GridScrollFrame.ScrollBarThickness = 4
+GridScrollFrame.ScrollBarImageColor3 = Color3.fromRGB(0, 150, 200)
+GridScrollFrame.CanvasSize = UDim2.new(0, 0, 0, 0)
 
 local Grid = Instance.new("UIGridLayout", GridScrollFrame)
-Grid.CellSize = UDim2.new(0.5, -6, 0, math.floor(52 * ScaleFactor))
-Grid.CellPadding = UDim2.new(0, 12, 0, 12)
+Grid.CellSize = UDim2.new(0.5, IsMobile and -4 or -8, 0, IsMobile and 35 or 50)
+Grid.CellPadding = UDim2.new(0, IsMobile and 6 or 10, 0, IsMobile and 6 or 10)
 Grid.SortOrder = Enum.SortOrder.LayoutOrder
 
 Grid:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
     GridScrollFrame.CanvasSize = UDim2.new(0, 0, 0, Grid.AbsoluteContentSize.Y + 20)
 end)
 
+-- UI Creation Functions
 local function createToggle(text, callback)
     local Btn = Instance.new("TextButton", GridScrollFrame)
-    Btn.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
+    Btn.BackgroundColor3 = Color3.fromRGB(30, 40, 60)
     Btn.Text = text .. "\n[TẮT]"
     Btn.TextColor3 = Color3.fromRGB(180, 180, 180)
     Btn.Font = Enum.Font.GothamBold
-    Btn.TextSize = math.floor(11 * ScaleFactor)
+    Btn.TextSize = IsMobile and 8 or 10
     createCorner(Btn, 8)
+    
+    local UIStrokeBtn = Instance.new("UIStroke", Btn)
+    UIStrokeBtn.Color = Color3.fromRGB(0, 100, 150)
+    UIStrokeBtn.Thickness = 1
+    UIStrokeBtn.Transparency = 0.5
     
     local isToggled = false
     Btn.MouseButton1Click:Connect(function()
         isToggled = not isToggled
         if isToggled then
-            Btn.BackgroundColor3 = Color3.fromRGB(0, 120, 255)
+            Btn.BackgroundColor3 = Color3.fromRGB(0, 140, 220)
             Btn.Text = text .. "\n[BẬT]"
             Btn.TextColor3 = Color3.new(1, 1, 1)
         else
-            Btn.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
+            Btn.BackgroundColor3 = Color3.fromRGB(30, 40, 60)
             Btn.Text = text .. "\n[TẮT]"
             Btn.TextColor3 = Color3.fromRGB(180, 180, 180)
         end
@@ -290,11 +392,11 @@ local function createToggle(text, callback)
     return function(extState) 
         isToggled = extState 
         if isToggled then 
-            Btn.BackgroundColor3 = Color3.fromRGB(0, 120, 255) 
+            Btn.BackgroundColor3 = Color3.fromRGB(0, 140, 220) 
             Btn.Text = text .. "\n[BẬT]" 
             Btn.TextColor3 = Color3.new(1, 1, 1) 
         else 
-            Btn.BackgroundColor3 = Color3.fromRGB(30, 30, 40) 
+            Btn.BackgroundColor3 = Color3.fromRGB(30, 40, 60) 
             Btn.Text = text .. "\n[TẮT]" 
             Btn.TextColor3 = Color3.fromRGB(180, 180, 180) 
         end 
@@ -303,34 +405,39 @@ end
 
 local function createSlider(text, minVal, maxVal, defaultVal, callback)
     local SliderBox = Instance.new("Frame", GridScrollFrame)
-    SliderBox.BackgroundColor3 = Color3.fromRGB(25, 25, 35)
+    SliderBox.BackgroundColor3 = Color3.fromRGB(25, 30, 45)
     createCorner(SliderBox, 8)
     
+    local UIStrokeSlider = Instance.new("UIStroke", SliderBox)
+    UIStrokeSlider.Color = Color3.fromRGB(0, 100, 150)
+    UIStrokeSlider.Thickness = 1
+    UIStrokeSlider.Transparency = 0.5
+    
     local Title = Instance.new("TextLabel", SliderBox)
-    Title.Size = UDim2.new(1, -10, 0, math.floor(20 * ScaleFactor))
-    Title.Position = UDim2.new(0, 8, 0, 4)
+    Title.Size = UDim2.new(1, -10, 0, IsMobile and 15 or 18)
+    Title.Position = UDim2.new(0, 5, 0, 2)
     Title.BackgroundTransparency = 1
     Title.Text = text .. ": " .. defaultVal
-    Title.TextColor3 = Color3.fromRGB(0, 220, 255)
+    Title.TextColor3 = Color3.fromRGB(100, 220, 255)
     Title.Font = Enum.Font.GothamSemibold
-    Title.TextSize = math.floor(10 * ScaleFactor)
+    Title.TextSize = IsMobile and 8 or 9
     Title.TextXAlignment = Enum.TextXAlignment.Left
 
     local Track = Instance.new("TextButton", SliderBox)
-    Track.Size = UDim2.new(1, -16, 0, math.floor(4 * ScaleFactor))
-    Track.Position = UDim2.new(0, 8, 1, math.floor(-14 * ScaleFactor))
-    Track.BackgroundColor3 = Color3.fromRGB(50, 50, 60)
+    Track.Size = UDim2.new(1, -10, 0, 2)
+    Track.Position = UDim2.new(0, 5, 1, -10)
+    Track.BackgroundColor3 = Color3.fromRGB(50, 60, 80)
     Track.Text = ""
     Track.AutoButtonColor = false
     createCorner(Track, 2)
 
     local Fill = Instance.new("Frame", Track)
     Fill.Size = UDim2.new((defaultVal - minVal)/(maxVal - minVal), 0, 1, 0)
-    Fill.BackgroundColor3 = Color3.fromRGB(0, 150, 255)
+    Fill.BackgroundColor3 = Color3.fromRGB(0, 180, 255)
     createCorner(Fill, 2)
 
     local Knob = Instance.new("Frame", Track)
-    local kDim = math.floor(10 * ScaleFactor)
+    local kDim = 6
     Knob.Size = UDim2.new(0, kDim, 0, kDim)
     Knob.Position = UDim2.new((defaultVal - minVal)/(maxVal - minVal), -kDim/2, 0.5, -kDim/2)
     Knob.BackgroundColor3 = Color3.new(1, 1, 1)
@@ -363,23 +470,38 @@ local function createButton(text, color, callback)
     Btn.Text = text
     Btn.TextColor3 = Color3.new(1, 1, 1)
     Btn.Font = Enum.Font.GothamBold
-    Btn.TextSize = math.floor(11 * ScaleFactor)
+    Btn.TextSize = IsMobile and 8 or 10
     createCorner(Btn, 8)
+    
+    local UIStrokeBtn = Instance.new("UIStroke", Btn)
+    UIStrokeBtn.Color = color
+    UIStrokeBtn.Thickness = 1
+    UIStrokeBtn.Transparency = 0.3
+    
     Btn.MouseButton1Click:Connect(callback)
 end
 
-local ButtonSize = math.floor(70 * ScaleFactor)
-local ToggleBtn = Instance.new("ScreenGui"):FindFirstChild("ToggleBtn") or Instance.new("TextButton", ScreenGui)
+-- TOGGLE BUTTON
+local ButtonSize = IsMobile and 45 or 65
+ToggleBtn = Instance.new("TextButton", ScreenGui)
 ToggleBtn.Size = UDim2.new(0, ButtonSize, 0, ButtonSize)
-ToggleBtn.Position = UDim2.new(0, 20, 0.4, 0)
-ToggleBtn.BackgroundColor3 = Color3.fromRGB(0, 120, 255)
+ToggleBtn.Position = UDim2.new(0, 15, 0.4, 0)
+ToggleBtn.BackgroundColor3 = Color3.fromRGB(0, 150, 255)
 ToggleBtn.Text = "📜"
 ToggleBtn.TextColor3 = Color3.new(1, 1, 1)
-ToggleBtn.TextSize = math.floor(32 * ScaleFactor)
+ToggleBtn.TextSize = IsMobile and 24 or 30
 createCorner(ToggleBtn, ButtonSize / 2)
 makeDraggable(ToggleBtn)
+
+local UIStrokeToggle = Instance.new("UIStroke", ToggleBtn)
+UIStrokeToggle.Color = Color3.fromRGB(0, 200, 255)
+UIStrokeToggle.Thickness = 2
+
 ToggleBtn.MouseButton1Click:Connect(function() MainFrame.Visible = not MainFrame.Visible end)
 
+-- ============== FEATURES ==============
+
+-- 1. FLY MODE
 local Fly_Active = false
 local FlySpeed = 60
 local FlyConnection
@@ -418,7 +540,7 @@ local function StopFly()
     pcall(function() LocalPlayer.Character:FindFirstChildOfClass("Humanoid").PlatformStand = false end)
 end
 
-local setFlyToggle = createToggle("Chế Độ Bay", function(state)
+local setFlyToggle = createToggle("✈️ Bay", function(state)
     Fly_Active = state
     if Fly_Active then StartFly() else StopFly() end
 end)
@@ -434,9 +556,9 @@ UserInputService.InputBegan:Connect(function(input, gpe)
     end
 end)
 
--- 1. NÚT INF HP (BẤT TỬ MÁU CLIENT)
+-- 2. INF HP
 local InfHP_Active = false
-createToggle("Vô Hạn Máu (Inf HP)", function(state)
+createToggle("❤️ Vô Hạn HP", function(state)
     InfHP_Active = state
     if state then
         task.spawn(function()
@@ -446,7 +568,6 @@ createToggle("Vô Hạn Máu (Inf HP)", function(state)
                     local char = LocalPlayer.Character
                     if char and char:FindFirstChildOfClass("Humanoid") then
                         local hum = char:FindFirstChildOfClass("Humanoid")
-                        -- Giữ máu luôn ở mức tối đa trên giao diện của bạn
                         hum.Health = hum.MaxHealth
                     end
                 end)
@@ -455,10 +576,10 @@ createToggle("Vô Hạn Máu (Inf HP)", function(state)
     end
 end)
 
--- 2. NÚT INF JUMP (NHẢY VÔ HẠN)
+-- 3. INF JUMP
 local InfJump_Active = false
 local JumpConnection
-createToggle("Nhảy Vô Hạn (Inf Jump)", function(state)
+createToggle("⬆️ Nhảy Vô Hạn", function(state)
     InfJump_Active = state
     if InfJump_Active then
         JumpConnection = UserInputService.JumpRequest:Connect(function()
@@ -474,12 +595,11 @@ createToggle("Nhảy Vô Hạn (Inf Jump)", function(state)
     end
 end)
 
--- 3. NÚT TỰ LÙI KHI CHIẾN ĐẤU (HIT & RUN / KITE)
+-- 4. AUTO KITE
 local AutoKite_Active = false
-createToggle("Tự Lùi Khi Đánh", function(state)
-    AutoKite_Active = state
-end)
+createToggle("🏃 Tự Lùi", function(state) AutoKite_Active = state end)
 
+-- 5. ESP
 local ESP_Active = false
 local function updateESP()
     for _, p in pairs(Players:GetPlayers()) do
@@ -502,7 +622,7 @@ local function updateESP()
                 local name = Instance.new("TextLabel", bill)
                 name.Size = UDim2.new(1, 0, 1, 0)
                 name.Text = p.DisplayName or p.Name
-                name.TextColor3 = Color3.fromRGB(255, 255, 255)
+                name.TextColor3 = Color3.fromRGB(0, 255, 150)
                 name.TextStrokeTransparency = 0
                 name.BackgroundTransparency = 1
                 name.Font = Enum.Font.GothamBold
@@ -511,9 +631,10 @@ local function updateESP()
         end
     end
 end
-createToggle("ESP Khung + Tên", function(state) ESP_Active = state updateESP() end)
+createToggle("👁️ ESP", function(state) ESP_Active = state updateESP() end)
 Players.PlayerAdded:Connect(function(p) p.CharacterAdded:Connect(function() task.wait(1) if ESP_Active then updateESP() end end) end)
 
+-- 6. ANTI KICK
 local AntiKick_Active = false
 task.spawn(function()
     local oldKick
@@ -524,11 +645,12 @@ task.spawn(function()
         end)
     end)
 end)
-createToggle("Chống Máy Châu Kick", function(state) AntiKick_Active = state end)
+createToggle("🛡️ Chống Kick", function(state) AntiKick_Active = state end)
 
+-- 7. SHIFT LOCK
 if IsMobile then
     local ShiftLock_Active = false
-    createToggle("Khóa Tâm Mobile", function(state) 
+    createToggle("📱 Khóa Tâm", function(state) 
         ShiftLock_Active = state 
         if not state then UserInputService.MouseBehavior = Enum.MouseBehavior.Default end 
     end)
@@ -541,15 +663,18 @@ if IsMobile then
     end)
 end
 
-createButton("✉️ Mời Bạn Bè Chơi", Color3.fromRGB(35, 140, 75), function()
+-- 8. GAME INVITE
+createButton("📧 Mời Bạn", Color3.fromRGB(60, 130, 80), function()
     pcall(function() SocialService:PromptGameInvite(LocalPlayer) end)
 end)
 
-createToggle("Bật Khung Theo Dõi", function(state)
+-- 9. SPECTATE
+createToggle("👀 Theo Dõi", function(state)
     SpectateFrame.Visible = state
     if state then updateSpec() else Camera.CameraSubject = LocalPlayer.Character:FindFirstChildOfClass("Humanoid") end
 end)
 
+-- 10. AI BOT
 local AI_Active = false
 RunService.RenderStepped:Connect(function()
     if AI_Active and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
@@ -566,22 +691,25 @@ RunService.RenderStepped:Connect(function()
         if nearestPlayer then Humanoid:MoveTo(nearestPlayer.Character.HumanoidRootPart.Position) end
     end
 end)
-createToggle("Chế Độ AI Bot", function(state) AI_Active = state end)
+createToggle("🤖 AI Bot", function(state) AI_Active = state end)
 
-createButton("🔗 Copy Link Game", Color3.fromRGB(80, 50, 150), function()
+-- 11. COPY GAME LINK
+createButton("🔗 Copy Link", Color3.fromRGB(100, 70, 150), function()
     if setclipboard then setclipboard("https://www.roblox.com/games/" .. game.PlaceId) end
 end)
 
+-- 12. SPIN
 local Spin_Active = false
 RunService.RenderStepped:Connect(function()
     if Spin_Active and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
         LocalPlayer.Character.HumanoidRootPart.CFrame = LocalPlayer.Character.HumanoidRootPart.CFrame * CFrame.Angles(0, math.rad(45), 0)
     end
 end)
-createToggle("Xoay Tròn (Spin)", function(state) Spin_Active = state end)
+createToggle("🌀 Xoay", function(state) Spin_Active = state end)
 
+-- 13. AUTO OBBY
 local AutoObby_Active = false
-createToggle("Auto Obby (Tự Chơi)", function(state)
+createToggle("🏁 Auto Obby", function(state)
     AutoObby_Active = state
     while AutoObby_Active and task.wait(0.4) do
         pcall(function()
@@ -595,8 +723,9 @@ createToggle("Auto Obby (Tự Chơi)", function(state)
     end
 end)
 
+-- 14. AUTO FARM
 local AutoFarm_Active = false
-createToggle("Auto Farm / Attack", function(state)
+createToggle("⚔️ Auto Farm", function(state)
     AutoFarm_Active = state
     task.spawn(function()
         while AutoFarm_Active do
@@ -605,7 +734,6 @@ createToggle("Auto Farm / Attack", function(state)
                 local target = nil
                 local maxDist = 200
                 
-                -- Tìm kiếm đối thủ gần nhất còn sống
                 for _, p in pairs(Players:GetPlayers()) do
                     if p ~= LocalPlayer and p.Character and p.Character:FindFirstChild("HumanoidRootPart") and p.Character:FindFirstChildOfClass("Humanoid").Health > 0 then
                         local dist = (LocalPlayer.Character.HumanoidRootPart.Position - p.Character.HumanoidRootPart.Position).Magnitude
@@ -613,20 +741,16 @@ createToggle("Auto Farm / Attack", function(state)
                     end
                 end
                 
-                -- Thực hiện di chuyển và tấn công
                 if target and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
                     local HRP = LocalPlayer.Character.HumanoidRootPart
                     
                     if AutoKite_Active then
-                        -- Nếu bật Tự Lùi: Giật lùi ra sau lưng đối thủ 6 studs để né chiêu
                         HRP.CFrame = target.HumanoidRootPart.CFrame * CFrame.new(0, 0, 6)
-                        task.wait(0.05) -- Khựng lại một nhịp rất ngắn rồi lại lao vào
+                        task.wait(0.05)
                     else
-                        -- Nếu tắt Tự Lùi: Áp sát mượt mà sau lưng đối thủ 3 studs như cũ
                         HRP.CFrame = target.HumanoidRootPart.CFrame * CFrame.new(0, 0, 3)
                     end
                     
-                    -- Tự động lấy vũ khí ra chém
                     local tool = LocalPlayer.Character:FindFirstChildOfClass("Tool") or LocalPlayer.Backpack:FindFirstChildOfClass("Tool")
                     if tool then 
                         if tool.Parent ~= LocalPlayer.Character then tool.Parent = LocalPlayer.Character end
@@ -638,8 +762,9 @@ createToggle("Auto Farm / Attack", function(state)
     end)
 end)
 
+-- 15. GHOST HIT
 local GhostHit_Active = false
-createToggle("Ghost Hit (Sửa Lỗi)", function(state) 
+createToggle("👻 Ghost Hit", function(state) 
     GhostHit_Active = state 
     pcall(function()
         local tool = LocalPlayer.Character:FindFirstChildOfClass("Tool") or LocalPlayer.Backpack:FindFirstChildOfClass("Tool")
@@ -657,35 +782,40 @@ createToggle("Ghost Hit (Sửa Lỗi)", function(state)
     end)
 end)
 
+-- 16. NOCLIP
 local Noclip_Active = false
 RunService.Stepped:Connect(function()
     if (Noclip_Active or Fly_Active) and LocalPlayer.Character then
         for _, v in pairs(LocalPlayer.Character:GetDescendants()) do if v:IsA("BasePart") then v.CanCollide = false end end
     end
 end)
-createToggle("Xuyên Tường", function(state) Noclip_Active = state end)
+createToggle("🚫 Noclip", function(state) Noclip_Active = state end)
 
+-- 17. AFK
 local AFK_Active = false
 LocalPlayer.Idled:Connect(function() if AFK_Active then VirtualUser:Button2Down(Vector2.new(0,0), Camera.CFrame) task.wait(1) VirtualUser:Button2Up(Vector2.new(0,0), Camera.CFrame) end end)
-createToggle("Treo Máy (Anti-AFK)", function(state) AFK_Active = state end)
+createToggle("💤 AFK", function(state) AFK_Active = state end)
 
+-- 18-19. JUMP POWER & WALK SPEED
 local JumpPower = 50
-createSlider("Chỉnh Lực Nhảy", 50, 300, JumpPower, function(val)
+createSlider("⬆️ Lực Nhảy", 50, 300, JumpPower, function(val)
     JumpPower = val
     if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then LocalPlayer.Character.Humanoid.JumpPower = val end
 end)
 
 local Speed_Val = 16
-createSlider("Chỉnh Tốc Độ", 16, 150, Speed_Val, function(val)
+createSlider("💨 Tốc Độ", 16, 150, Speed_Val, function(val)
     Speed_Val = val
     if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then LocalPlayer.Character.Humanoid.WalkSpeed = val end
 end)
 
-createButton("Mở Infinite Yield", Color3.fromRGB(150, 50, 50), function()
+-- 20. INFINITE YIELD
+createButton("📋 Inf Yield", Color3.fromRGB(120, 80, 50), function()
     loadstring(game:HttpGet('https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source'))()
 end)
 
-createButton("Chuyển Server Khác", Color3.fromRGB(0, 150, 100), function()
+-- 21. SERVER CHANGE
+createButton("🌍 Đổi Server", Color3.fromRGB(50, 140, 100), function()
     if syn and syn.queue_on_teleport then syn.queue_on_teleport([[loadstring(game:HttpGet("https://raw.githubusercontent.com/3hbin/Gemini-Hub/refs/heads/main/GeminiHub.lua"))()]])
     elseif queue_on_teleport then queue_on_teleport([[loadstring(game:HttpGet("https://raw.githubusercontent.com/3hbin/Gemini-Hub/refs/heads/main/GeminiHub.lua"))()]]) end
     local TPS = game:GetService("TeleportService")
@@ -696,13 +826,19 @@ createButton("Chuyển Server Khác", Color3.fromRGB(0, 150, 100), function()
     end
 end)
 
-local CloseBtn = Instance.new("TextButton", MainFram)
-CloseBtn.Size = UDim2.new(1, -20, 0, math.floor(35 * ScaleFactor))
-CloseBtn.Position = UDim2.new(0, 10, 1, math.floor(-45 * ScaleFactor))
-CloseBtn.BackgroundColor3 = Color3.fromRGB(220, 50, 50)
+-- CLOSE BUTTON - FIX TYPO
+local CloseBtn = Instance.new("TextButton", MainFrame)
+CloseBtn.Size = UDim2.new(1, -12, 0, IsMobile and 25 or 35)
+CloseBtn.Position = UDim2.new(0, 6, 1, IsMobile and -33 or -45)
+CloseBtn.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
 CloseBtn.TextColor3 = Color3.new(1, 1, 1)
 CloseBtn.Font = Enum.Font.GothamBold
-CloseBtn.TextSize = math.floor(12 * ScaleFactor)
-CloseBtn.Text = "Ẩn Bảng Menu"
+CloseBtn.TextSize = IsMobile and 9 or 12
+CloseBtn.Text = "❌ Ẩn Menu"
 createCorner(CloseBtn, 8)
+
+local UIStrokeClose = Instance.new("UIStroke", CloseBtn)
+UIStrokeClose.Color = Color3.fromRGB(220, 80, 80)
+UIStrokeClose.Thickness = 1
+
 CloseBtn.MouseButton1Click:Connect(function() MainFrame.Visible = false end)
