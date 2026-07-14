@@ -2088,8 +2088,8 @@ createButton("🎟️ Fake Gamepass", Color3.fromRGB(255, 85, 85), function()
     end)
 end)
 
--- 34. KHO ĐỒ (TOOL INVENTORY)
-createButton("🧰 Kho Đồ", Color3.fromRGB(85, 255, 170), function()
+-- 34. KHO ĐỒ & LẤY FREE TOOL (KHÔNG TỐN TIỀN)
+createButton("🧰 Free Tools", Color3.fromRGB(85, 255, 170), function()
     local Players = game:GetService("Players")
     local LocalPlayer = Players.LocalPlayer
     
@@ -2098,12 +2098,16 @@ createButton("🧰 Kho Đồ", Color3.fromRGB(85, 255, 170), function()
     ToolGui.ResetOnSpawn = false
     
     local ToolFrame = Instance.new("Frame", ToolGui)
-    ToolFrame.Size = UDim2.new(0, 220, 0, 300)
-    ToolFrame.Position = UDim2.new(0.5, -110, 0.5, -150)
+    ToolFrame.Size = UDim2.new(0, IsMobile and 220 or 400, 0, IsMobile and 300 or 420)
+    ToolFrame.Position = UDim2.new(0.5, IsMobile and -110 or -200, 0.5, IsMobile and -150 or -210)
     ToolFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
     ToolFrame.BorderSizePixel = 0
     createCorner(ToolFrame, 12)
     makeDraggable(ToolFrame)
+    
+    local ToolStroke = Instance.new("UIStroke", ToolFrame)
+    ToolStroke.Color = Color3.fromRGB(85, 255, 170)
+    ToolStroke.Thickness = 2
     
     local ToolHeader = Instance.new("Frame", ToolFrame)
     ToolHeader.Size = UDim2.new(1, 0, 0, 35)
@@ -2112,85 +2116,129 @@ createButton("🧰 Kho Đồ", Color3.fromRGB(85, 255, 170), function()
     createCorner(ToolHeader, 12)
     
     local Title = Instance.new("TextLabel", ToolHeader)
-    Title.Size = UDim2.new(1, 0, 1, 0)
+    Title.Size = UDim2.new(1, -75, 1, 0)
+    Title.Position = UDim2.new(0, 10, 0, 0)
     Title.BackgroundTransparency = 1
-    Title.Text = "🧰 Kho Đồ Của Bạn"
+    Title.Text = "🧰 Kho Tool Miễn Phí (Free)"
     Title.TextColor3 = Color3.new(1, 1, 1)
     Title.Font = Enum.Font.GothamBold
     Title.TextSize = 12
+    Title.TextXAlignment = Enum.TextXAlignment.Left
     
     local RefreshBtn = Instance.new("TextButton", ToolHeader)
     RefreshBtn.Size = UDim2.new(0, 30, 1, 0)
-    RefreshBtn.Position = UDim2.new(1, -35, 0, 0)
-    RefreshBtn.BackgroundTransparency = 1
+    RefreshBtn.Position = UDim2.new(1, -70, 0, 0)
+    RefreshBtn.BackgroundTransparency = 0.5
+    RefreshBtn.BackgroundColor3 = Color3.fromRGB(0, 180, 100)
     RefreshBtn.Text = "↻"
     RefreshBtn.TextColor3 = Color3.new(1, 1, 1)
-    RefreshBtn.TextSize = 20
+    RefreshBtn.Font = Enum.Font.GothamBold
+    RefreshBtn.TextSize = 18
+    createCorner(RefreshBtn, 8)
+    
+    local CloseBtn = Instance.new("TextButton", ToolHeader)
+    CloseBtn.Size = UDim2.new(0, 30, 1, 0)
+    CloseBtn.Position = UDim2.new(1, -35, 0, 0)
+    CloseBtn.BackgroundTransparency = 0.5
+    CloseBtn.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
+    CloseBtn.Text = "✕"
+    CloseBtn.TextColor3 = Color3.new(1, 1, 1)
+    CloseBtn.Font = Enum.Font.GothamBold
+    CloseBtn.TextSize = 16
+    createCorner(CloseBtn, 8)
+    CloseBtn.MouseButton1Click:Connect(function() ToolGui:Destroy() end)
     
     local ListScroll = Instance.new("ScrollingFrame", ToolFrame)
     ListScroll.Size = UDim2.new(1, -10, 1, -45)
     ListScroll.Position = UDim2.new(0, 5, 0, 40)
-    ListScroll.BackgroundTransparency = 1
+    ListScroll.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
     ListScroll.ScrollBarThickness = 3
+    createCorner(ListScroll, 8)
     
     local ListLayout = Instance.new("UIListLayout", ListScroll)
-    ListLayout.Padding = UDim.new(0, 5)
+    ListLayout.Padding = UDim.new(0, 8)
+    ListLayout.SortOrder = Enum.SortOrder.LayoutOrder
     
+    ListLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+        ListScroll.CanvasSize = UDim2.new(0, 0, 0, ListLayout.AbsoluteContentSize.Y + 10)
+    end)
+    
+    -- Hàm quét và lấy danh sách Tool ẩn trong game
     local function UpdateToolList()
-        -- Xóa danh sách cũ
         for _, child in pairs(ListScroll:GetChildren()) do
-            if child:IsA("TextButton") then child:Destroy() end
+            if child:IsA("Frame") then child:Destroy() end
         end
         
-        -- Quét Backpack và Character
-        local character = LocalPlayer.Character
-        local backpack = LocalPlayer.Backpack
+        -- Danh sách các nơi lưu trữ Tool phổ biến trong game độc lập với ví tiền
+        local storagePlaces = {
+            game:GetService("Lighting"),
+            game:GetService("ReplicatedStorage"),
+            workspace
+        }
+        
+        -- Thêm ServerStorage nếu executor của bạn đủ quyền đọc
+        pcall(function() table.insert(storagePlaces, game:GetService("ServerStorage")) end)
         
         local toolsFound = {}
         
-        -- Thêm vào bảng
-        if character then
-            for _, item in pairs(character:GetChildren()) do
-                if item:IsA("Tool") then table.insert(toolsFound, item) end
+        for _, storage in pairs(storagePlaces) do
+            for _, item in pairs(storage:GetDescendants()) do
+                if item:IsA("Tool") and not item:FindFirstAncestorOfClass("Tool") then
+                    -- Tránh trùng lặp tên Tool trong danh sách hiển thị
+                    if not toolsFound[item.Name] then
+                        toolsFound[item.Name] = item
+                    end
+                end
             end
         end
-        for _, item in pairs(backpack:GetChildren()) do
-            if item:IsA("Tool") then table.insert(toolsFound, item) end
-        end
         
-        -- Tạo nút cho mỗi tool
-        for _, tool in pairs(toolsFound) do
-            local btn = Instance.new("TextButton", ListScroll)
-            btn.Size = UDim2.new(1, 0, 0, 35)
-            btn.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-            btn.Text = tool.Name
-            btn.TextColor3 = Color3.new(1, 1, 1)
-            btn.Font = Enum.Font.Gotham
-            btn.TextSize = 12
-            createCorner(btn, 6)
+        -- Tạo nút bấm nhận Tool
+        for name, tool in pairs(toolsFound) do
+            local ItemFrame = Instance.new("Frame", ListScroll)
+            ItemFrame.Size = UDim2.new(1, -10, 0, 45)
+            ItemFrame.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+            createCorner(ItemFrame, 8)
             
-            btn.MouseButton1Click:Connect(function()
-                if tool.Parent ~= character then
-                    LocalPlayer.Character.Humanoid:EquipTool(tool)
+            local ToolLabel = Instance.new("TextLabel", ItemFrame)
+            ToolLabel.Size = UDim2.new(0.7, 0, 1, 0)
+            ToolLabel.Position = UDim2.new(0, 10, 0, 0)
+            ToolLabel.BackgroundTransparency = 1
+            ToolLabel.Text = "⚔️ " .. name
+            ToolLabel.TextColor3 = Color3.new(1, 1, 1)
+            ToolLabel.Font = Enum.Font.GothamBold
+            ToolLabel.TextSize = 11
+            ToolLabel.TextXAlignment = Enum.TextXAlignment.Left
+            
+            local GetBtn = Instance.new("TextButton", ItemFrame)
+            GetBtn.Size = UDim2.new(0.25, 0, 0.7, 0)
+            GetBtn.Position = UDim2.new(0.75, -5, 0.15, 0)
+            GetBtn.BackgroundColor3 = Color3.fromRGB(0, 180, 100)
+            GetBtn.Text = "Lấy Free"
+            GetBtn.TextColor3 = Color3.new(1, 1, 1)
+            GetBtn.Font = Enum.Font.GothamBold
+            GetBtn.TextSize = 10
+            createCorner(GetBtn, 6)
+            
+            GetBtn.MouseButton1Click:Connect(function()
+                local backpack = LocalPlayer:FindFirstChild("Backpack")
+                if backpack then
+                    -- Clone (Sao chép) bản sao của Tool vào túi đồ cá nhân miễn phí
+                    local toolClone = tool:Clone()
+                    toolClone.Parent = backpack
+                    
+                    -- Thông báo nhỏ cho bạn biết đã lấy thành công
+                    GetBtn.Text = "Đã Lấy ✔️"
+                    GetBtn.BackgroundColor3 = Color3.fromRGB(50, 150, 50)
+                    task.wait(1)
+                    GetBtn.Text = "Lấy Free"
+                    GetBtn.BackgroundColor3 = Color3.fromRGB(0, 180, 100)
                 end
             end)
         end
-        
-        ListScroll.CanvasSize = UDim2.new(0, 0, 0, ListLayout.AbsoluteContentSize.Y)
     end
     
     RefreshBtn.MouseButton1Click:Connect(UpdateToolList)
-    
-    -- Tự động cập nhật khi mở
     UpdateToolList()
-    
-    local CloseBtn = Instance.new("TextButton", ToolFrame)
-    CloseBtn.Size = UDim2.new(0, 20, 0, 20)
-    CloseBtn.Position = UDim2.new(1, -25, 0, 8)
-    CloseBtn.BackgroundTransparency = 1
-    CloseBtn.Text = "X"
-    CloseBtn.TextColor3 = Color3.new(1, 1, 1)
-    CloseBtn.MouseButton1Click:Connect(function() ToolGui:Destroy() end)
 end)
 
 -- 35. AIMBOT (KHÓA MỤC TIÊU NGƯỜI CHƠI)
@@ -2463,20 +2511,49 @@ createButton("♻️ Tải Lại Nhân Vật", Color3.fromRGB(85, 170, 255), fun
     end)
 end)
 
--- 14. REJOIN (VÀO LẠI PHÒNG GAME HIỆN TẠI)
+-- 37. REJOIN (TỰ ĐỘNG CHẠY LẠI SCRIPT KHI SANG SERVER MỚI)
 createButton("🔄 Vào Lại Game", Color3.fromRGB(255, 85, 255), function()
     local TeleportService = game:GetService("TeleportService")
     local Players = game:GetService("Players")
+    local StarterGui = game:GetService("StarterGui")
     local LocalPlayer = Players.LocalPlayer
     
-    -- Thực hiện dịch chuyển chính bạn vào lại Server ID hiện tại
-    if #Players:GetPlayers() <= 1 then
-        -- Nếu phòng chỉ có 1 mình bạn, tự động Rejoin vào server mới cùng map
-        TeleportService:Teleport(game.PlaceId, LocalPlayer)
-    else
-        -- Nếu phòng có nhiều người, Rejoin chuẩn xác vào đúng ID server đang chơi
-        TeleportService:TeleportToPlaceInstance(game.PlaceId, game.JobId, LocalPlayer)
+    local function notify(title, text)
+        pcall(function()
+            StarterGui:SetCore("SendNotification", {
+                Title = title,
+                Text = text,
+                Duration = 4
+            })
+        end)
     end
+
+    notify("Rejoin", "Đang kết nối lại và kích hoạt Auto-Run...")
+    task.wait(0.5)
+
+    -- Hệ thống tự động xếp hàng để tải lại Script Hub của bạn ở server mới
+    local queue = queue_on_teleport or syn_queue_on_teleport or (fluxus and fluxus.queue_on_teleport)
+    if queue then
+        queue([[
+            repeat task.wait() until game:IsLoaded()
+            pcall(function()
+                -- Tự động chạy lại link script Gemini Hub của bạn
+                loadstring(game:HttpGet("https://raw.githubusercontent.com/3hbin/Gemini-Hub/refs/heads/main/GeminiHub.lua"))()
+            end)
+        ]])
+    else
+        notify("Cảnh báo", "Executor không hỗ trợ tự chạy lại script khi đổi server!")
+        task.wait(1)
+    end
+
+    -- Tiến hành dịch chuyển
+    pcall(function()
+        if #Players:GetPlayers() <= 1 then
+            TeleportService:Teleport(game.PlaceId, LocalPlayer)
+        else
+            TeleportService:TeleportToPlaceInstance(game.PlaceId, game.JobId, LocalPlayer)
+        end
+    end)
 end)
 
 -- CLOSE BUTTON
