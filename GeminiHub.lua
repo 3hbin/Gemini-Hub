@@ -3507,6 +3507,505 @@ createButton("🔍 Tìm & Chơi Game", Color3.fromRGB(170, 85, 255), function()
     end)
 end)
 
+-- 45. GIAO DIỆN SMARTPHONE THÔNG MINH V2 (TÍCH HỢP PLAY STORE, GEMINI & CÀI ĐẶT)
+createButton("📱 Smartphone v2", Color3.fromRGB(85, 255, 120), function()
+    local Players = game:GetService("Players")
+    local LocalPlayer = Players.LocalPlayer
+    local TweenService = game:GetService("TweenService")
+    
+    local PhoneGui = Instance.new("ScreenGui", game.CoreGui)
+    PhoneGui.Name = "GeminiSmartphoneV2"
+    PhoneGui.ResetOnSpawn = false
+    
+    -- Thân máy (Vỏ ngoài điện thoại bo góc)
+    local PhoneFrame = Instance.new("Frame", PhoneGui)
+    PhoneFrame.Size = UDim2.new(0, 250, 0, 460)
+    PhoneFrame.Position = UDim2.new(0.5, -125, 0.5, -230)
+    PhoneFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
+    PhoneFrame.BorderSizePixel = 0
+    createCorner(PhoneFrame, 28)
+    makeDraggable(PhoneFrame)
+    
+    local PhoneStroke = Instance.new("UIStroke", PhoneFrame)
+    PhoneStroke.Color = Color3.fromRGB(70, 70, 75)
+    PhoneStroke.Thickness = 4
+    
+    -- Màn hình hiển thị
+    local Screen = Instance.new("ImageLabel", PhoneFrame)
+    Screen.Size = UDim2.new(1, -12, 1, -12)
+    Screen.Position = UDim2.new(0, 6, 0, 6)
+    Screen.BackgroundColor3 = Color3.fromRGB(30, 30, 35)
+    Screen.Image = "rbxassetid://13540899144" -- Hình nền gốc
+    Screen.ScaleType = Enum.ScaleType.Crop
+    createCorner(Screen, 24)
+    
+    -- Tai thỏ / Dynamic Island
+    local Notch = Instance.new("Frame", Screen)
+    Notch.Size = UDim2.new(0, 90, 0, 18)
+    Notch.Position = UDim2.new(0.5, -45, 0, 4)
+    Notch.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+    Notch.BorderSizePixel = 0
+    createCorner(Notch, 9)
+    
+    -- Thanh trạng thái (Status Bar)
+    local StatusBar = Instance.new("Frame", Screen)
+    StatusBar.Size = UDim2.new(1, 0, 0, 24)
+    StatusBar.BackgroundTransparency = 1
+    
+    local TimeLabel = Instance.new("TextLabel", StatusBar)
+    TimeLabel.Size = UDim2.new(0, 60, 1, 0)
+    TimeLabel.Position = UDim2.new(0, 15, 0, 0)
+    TimeLabel.BackgroundTransparency = 1
+    TimeLabel.Text = "12:00"
+    TimeLabel.TextColor3 = Color3.new(1, 1, 1)
+    TimeLabel.Font = Enum.Font.GothamBold
+    TimeLabel.TextSize = 11
+    TimeLabel.TextXAlignment = Enum.TextXAlignment.Left
+    
+    task.spawn(function()
+        while task.wait(1) do
+            if not TimeLabel then break end
+            local date = os.date("*t")
+            TimeLabel.Text = string.format("%02d:%02d", date.hour, date.min)
+        end
+    end)
+    
+    local IconsLabel = Instance.new("TextLabel", StatusBar)
+    IconsLabel.Size = UDim2.new(0, 80, 1, 0)
+    IconsLabel.Position = UDim2.new(1, -15, 0, 0)
+    IconsLabel.BackgroundTransparency = 1
+    IconsLabel.Text = "📶 🔋"
+    IconsLabel.TextColor3 = Color3.new(1, 1, 1)
+    IconsLabel.Font = Enum.Font.GothamBold
+    IconsLabel.TextSize = 10
+    IconsLabel.TextXAlignment = Enum.TextXAlignment.Right
+    
+    -- Khung chứa ứng dụng màn hình chính
+    local AppContainer = Instance.new("Frame", Screen)
+    AppContainer.Size = UDim2.new(1, -20, 1, -80)
+    AppContainer.Position = UDim2.new(0, 10, 0, 40)
+    AppContainer.BackgroundTransparency = 1
+    
+    local Grid = Instance.new("UIGridLayout", AppContainer)
+    Grid.CellSize = UDim2.new(0, 48, 0, 65)
+    Grid.CellPadding = UDim2.new(0, 10, 0, 15)
+    Grid.SortOrder = Enum.SortOrder.LayoutOrder
+    
+    -- Khung hiển thị các Sub-Window khi mở App (Màn hình ứng dụng chạy ngầm)
+    local AppWindow = Instance.new("Frame", Screen)
+    AppWindow.Size = UDim2.new(1, 0, 1, -24)
+    AppWindow.Position = UDim2.new(0, 0, 1, 0) -- Giấu ở dưới đáy, vuốt lên khi mở
+    AppWindow.BackgroundColor3 = Color3.fromRGB(25, 25, 30)
+    AppWindow.BorderSizePixel = 0
+    createCorner(AppWindow, 24)
+    
+    local WindowTitle = Instance.new("TextLabel", AppWindow)
+    WindowTitle.Size = UDim2.new(1, 0, 0, 35)
+    WindowTitle.Position = UDim2.new(0, 0, 0, 10)
+    WindowTitle.BackgroundTransparency = 1
+    WindowTitle.Text = "Ứng dụng"
+    WindowTitle.TextColor3 = Color3.new(1, 1, 1)
+    WindowTitle.Font = Enum.Font.GothamBold
+    WindowTitle.TextSize = 14
+    
+    local BackBtn = Instance.new("TextButton", AppWindow)
+    BackBtn.Size = UDim2.new(0, 40, 0, 25)
+    BackBtn.Position = UDim2.new(0, 10, 0, 10)
+    BackBtn.BackgroundColor3 = Color3.fromRGB(50, 50, 55)
+    BackBtn.Text = "◀"
+    BackBtn.TextColor3 = Color3.new(1, 1, 1)
+    BackBtn.TextSize = 10
+    createCorner(BackBtn, 6)
+    
+    local function openWindow(title)
+        WindowTitle.Text = title
+        AppWindow:TweenPosition(UDim2.new(0, 0, 0, 24), "Out", "Quad", 0.3, true)
+    end
+    
+    BackBtn.MouseButton1Click:Connect(function()
+        for _, child in pairs(AppWindow:GetChildren()) do
+            if child:IsA("Frame") or child:IsA("ScrollingFrame") then child.Visible = false end
+        end
+        AppWindow:TweenPosition(UDim2.new(0, 0, 1, 0), "In", "Quad", 0.3, true)
+    end)
+
+    local function createApp(name, iconText, bgColor, callback)
+        local App = Instance.new("Frame", AppContainer)
+        App.BackgroundTransparency = 1
+        
+        local Btn = Instance.new("TextButton", App)
+        Btn.Size = UDim2.new(1, 0, 0, 48)
+        Btn.BackgroundColor3 = bgColor
+        Btn.Text = iconText
+        Btn.TextSize = 22
+        createCorner(Btn, 12)
+        
+        local Label = Instance.new("TextLabel", App)
+        Label.Size = UDim2.new(1, 0, 0, 15)
+        Label.Position = UDim2.new(0, 0, 1, 0)
+        Label.BackgroundTransparency = 1
+        Label.Text = name
+        Label.TextColor3 = Color3.new(1, 1, 1)
+        Label.Font = Enum.Font.Gotham
+        Label.TextSize = 9
+        
+        Btn.MouseButton1Click:Connect(callback)
+    end
+
+    ---------------------------------------------------------
+    -- 1. ỨNG DỤNG GOOGLE PLAY STORE (TẢI TÍNH NĂNG MOD)
+    ---------------------------------------------------------
+    local PlayContent = Instance.new("Frame", AppWindow)
+    PlayContent.Size = UDim2.new(1, -20, 1, -50)
+    PlayContent.Position = UDim2.new(0, 10, 0, 50)
+    PlayContent.BackgroundTransparency = 1
+    PlayContent.Visible = false
+    
+    local function createPlayItem(name, desc, action)
+        local item = Instance.new("Frame", PlayContent)
+        item.Size = UDim2.new(1, 0, 0, 40)
+        item.BackgroundColor3 = Color3.fromRGB(40, 40, 45)
+        createCorner(item, 6)
+        
+        local label = Instance.new("TextLabel", item)
+        label.Size = UDim2.new(0.7, 0, 1, 0)
+        label.Position = UDim2.new(0, 5, 0, 0)
+        label.BackgroundTransparency = 1
+        label.Text = "<b>" .. name .. "</b>\n<font size='8' color='rgb(180,180,180)'>" .. desc .. "</font>"
+        label.TextColor3 = Color3.new(1, 1, 1)
+        label.Font = Enum.Font.Gotham
+        label.TextSize = 10
+        label.RichText = true
+        label.TextXAlignment = Enum.TextXAlignment.Left
+        
+        local getBtn = Instance.new("TextButton", item)
+        getBtn.Size = UDim2.new(0, 50, 0, 25)
+        getBtn.Position = UDim2.new(1, -55, 0.5, -12.5)
+        getBtn.BackgroundColor3 = Color3.fromRGB(0, 160, 100)
+        getBtn.Text = "TẢI VỀ"
+        getBtn.TextColor3 = Color3.new(1, 1, 1)
+        getBtn.Font = Enum.Font.GothamBold
+        getBtn.TextSize = 8
+        createCorner(getBtn, 6)
+        
+        getBtn.MouseButton1Click:Connect(action)
+    end
+    
+    local LayoutPlay = Instance.new("UIListLayout", PlayContent)
+    LayoutPlay.Padding = UDim.new(0, 5)
+    
+    createPlayItem("Mod Tốc Độ", "Tăng tốc chạy cực nhanh", function()
+        local char = LocalPlayer.Character and char:FindFirstChildOfClass("Humanoid")
+        if LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid") then
+            LocalPlayer.Character:FindFirstChildOfClass("Humanoid").WalkSpeed = 80
+        end
+    end)
+    
+    createPlayItem("Siêu Nhảy", "Nhảy cao vượt địa hình", function()
+        if LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid") then
+            LocalPlayer.Character:FindFirstChildOfClass("Humanoid").JumpPower = 150
+        end
+    end)
+
+    createApp("Play Store", "🛍️", Color3.fromRGB(0, 160, 120), function()
+        PlayContent.Visible = true
+        openWindow("Google Play Store")
+    end)
+
+    ---------------------------------------------------------
+    -- 2. ỨNG DỤNG GEMINI AI (CHAT BOT GỢI Ý CÂU THOẠI)
+    ---------------------------------------------------------
+    local GeminiContent = Instance.new("Frame", AppWindow)
+    GeminiContent.Size = UDim2.new(1, -20, 1, -50)
+    GeminiContent.Position = UDim2.new(0, 10, 0, 50)
+    GeminiContent.BackgroundTransparency = 1
+    GeminiContent.Visible = false
+    
+    local AIResponse = Instance.new("TextLabel", GeminiContent)
+    AIResponse.Size = UDim2.new(1, 0, 0, 60)
+    AIResponse.BackgroundColor3 = Color3.fromRGB(35, 35, 40)
+    AIResponse.Text = "Xin chào! Mình là trợ lý Gemini AI.\nBấm nút bên dưới để mình tạo câu nói cực ngầu gửi lên Chat game nhé!"
+    AIResponse.TextColor3 = Color3.fromRGB(170, 220, 255)
+    AIResponse.Font = Enum.Font.Gotham
+    AIResponse.TextSize = 10
+    AIResponse.TextWrapped = true
+    createCorner(AIResponse, 8)
+    
+    local AIChatBtn = Instance.new("TextButton", GeminiContent)
+    AIChatBtn.Size = UDim2.new(1, 0, 0, 35)
+    AIChatBtn.Position = UDim2.new(0, 0, 0, 75)
+    AIChatBtn.BackgroundColor3 = Color3.fromRGB(85, 120, 255)
+    AIChatBtn.Text = "✨ Phát Ngôn Cực Chất"
+    AIChatBtn.TextColor3 = Color3.new(1, 1, 1)
+    AIChatBtn.Font = Enum.Font.GothamBold
+    AIChatBtn.TextSize = 11
+    createCorner(AIChatBtn, 8)
+    
+    local CoolQuotes = {
+        "Gemini Hub đang làm chủ cuộc chơi này! 😎",
+        "Đừng tìm anh, anh ở một đẳng cấp khác! ⚡",
+        "Smartphone v2 mượt mà quá đi mất! 📱🔥",
+        "Chạy nhanh quá, camera game bắt không kịp rồi! 🚀"
+    }
+    
+    AIChatBtn.MouseButton1Click:Connect(function()
+        local quote = CoolQuotes[math.random(1, #CoolQuotes)]
+        AIResponse.Text = "Gemini AI: " .. quote
+        
+        local TextChatService = game:GetService("TextChatService")
+        if TextChatService.ChatVersion == Enum.ChatVersion.TextChatService then
+            TextChatService.TextChannels.RBXGeneral:SendAsync(quote)
+        else
+            game:GetService("ReplicatedStorage").DefaultChatSystemChatEvents.SayMessageRequest:FireServer(quote, "All")
+        end
+    end)
+    
+    createApp("Gemini AI", "✨", Color3.fromRGB(80, 50, 180), function()
+        GeminiContent.Visible = true
+        openWindow("Gemini AI")
+    end)
+
+    ---------------------------------------------------------
+    -- 3. ỨNG DỤNG CÀI ĐẶT (SETTINGS - ĐỔI MÀU NỀN)
+    ---------------------------------------------------------
+    local SetContent = Instance.new("Frame", AppWindow)
+    SetContent.Size = UDim2.new(1, -20, 1, -50)
+    SetContent.Position = UDim2.new(0, 10, 0, 50)
+    SetContent.BackgroundTransparency = 1
+    SetContent.Visible = false
+    
+    local function createSetBtn(name, color, imgId)
+        local btn = Instance.new("TextButton", SetContent)
+        btn.Size = UDim2.new(1, 0, 0, 35)
+        btn.BackgroundColor3 = color
+        btn.Text = name
+        btn.TextColor3 = Color3.new(1, 1, 1)
+        btn.Font = Enum.Font.GothamBold
+        btn.TextSize = 11
+        createCorner(btn, 6)
+        
+        btn.MouseButton1Click:Connect(function()
+            Screen.Image = imgId
+        end)
+    end
+    
+    local LayoutSet = Instance.new("UIListLayout", SetContent)
+    LayoutSet.Padding = UDim.new(0, 8)
+    
+    createSetBtn("🖼️ Đổi Nền Không Gian Đậm", Color3.fromRGB(40, 30, 50), "rbxassetid://13540899144")
+    createSetBtn("🖼️ Đổi Nền Tương Lai Neon", Color3.fromRGB(30, 50, 40), "rbxassetid://11488102324")
+    
+    createApp("Cài đặt", "⚙️", Color3.fromRGB(100, 100, 105), function()
+        SetContent.Visible = true
+        openWindow("Cài Đặt Hệ Thống")
+    end)
+
+    ---------------------------------------------------------
+    -- CÁC APP CŨ (REJOIN, RESET, TẮT MÁY) ĐƯỢC XẾP NỐI TIẾP
+    ---------------------------------------------------------
+    createApp("Rejoin", "🔄", Color3.fromRGB(0, 120, 255), function()
+        game:GetService("TeleportService"):Teleport(game.PlaceId, LocalPlayer)
+    end)
+    
+    createApp("Reset", "💀", Color3.fromRGB(220, 50, 50), function()
+        if LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid") then
+            LocalPlayer.Character:FindFirstChildOfClass("Humanoid").Health = 0
+        end
+    end)
+    
+    createApp("Tắt Máy", "❌", Color3.fromRGB(40, 40, 40), function()
+        PhoneGui:Destroy()
+    end)
+    
+    -- Home Bar đáy máy
+    local HomeBar = Instance.new("Frame", Screen)
+    HomeBar.Size = UDim2.new(0, 80, 0, 4)
+    HomeBar.Position = UDim2.new(0.5, -40, 1, -8)
+    HomeBar.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    HomeBar.BorderSizePixel = 0
+    createCorner(HomeBar, 10)
+end)
+
+-- 46. BẢNG CHỨC NĂNG GLITCHES ĐỘC LẬP (MENU LỖI ĐỒ HỌA / TROLL)
+createButton("👾 Chức Năng Glitches", Color3.fromRGB(255, 0, 130), function()
+    local Players = game:GetService("Players")
+    local LocalPlayer = Players.LocalPlayer
+    local TweenService = game:GetService("TweenService")
+    
+    local GlitchGui = Instance.new("ScreenGui", game.CoreGui)
+    GlitchGui.Name = "GeminiGlitchMenu"
+    GlitchGui.ResetOnSpawn = false
+    
+    local GlitchFrame = Instance.new("Frame", GlitchGui)
+    GlitchFrame.Size = UDim2.new(0, IsMobile and 240 or 320, 0, IsMobile and 160 or 200)
+    GlitchFrame.Position = UDim2.new(0.5, IsMobile and -120 or -160, 0.5, IsMobile and -80 or -100)
+    GlitchFrame.BackgroundColor3 = Color3.fromRGB(20, 10, 20)
+    GlitchFrame.BorderSizePixel = 0
+    createCorner(GlitchFrame, 12)
+    makeDraggable(GlitchFrame)
+    
+    local GlitchStroke = Instance.new("UIStroke", GlitchFrame)
+    GlitchStroke.Color = Color3.fromRGB(255, 0, 130)
+    GlitchStroke.Thickness = 2
+    
+    -- Thanh Tiêu Đề Menu
+    local Header = Instance.new("Frame", GlitchFrame)
+    Header.Size = UDim2.new(1, 0, 0, 35)
+    Header.BackgroundColor3 = Color3.fromRGB(130, 0, 65)
+    Header.BorderSizePixel = 0
+    createCorner(Header, 12)
+    
+    local Title = Instance.new("TextLabel", Header)
+    Title.Size = UDim2.new(1, -40, 1, 0)
+    Title.Position = UDim2.new(0, 10, 0, 0)
+    Title.BackgroundTransparency = 1
+    Title.Text = "👾 Hệ Thống Glitches Mod"
+    Title.TextColor3 = Color3.new(1, 1, 1)
+    Title.Font = Enum.Font.GothamBold
+    Title.TextSize = 12
+    Title.TextXAlignment = Enum.TextXAlignment.Left
+    
+    local CloseBtn = Instance.new("TextButton", Header)
+    CloseBtn.Size = UDim2.new(0, 30, 1, 0)
+    CloseBtn.Position = UDim2.new(1, -35, 0, 0)
+    CloseBtn.BackgroundTransparency = 0.5
+    CloseBtn.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
+    CloseBtn.Text = "✕"
+    CloseBtn.TextColor3 = Color3.new(1, 1, 1)
+    CloseBtn.Font = Enum.Font.GothamBold
+    CloseBtn.TextSize = 16
+    createCorner(CloseBtn, 8)
+    CloseBtn.MouseButton1Click:Connect(function() GlitchGui:Destroy() end)
+    
+    -- Khung chứa danh sách nút cuộn
+    local ContentScroll = Instance.new("ScrollingFrame", GlitchFrame)
+    ContentScroll.Size = UDim2.new(1, -10, 1, -45)
+    ContentScroll.Position = UDim2.new(0, 5, 0, 40)
+    ContentScroll.BackgroundColor3 = Color3.fromRGB(25, 15, 25)
+    ContentScroll.ScrollBarThickness = 3
+    createCorner(ContentScroll, 8)
+    
+    local ListLayout = Instance.new("UIListLayout", ContentScroll)
+    ListLayout.Padding = UDim.new(0, 8)
+    ListLayout.SortOrder = Enum.SortOrder.LayoutOrder
+    
+    ListLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+        ContentScroll.CanvasSize = UDim2.new(0, 0, 0, ListLayout.AbsoluteContentSize.Y + 10)
+    end)
+
+    -- 1. TÍNH NĂNG: SKIN LỖI ĐỔI MÀU LIÊN TỤC
+    local glitchSkinActive = false
+    local skinBtn = Instance.new("TextButton", ContentScroll)
+    skinBtn.Size = UDim2.new(1, -10, 0, 35)
+    skinBtn.BackgroundColor3 = Color3.fromRGB(50, 20, 60)
+    skinBtn.Text = "👾 Bật Glitch Skin (Đổi Màu Cầu Vồng)"
+    skinBtn.TextColor3 = Color3.new(1, 1, 1)
+    skinBtn.Font = Enum.Font.GothamBold
+    skinBtn.TextSize = 11
+    createCorner(skinBtn, 6)
+    
+    skinBtn.MouseButton1Click:Connect(function()
+        glitchSkinActive = not glitchSkinActive
+        if glitchSkinActive then
+            skinBtn.BackgroundColor3 = Color3.fromRGB(180, 0, 180)
+            skinBtn.Text = "👾 Tắt Glitch Skin"
+            task.spawn(function()
+                while glitchSkinActive do
+                    local char = LocalPlayer.Character
+                    if char then
+                        for _, p in pairs(char:GetChildren()) do
+                            if p:IsA("BasePart") then
+                                p.Color = Color3.fromHSV(math.random(), 1, 1)
+                            end
+                        end
+                    end
+                    task.wait(0.05)
+                end
+            end)
+        else
+            skinBtn.BackgroundColor3 = Color3.fromRGB(50, 20, 60)
+            skinBtn.Text = "👾 Bật Glitch Skin (Đổi Màu Cầu Vồng)"
+        end
+    end)
+    
+    -- 2. TÍNH NĂNG: HIỆU ỨNG CHẠY ĐỂ LẠI BÓNG MA (GHOST TRAIL)
+    local glitchTrailActive = false
+    local trailBtn = Instance.new("TextButton", ContentScroll)
+    trailBtn.Size = UDim2.new(1, -10, 0, 35)
+    trailBtn.BackgroundColor3 = Color3.fromRGB(20, 50, 60)
+    trailBtn.Text = "👻 Bật Tạo Bóng Ma Khi Di Chuyển"
+    trailBtn.TextColor3 = Color3.new(1, 1, 1)
+    trailBtn.Font = Enum.Font.GothamBold
+    trailBtn.TextSize = 11
+    createCorner(trailBtn, 6)
+    
+    trailBtn.MouseButton1Click:Connect(function()
+        glitchTrailActive = not glitchTrailActive
+        if glitchTrailActive then
+            trailBtn.BackgroundColor3 = Color3.fromRGB(0, 160, 160)
+            trailBtn.Text = "👻 Tắt Tạo Bóng Ma"
+            task.spawn(function()
+                while glitchTrailActive do
+                    local char = LocalPlayer.Character
+                    local root = char and char:FindFirstChild("HumanoidRootPart")
+                    if root and root.AssemblyLinearVelocity.Magnitude > 2 then
+                        -- Tạo một khối hộp lỗi tại vị trí cũ
+                        local ghost = Instance.new("Part")
+                        ghost.Size = char.Size or Vector3.new(2,2,1)
+                        ghost.CFrame = root.CFrame
+                        ghost.Anchored = true
+                        ghost.CanCollide = false
+                        ghost.Color = Color3.fromRGB(255, 0, 130)
+                        ghost.Material = Enum.Material.Neon
+                        ghost.Transparency = 0.5
+                        ghost.Parent = workspace
+                        
+                        -- Hiệu ứng mờ dần rồi biến mất
+                        TweenService:Create(ghost, TweenInfo.new(0.5), {Transparency = 1}):Play()
+                        game:GetService("Debris"):AddItem(ghost, 0.5)
+                    end
+                    task.wait(0.1)
+                end
+            end)
+        else
+            trailBtn.BackgroundColor3 = Color3.fromRGB(20, 50, 60)
+            trailBtn.Text = "👻 Bật Tạo Bóng Ma Khi Di Chuyển"
+        end
+    end)
+
+    -- 3. TÍNH NĂNG: RUNG LẮC CAMERA (SCREEN SHAKE)
+    local glitchScreenActive = false
+    local shakeBtn = Instance.new("TextButton", ContentScroll)
+    shakeBtn.Size = UDim2.new(1, -10, 0, 35)
+    shakeBtn.BackgroundColor3 = Color3.fromRGB(70, 30, 30)
+    shakeBtn.Text = "🫨 Bật Rung Lắc Màn Hình"
+    shakeBtn.TextColor3 = Color3.new(1, 1, 1)
+    shakeBtn.Font = Enum.Font.GothamBold
+    shakeBtn.TextSize = 11
+    createCorner(shakeBtn, 6)
+    
+    shakeBtn.MouseButton1Click:Connect(function()
+        glitchScreenActive = not glitchScreenActive
+        if glitchScreenActive then
+            shakeBtn.BackgroundColor3 = Color3.fromRGB(200, 0, 0)
+            shakeBtn.Text = "🫨 Tắt Rung Lắc Màn Hình"
+            task.spawn(function()
+                local camera = workspace.CurrentCamera
+                while glitchScreenActive do
+                    local x = math.random(-4, 4) / 10
+                    local y = math.random(-4, 4) / 10
+                    local z = math.random(-4, 4) / 10
+                    camera.CFrame = camera.CFrame * CFrame.new(x, y, z)
+                    task.wait(0.01)
+                end
+            end)
+        else
+            shakeBtn.BackgroundColor3 = Color3.fromRGB(70, 30, 30)
+            shakeBtn.Text = "🫨 Bật Rung Lắc Màn Hình"
+        end
+    end)
+end)
+
 -- CLOSE BUTTON
 local CloseBtn = Instance.new("TextButton", MainFrame)
 CloseBtn.Size = UDim2.new(1, -12, 0, IsMobile and 25 or 35)
