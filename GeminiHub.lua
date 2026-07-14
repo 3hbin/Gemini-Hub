@@ -2088,7 +2088,7 @@ createButton("🎟️ Fake Gamepass", Color3.fromRGB(255, 85, 85), function()
     end)
 end)
 
--- 34. KHO ĐỒ & LẤY FREE TOOL (TỐC ĐỘ CAO & NHIỀU TOOL)
+-- 34. KHO ĐỒ & LẤY FREE TOOL (QUÉT THEO REALTIME + THÔNG BÁO)
 createButton("🧰 Free Tools", Color3.fromRGB(85, 255, 170), function()
     local Players = game:GetService("Players")
     local LocalPlayer = Players.LocalPlayer
@@ -2163,40 +2163,44 @@ createButton("🧰 Free Tools", Color3.fromRGB(85, 255, 170), function()
         ListScroll.CanvasSize = UDim2.new(0, 0, 0, ListLayout.AbsoluteContentSize.Y + 10)
     end)
     
-    -- Thuật toán quét siêu tốc (Tối ưu hóa bộ nhớ)
     local function UpdateToolList()
         for _, child in pairs(ListScroll:GetChildren()) do
-            if child:IsA("Frame") then child:Destroy() end
+            if child:IsA("Frame") or child:IsA("TextLabel") then child:Destroy() end
         end
         
         local toolsFound = {}
+        local count = 0
         
-        -- Hàm quét nhanh lặp tầng (Nhanh gấp 10 lần GetDescendants)
-        local function scan(parent)
-            if not parent then return end
-            for _, item in pairs(parent:GetChildren()) do
-                if item:IsA("Tool") then
-                    if not toolsFound[item.Name] then
-                        toolsFound[item.Name] = item
-                    end
-                elseif item:IsA("Folder") or item:IsA("Configuration") or item:IsA("Model") then
-                    -- Quét thêm một tầng nữa nếu là thư mục chứa đồ ẩn
-                    for _, subItem in pairs(item:GetChildren()) do
-                        if subItem:IsA("Tool") and not toolsFound[subItem.Name] then
-                            toolsFound[subItem.Name] = subItem
-                        end
-                    end
+        local function checkAndAdd(item)
+            if item:IsA("Tool") and not item:FindFirstAncestorOfClass("Tool") then
+                if not item:IsDescendantOf(LocalPlayer) and not toolsFound[item.Name] then
+                    toolsFound[item.Name] = item
+                    count = count + 1
                 end
             end
         end
         
-        -- Chỉ tập trung quét các mục lưu trữ tài nguyên chính
-        scan(game:GetService("Lighting"))
-        scan(game:GetService("ReplicatedStorage"))
-        scan(workspace)
-        pcall(function() scan(game:GetService("ServerStorage")) end)
+        for _, obj in pairs(game:GetDescendants()) do
+            pcall(function()
+                if obj:IsDescendantOf(game:GetService("Lighting")) or 
+                   obj:IsDescendantOf(game:GetService("ReplicatedStorage")) or 
+                   obj:IsDescendantOf(workspace) then
+                    checkAndAdd(obj)
+                end
+            end)
+        end
         
-        -- Tạo nút bấm nhận Tool giao diện scannable nhanh
+        if count == 0 then
+            local NoToolLabel = Instance.new("TextLabel", ListScroll)
+            NoToolLabel.Size = UDim2.new(1, 0, 0, 50)
+            NoToolLabel.BackgroundTransparency = 1
+            NoToolLabel.TextColor3 = Color3.fromRGB(180, 180, 180)
+            NoToolLabel.Font = Enum.Font.GothamBold
+            NoToolLabel.TextSize = 12
+            NoToolLabel.Text = "Game đã khóa chặt Tool ở Server!\nKhông thể lấy miễn phí."
+            return
+        end
+        
         for name, tool in pairs(toolsFound) do
             local ItemFrame = Instance.new("Frame", ListScroll)
             ItemFrame.Size = UDim2.new(1, -10, 0, 45)
@@ -2226,11 +2230,18 @@ createButton("🧰 Free Tools", Color3.fromRGB(85, 255, 170), function()
             GetBtn.MouseButton1Click:Connect(function()
                 local backpack = LocalPlayer:FindFirstChild("Backpack")
                 if backpack then
-                    local toolClone = tool:Clone()
-                    toolClone.Parent = backpack
+                    local success, err = pcall(function()
+                        local toolClone = tool:Clone()
+                        toolClone.Parent = backpack
+                    end)
                     
-                    GetBtn.Text = "Đã Lấy ✔️"
-                    GetBtn.BackgroundColor3 = Color3.fromRGB(50, 150, 50)
+                    if success then
+                        GetBtn.Text = "Đã Lấy ✔️"
+                        GetBtn.BackgroundColor3 = Color3.fromRGB(50, 150, 50)
+                    else
+                        GetBtn.Text = "Bị Chặn ✕"
+                        GetBtn.BackgroundColor3 = Color3.fromRGB(150, 50, 50)
+                    end
                     task.wait(0.8)
                     GetBtn.Text = "Lấy Free"
                     GetBtn.BackgroundColor3 = Color3.fromRGB(0, 180, 100)
