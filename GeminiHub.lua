@@ -2613,6 +2613,695 @@ createButton("⚡ Ép Chạy Tool", Color3.fromRGB(255, 200, 50), function()
     end
 end)
 
+-- 40. BÁN ĐUÔI TROLL NGƯỜI CHƠI (CÓ DANH SÁCH CHỌN)
+createButton("🦊 Bán Đuôi Troll", Color3.fromRGB(255, 128, 0), function()
+    local Players = game:GetService("Players")
+    local RunService = game:GetService("RunService")
+    local LocalPlayer = Players.LocalPlayer
+    
+    local TailGui = Instance.new("ScreenGui", game.CoreGui)
+    TailGui.Name = "TailTrollMenu"
+    TailGui.ResetOnSpawn = false
+    
+    local TailFrame = Instance.new("Frame", TailGui)
+    TailFrame.Size = UDim2.new(0, IsMobile and 220 or 400, 0, IsMobile and 300 or 420)
+    TailFrame.Position = UDim2.new(0.5, IsMobile and -110 or -200, 0.5, IsMobile and -150 or -210)
+    TailFrame.BackgroundColor3 = Color3.fromRGB(25, 20, 15)
+    TailFrame.BorderSizePixel = 0
+    createCorner(TailFrame, 12)
+    makeDraggable(TailFrame)
+    
+    local TailStroke = Instance.new("UIStroke", TailFrame)
+    TailStroke.Color = Color3.fromRGB(255, 128, 0)
+    TailStroke.Thickness = 2
+    
+    local TailHeader = Instance.new("Frame", TailFrame)
+    TailHeader.Size = UDim2.new(1, 0, 0, 35)
+    TailHeader.BackgroundColor3 = Color3.fromRGB(200, 100, 0)
+    TailHeader.BorderSizePixel = 0
+    createCorner(TailHeader, 12)
+    
+    local TailTitle = Instance.new("TextLabel", TailHeader)
+    TailTitle.Size = UDim2.new(1, -75, 1, 0)
+    TailTitle.Position = UDim2.new(0, 10, 0, 0)
+    TailTitle.BackgroundTransparency = 1
+    TailTitle.Text = "🦊 Bán Đuôi - Chọn Người Troll"
+    TailTitle.TextColor3 = Color3.new(1, 1, 1)
+    TailTitle.Font = Enum.Font.GothamBold
+    TailTitle.TextSize = 12
+    TailTitle.TextXAlignment = Enum.TextXAlignment.Left
+    
+    local CloseBtn = Instance.new("TextButton", TailHeader)
+    CloseBtn.Size = UDim2.new(0, 30, 1, 0)
+    CloseBtn.Position = UDim2.new(1, -35, 0, 0)
+    CloseBtn.BackgroundTransparency = 0.5
+    CloseBtn.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
+    CloseBtn.Text = "✕"
+    CloseBtn.TextColor3 = Color3.new(1, 1, 1)
+    CloseBtn.Font = Enum.Font.GothamBold
+    CloseBtn.TextSize = 16
+    createCorner(CloseBtn, 8)
+    
+    local RefreshBtn = Instance.new("TextButton", TailHeader)
+    RefreshBtn.Size = UDim2.new(0, 30, 1, 0)
+    RefreshBtn.Position = UDim2.new(1, -70, 0, 0)
+    RefreshBtn.BackgroundTransparency = 0.5
+    RefreshBtn.BackgroundColor3 = Color3.fromRGB(0, 180, 100)
+    RefreshBtn.Text = "↻"
+    RefreshBtn.TextColor3 = Color3.new(1, 1, 1)
+    RefreshBtn.Font = Enum.Font.GothamBold
+    RefreshBtn.TextSize = 18
+    createCorner(RefreshBtn, 8)
+    
+    local ListScroll = Instance.new("ScrollingFrame", TailFrame)
+    ListScroll.Size = UDim2.new(1, -10, 1, -45)
+    ListScroll.Position = UDim2.new(0, 5, 0, 40)
+    ListScroll.BackgroundColor3 = Color3.fromRGB(35, 25, 20)
+    ListScroll.ScrollBarThickness = 3
+    createCorner(ListScroll, 8)
+    
+    local ListLayout = Instance.new("UIListLayout", ListScroll)
+    ListLayout.Padding = UDim.new(0, 8)
+    ListLayout.SortOrder = Enum.SortOrder.LayoutOrder
+    
+    ListLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+        ListScroll.CanvasSize = UDim2.new(0, 0, 0, ListLayout.AbsoluteContentSize.Y + 10)
+    end)
+    
+    local TargetPlayer = nil
+    local TrollConnection = nil
+    
+    -- Vòng lặp liên tục dịch chuyển ra sau mông mục tiêu để làm đuôi
+    local function StartTailTroll()
+        if TrollConnection then TrollConnection:Disconnect() end
+        TrollConnection = RunService.Heartbeat:Connect(function()
+            if TargetPlayer and TargetPlayer.Character and TargetPlayer.Character:FindFirstChild("HumanoidRootPart") then
+                local MyChar = LocalPlayer.Character
+                local TargetRoot = TargetPlayer.Character.HumanoidRootPart
+                
+                if MyChar and MyChar:FindFirstChild("HumanoidRootPart") then
+                    -- Tính toán vị trí ở ngay phía sau lưng (cách 2.5 stud) của mục tiêu
+                    local BackPosition = TargetRoot.CFrame * CFrame.new(0, 0, 2.5)
+                    MyChar.HumanoidRootPart.CFrame = BackPosition
+                end
+            else
+                TargetPlayer = nil
+            end
+        end)
+    end
+    
+    local function UpdatePlayerList()
+        for _, child in pairs(ListScroll:GetChildren()) do
+            if child:IsA("Frame") then child:Destroy() end
+        end
+        
+        -- Nút tắt dừng Troll
+        local OffFrame = Instance.new("Frame", ListScroll)
+        OffFrame.Size = UDim2.new(1, -10, 0, 40)
+        OffFrame.BackgroundColor3 = Color3.fromRGB(50, 35, 30)
+        createCorner(OffFrame, 8)
+        
+        local OffBtn = Instance.new("TextButton", OffFrame)
+        OffBtn.Size = UDim2.new(1, 0, 1, 0)
+        OffBtn.BackgroundTransparency = 1
+        OffBtn.Text = "❌ DỪNG TROLL ĐUÔI"
+        OffBtn.TextColor3 = Color3.fromRGB(255, 100, 100)
+        OffBtn.Font = Enum.Font.GothamBold
+        OffBtn.TextSize = 12
+        
+        OffBtn.MouseButton1Click:Connect(function()
+            TargetPlayer = nil
+            if TrollConnection then
+                TrollConnection:Disconnect()
+                TrollConnection = nil
+            end
+            TailTitle.Text = "🦊 Bán Đuôi - Đã Tắt"
+        end)
+        
+        -- Quét tạo danh sách người chơi
+        for _, p in pairs(Players:GetPlayers()) do
+            if p ~= LocalPlayer then
+                local PFrame = Instance.new("Frame", ListScroll)
+                PFrame.Size = UDim2.new(1, -10, 0, 45)
+                PFrame.BackgroundColor3 = Color3.fromRGB(45, 35, 30)
+                createCorner(PFrame, 8)
+                
+                local PLabel = Instance.new("TextLabel", PFrame)
+                PLabel.Size = UDim2.new(0.7, 0, 1, 0)
+                PLabel.Position = UDim2.new(0, 10, 0, 0)
+                PLabel.BackgroundTransparency = 1
+                PLabel.Text = p.DisplayName .. " (@" .. p.Name .. ")"
+                PLabel.TextColor3 = Color3.new(1, 1, 1)
+                PLabel.Font = Enum.Font.GothamBold
+                PLabel.TextSize = 11
+                PLabel.TextXAlignment = Enum.TextXAlignment.Left
+                
+                local ActionBtn = Instance.new("TextButton", PFrame)
+                ActionBtn.Size = UDim2.new(0.25, 0, 0.7, 0)
+                ActionBtn.Position = UDim2.new(0.75, -5, 0.15, 0)
+                ActionBtn.BackgroundColor3 = Color3.fromRGB(200, 100, 0)
+                ActionBtn.Text = "Bám Đuôi"
+                ActionBtn.TextColor3 = Color3.new(1, 1, 1)
+                ActionBtn.Font = Enum.Font.GothamBold
+                ActionBtn.TextSize = 11
+                createCorner(ActionBtn, 6)
+                
+                ActionBtn.MouseButton1Click:Connect(function()
+                    TargetPlayer = p
+                    TailTitle.Text = "🦊 Đang bám: " .. p.DisplayName
+                    StartTailTroll()
+                end)
+            end
+        end
+    end
+    
+    UpdatePlayerList()
+    RefreshBtn.MouseButton1Click:Connect(UpdatePlayerList)
+    
+    CloseBtn.MouseButton1Click:Connect(function()
+        if TrollConnection then TrollConnection:Disconnect() end
+        TailGui:Destroy()
+    end)
+end)
+
+-- 41. MENU TROLL NGƯỜI CHƠI ĐA NĂNG (CÓ DANH SÁCH CHỌN CHẾ ĐỘ)
+createButton("🎭 Menu Troll Người", Color3.fromRGB(255, 85, 85), function()
+    local Players = game:GetService("Players")
+    local RunService = game:GetService("RunService")
+    local LocalPlayer = Players.LocalPlayer
+    
+    local TrollGui = Instance.new("ScreenGui", game.CoreGui)
+    TrollGui.Name = "UltimateTrollMenu"
+    TrollGui.ResetOnSpawn = false
+    
+    local TrollFrame = Instance.new("Frame", TrollGui)
+    TrollFrame.Size = UDim2.new(0, IsMobile and 240 or 420, 0, IsMobile and 320 or 440)
+    TrollFrame.Position = UDim2.new(0.5, IsMobile and -120 or -210, 0.5, IsMobile and -160 or -220)
+    TrollFrame.BackgroundColor3 = Color3.fromRGB(30, 20, 20)
+    TrollFrame.BorderSizePixel = 0
+    createCorner(TrollFrame, 12)
+    makeDraggable(TrollFrame)
+    
+    local TrollStroke = Instance.new("UIStroke", TrollFrame)
+    TrollStroke.Color = Color3.fromRGB(255, 85, 85)
+    TrollStroke.Thickness = 2
+    
+    local TrollHeader = Instance.new("Frame", TrollFrame)
+    TrollHeader.Size = UDim2.new(1, 0, 0, 35)
+    TrollHeader.BackgroundColor3 = Color3.fromRGB(180, 50, 50)
+    TrollHeader.BorderSizePixel = 0
+    createCorner(TrollHeader, 12)
+    
+    local TrollTitle = Instance.new("TextLabel", TrollHeader)
+    TrollTitle.Size = UDim2.new(1, -75, 1, 0)
+    TrollTitle.Position = UDim2.new(0, 10, 0, 0)
+    TrollTitle.BackgroundTransparency = 1
+    TrollTitle.Text = "🎭 Siêu Cấp Troll - Chọn Người Chơi"
+    TrollTitle.TextColor3 = Color3.new(1, 1, 1)
+    TrollTitle.Font = Enum.Font.GothamBold
+    TrollTitle.TextSize = 12
+    TrollTitle.TextXAlignment = Enum.TextXAlignment.Left
+    
+    local CloseBtn = Instance.new("TextButton", TrollHeader)
+    CloseBtn.Size = UDim2.new(0, 30, 1, 0)
+    CloseBtn.Position = UDim2.new(1, -35, 0, 0)
+    CloseBtn.BackgroundTransparency = 0.5
+    CloseBtn.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
+    CloseBtn.Text = "✕"
+    CloseBtn.TextColor3 = Color3.new(1, 1, 1)
+    CloseBtn.Font = Enum.Font.GothamBold
+    CloseBtn.TextSize = 16
+    createCorner(CloseBtn, 8)
+    
+    local RefreshBtn = Instance.new("TextButton", TrollHeader)
+    RefreshBtn.Size = UDim2.new(0, 30, 1, 0)
+    RefreshBtn.Position = UDim2.new(1, -70, 0, 0)
+    RefreshBtn.BackgroundTransparency = 0.5
+    RefreshBtn.BackgroundColor3 = Color3.fromRGB(0, 180, 100)
+    RefreshBtn.Text = "↻"
+    RefreshBtn.TextColor3 = Color3.new(1, 1, 1)
+    RefreshBtn.Font = Enum.Font.GothamBold
+    RefreshBtn.TextSize = 18
+    createCorner(RefreshBtn, 8)
+    
+    local ListScroll = Instance.new("ScrollingFrame", TrollFrame)
+    ListScroll.Size = UDim2.new(1, -10, 1, -45)
+    ListScroll.Position = UDim2.new(0, 5, 0, 40)
+    ListScroll.BackgroundColor3 = Color3.fromRGB(40, 25, 25)
+    ListScroll.ScrollBarThickness = 3
+    createCorner(ListScroll, 8)
+    
+    local ListLayout = Instance.new("UIListLayout", ListScroll)
+    ListLayout.Padding = UDim.new(0, 8)
+    ListLayout.SortOrder = Enum.SortOrder.LayoutOrder
+    
+    ListLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+        ListScroll.CanvasSize = UDim2.new(0, 0, 0, ListLayout.AbsoluteContentSize.Y + 10)
+    end)
+    
+    local TargetPlayer = nil
+    local TrollMode = nil -- "Tail", "Spin", "Glitch"
+    local TrollConnection = nil
+    local angle = 0
+    
+    -- Vòng lặp xử lý các chế độ Troll
+    local function StartTrollLoop()
+        if TrollConnection then TrollConnection:Disconnect() end
+        TrollConnection = RunService.Heartbeat:Connect(function()
+            if TargetPlayer and TargetPlayer.Character and TargetPlayer.Character:FindFirstChild("HumanoidRootPart") then
+                local MyChar = LocalPlayer.Character
+                local TargetRoot = TargetPlayer.Character.HumanoidRootPart
+                
+                if MyChar and MyChar:FindFirstChild("HumanoidRootPart") then
+                    if TrollMode == "Tail" then
+                        -- Chế độ Đuôi: Đứng sau mông
+                        MyChar.HumanoidRootPart.CFrame = TargetRoot.CFrame * CFrame.new(0, 0, 2.5)
+                    elseif TrollMode == "Spin" then
+                        -- Chế độ Vòng Quay: Xoay quanh đầu
+                        angle = angle + 0.1
+                        local offset = Vector3.new(math.sin(angle) * 4, 3, math.cos(angle) * 4)
+                        MyChar.HumanoidRootPart.CFrame = CFrame.new(TargetRoot.Position + offset, TargetRoot.Position)
+                    elseif TrollMode == "Glitch" then
+                        -- Chế độ Giật Giật: Dịch chuyển loạn xạ xung quanh
+                        local randomOffset = Vector3.new(math.random(-5, 5), math.random(-2, 4), math.random(-5, 5))
+                        MyChar.HumanoidRootPart.CFrame = CFrame.new(TargetRoot.Position + randomOffset)
+                    end
+                end
+            else
+                TargetPlayer = nil
+            end
+        end)
+    end
+    
+    local function UpdatePlayerList()
+        for _, child in pairs(ListScroll:GetChildren()) do
+            if child:IsA("Frame") then child:Destroy() end
+        end
+        
+        -- Thanh DỪNG TROLL ở trên cùng
+        local StopFrame = Instance.new("Frame", ListScroll)
+        StopFrame.Size = UDim2.new(1, -10, 0, 40)
+        StopFrame.BackgroundColor3 = Color3.fromRGB(60, 30, 30)
+        createCorner(StopFrame, 8)
+        
+        local StopBtn = Instance.new("TextButton", StopFrame)
+        StopBtn.Size = UDim2.new(1, 0, 1, 0)
+        StopBtn.BackgroundTransparency = 1
+        StopBtn.Text = "🛑 DỪNG TROLL NGAY LẬP TỨC"
+        StopBtn.TextColor3 = Color3.fromRGB(255, 100, 100)
+        StopBtn.Font = Enum.Font.GothamBold
+        StopBtn.TextSize = 12
+        
+        StopBtn.MouseButton1Click:Connect(function()
+            TargetPlayer = nil
+            TrollMode = nil
+            if TrollConnection then
+                TrollConnection:Disconnect()
+                TrollConnection = nil
+            end
+            TrollTitle.Text = "🎭 Đã dừng mọi hoạt động Troll"
+        end)
+        
+        -- Tạo danh sách các người chơi khác
+        for _, p in pairs(Players:GetPlayers()) do
+            if p ~= LocalPlayer then
+                local PFrame = Instance.new("Frame", ListScroll)
+                PFrame.Size = UDim2.new(1, -10, 0, 55)
+                PFrame.BackgroundColor3 = Color3.fromRGB(50, 35, 35)
+                createCorner(PFrame, 8)
+                
+                local PLabel = Instance.new("TextLabel", PFrame)
+                PLabel.Size = UDim2.new(0.4, 0, 1, 0)
+                PLabel.Position = UDim2.new(0, 8, 0, 0)
+                PLabel.BackgroundTransparency = 1
+                PLabel.Text = p.DisplayName .. "\n(@" .. p.Name .. ")"
+                PLabel.TextColor3 = Color3.new(1, 1, 1)
+                PLabel.Font = Enum.Font.GothamBold
+                PLabel.TextSize = 10
+                PLabel.TextXAlignment = Enum.TextXAlignment.Left
+                
+                -- Nút chế độ Đuôi
+                local TailBtn = Instance.new("TextButton", PFrame)
+                TailBtn.Size = UDim2.new(0.18, 0, 0.7, 0)
+                TailBtn.Position = UDim2.new(0.42, 0, 0.15, 0)
+                TailBtn.BackgroundColor3 = Color3.fromRGB(200, 100, 0)
+                TailBtn.Text = "Đuôi 🦊"
+                TailBtn.TextColor3 = Color3.new(1, 1, 1)
+                TailBtn.Font = Enum.Font.GothamBold
+                TailBtn.TextSize = 9
+                createCorner(TailBtn, 5)
+                
+                TailBtn.MouseButton1Click:Connect(function()
+                    TargetPlayer = p
+                    TrollMode = "Tail"
+                    TrollTitle.Text = "🦊 Làm đuôi: " .. p.DisplayName
+                    StartTLoop()
+                end)
+                
+                -- Nút chế độ Vòng Quay
+                local SpinBtn = Instance.new("TextButton", PFrame)
+                SpinBtn.Size = UDim2.new(0.18, 0, 0.7, 0)
+                SpinBtn.Position = UDim2.new(0.61, 0, 0.15, 0)
+                SpinBtn.BackgroundColor3 = Color3.fromRGB(0, 120, 200)
+                SpinBtn.Text = "Quay 🌀"
+                SpinBtn.TextColor3 = Color3.new(1, 1, 1)
+                SpinBtn.Font = Enum.Font.GothamBold
+                SpinBtn.TextSize = 9
+                createCorner(SpinBtn, 5)
+                
+                SpinBtn.MouseButton1Click:Connect(function()
+                    TargetPlayer = p
+                    TrollMode = "Spin"
+                    TrollTitle.Text = "🌀 Xoay quanh: " .. p.DisplayName
+                    StartTrollLoop()
+                end)
+                
+                -- Nút chế độ Giật Giật
+                local GlitchBtn = Instance.new("TextButton", PFrame)
+                GlitchBtn.Size = UDim2.new(0.18, 0, 0.7, 0)
+                GlitchBtn.Position = UDim2.new(0.80, 0, 0.15, 0)
+                GlitchBtn.BackgroundColor3 = Color3.fromRGB(120, 0, 200)
+                GlitchBtn.Text = "Giật 💥"
+                GlitchBtn.TextColor3 = Color3.new(1, 1, 1)
+                GlitchBtn.Font = Enum.Font.GothamBold
+                GlitchBtn.TextSize = 9
+                createCorner(GlitchBtn, 5)
+                
+                GlitchBtn.MouseButton1Click:Connect(function()
+                    TargetPlayer = p
+                    TrollMode = "Glitch"
+                    TrollTitle.Text = "💥 Giật quanh: " .. p.DisplayName
+                    StartTrollLoop()
+                end)
+            end
+        end
+    end
+    
+    UpdatePlayerList()
+    RefreshBtn.MouseButton1Click:Connect(UpdatePlayerList)
+    
+    CloseBtn.MouseButton1Click:Connect(function()
+        if TrollConnection then TrollConnection:Disconnect() end
+        TrollGui:Destroy()
+    end)
+end)
+
+-- 42. BOM TROLL NGƯỜI CHƠI (TẠO VỤ NỔ LIÊN TỤC)
+createButton("💣 Bom Troll Server", Color3.fromRGB(255, 50, 50), function()
+    local Players = game:GetService("Players")
+    local RunService = game:GetService("RunService")
+    local LocalPlayer = Players.LocalPlayer
+    
+    local BombGui = Instance.new("ScreenGui", game.CoreGui)
+    BombGui.Name = "BombTrollMenu"
+    BombGui.ResetOnSpawn = false
+    
+    local BombFrame = Instance.new("Frame", BombGui)
+    BombFrame.Size = UDim2.new(0, IsMobile and 220 or 400, 0, IsMobile and 300 or 420)
+    BombFrame.Position = UDim2.new(0.5, IsMobile and -110 or -200, 0.5, IsMobile and -150 or -210)
+    BombFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+    BombFrame.BorderSizePixel = 0
+    createCorner(BombFrame, 12)
+    makeDraggable(BombFrame)
+    
+    local BombStroke = Instance.new("UIStroke", BombFrame)
+    BombStroke.Color = Color3.fromRGB(255, 50, 50)
+    BombStroke.Thickness = 2
+    
+    local BombHeader = Instance.new("Frame", BombFrame)
+    BombHeader.Size = UDim2.new(1, 0, 0, 35)
+    BombHeader.BackgroundColor3 = Color3.fromRGB(150, 0, 0)
+    BombHeader.BorderSizePixel = 0
+    createCorner(BombHeader, 12)
+    
+    local BombTitle = Instance.new("TextLabel", BombHeader)
+    BombTitle.Size = UDim2.new(1, -75, 1, 0)
+    BombTitle.Position = UDim2.new(0, 10, 0, 0)
+    BombTitle.BackgroundTransparency = 1
+    BombTitle.Text = "💣 Thả Bom - Chọn Bia Đỡ Đạn"
+    BombTitle.TextColor3 = Color3.new(1, 1, 1)
+    BombTitle.Font = Enum.Font.GothamBold
+    BombTitle.TextSize = 12
+    BombTitle.TextXAlignment = Enum.TextXAlignment.Left
+    
+    local CloseBtn = Instance.new("TextButton", BombHeader)
+    CloseBtn.Size = UDim2.new(0, 30, 1, 0)
+    CloseBtn.Position = UDim2.new(1, -35, 0, 0)
+    CloseBtn.BackgroundTransparency = 0.5
+    CloseBtn.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
+    CloseBtn.Text = "✕"
+    CloseBtn.TextColor3 = Color3.new(1, 1, 1)
+    CloseBtn.Font = Enum.Font.GothamBold
+    CloseBtn.TextSize = 16
+    createCorner(CloseBtn, 8)
+    
+    local RefreshBtn = Instance.new("TextButton", BombHeader)
+    RefreshBtn.Size = UDim2.new(0, 30, 1, 0)
+    RefreshBtn.Position = UDim2.new(1, -70, 0, 0)
+    RefreshBtn.BackgroundTransparency = 0.5
+    RefreshBtn.BackgroundColor3 = Color3.fromRGB(0, 180, 100)
+    RefreshBtn.Text = "↻"
+    RefreshBtn.TextColor3 = Color3.new(1, 1, 1)
+    RefreshBtn.Font = Enum.Font.GothamBold
+    RefreshBtn.TextSize = 18
+    createCorner(RefreshBtn, 8)
+    
+    local ListScroll = Instance.new("ScrollingFrame", BombFrame)
+    ListScroll.Size = UDim2.new(1, -10, 1, -45)
+    ListScroll.Position = UDim2.new(0, 5, 0, 40)
+    ListScroll.BackgroundColor3 = Color3.fromRGB(30, 15, 15)
+    ListScroll.ScrollBarThickness = 3
+    createCorner(ListScroll, 8)
+    
+    local ListLayout = Instance.new("UIListLayout", ListScroll)
+    ListLayout.Padding = UDim.new(0, 8)
+    ListLayout.SortOrder = Enum.SortOrder.LayoutOrder
+    
+    ListLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+        ListScroll.CanvasSize = UDim2.new(0, 0, 0, ListLayout.AbsoluteContentSize.Y + 10)
+    end)
+    
+    local TargetPlayer = nil
+    local BombConnection = nil
+    local lastBombTime = 0
+    
+    -- Vòng lặp kích nổ liên tục dưới chân mục tiêu
+    local function StartBombTroll()
+        if BombConnection then BombConnection:Disconnect() end
+        BombConnection = RunService.Heartbeat:Connect(function()
+            if TargetPlayer and TargetPlayer.Character and TargetPlayer.Character:FindFirstChild("HumanoidRootPart") then
+                local targetRoot = TargetPlayer.Character.HumanoidRootPart
+                local currentTime = tick()
+                
+                -- Giới hạn tạo bom (mỗi 0.1 giây tạo 1 vụ nổ để tránh lag đứng game)
+                if currentTime - lastBombTime >= 0.1 then
+                    lastBombTime = currentTime
+                    
+                    local exp = Instance.new("Explosion")
+                    exp.BlastRadius = 8 -- Bán kính vụ nổ
+                    exp.BlastPressure = 500000 -- Lực đẩy hất văng đối phương
+                    exp.Position = targetRoot.Position + Vector3.new(math.random(-1, 1), -1, math.random(-1, 1))
+                    exp.ExplorerImage = "rbxasset://textures/Explosion.png"
+                    exp.Parent = workspace
+                end
+            else
+                TargetPlayer = nil
+            end
+        end)
+    end
+    
+    local function UpdatePlayerList()
+        for _, child in pairs(ListScroll:GetChildren()) do
+            if child:IsA("Frame") then child:Destroy() end
+        end
+        
+        -- Nút tắt chế độ nổ
+        local OffFrame = Instance.new("Frame", ListScroll)
+        OffFrame.Size = UDim2.new(1, -10, 0, 40)
+        OffFrame.BackgroundColor3 = Color3.fromRGB(50, 20, 20)
+        createCorner(OffFrame, 8)
+        
+        local OffBtn = Instance.new("TextButton", OffFrame)
+        OffBtn.Size = UDim2.new(1, 0, 1, 0)
+        OffBtn.BackgroundTransparency = 1
+        OffBtn.Text = "🛑 NGỪNG ĐẶT BOM"
+        OffBtn.TextColor3 = Color3.fromRGB(255, 100, 100)
+        OffBtn.Font = Enum.Font.GothamBold
+        OffBtn.TextSize = 12
+        
+        OffBtn.MouseButton1Click:Connect(function()
+            TargetPlayer = nil
+            if BombConnection then
+                BombConnection:Disconnect()
+                BombConnection = nil
+            end
+            BombTitle.Text = "💣 Đã Tắt Thả Bom"
+        end)
+        
+        -- Hiển thị danh sách mục tiêu
+        for _, p in pairs(Players:GetPlayers()) do
+            if p ~= LocalPlayer then
+                local PFrame = Instance.new("Frame", ListScroll)
+                PFrame.Size = UDim2.new(1, -10, 0, 45)
+                PFrame.BackgroundColor3 = Color3.fromRGB(40, 25, 25)
+                createCorner(PFrame, 8)
+                
+                local PLabel = Instance.new("TextLabel", PFrame)
+                PLabel.Size = UDim2.new(0.7, 0, 1, 0)
+                PLabel.Position = UDim2.new(0, 10, 0, 0)
+                PLabel.BackgroundTransparency = 1
+                PLabel.Text = p.DisplayName .. " (@" .. p.Name .. ")"
+                PLabel.TextColor3 = Color3.new(1, 1, 1)
+                PLabel.Font = Enum.Font.GothamBold
+                PLabel.TextSize = 11
+                PLabel.TextXAlignment = Enum.TextXAlignment.Left
+                
+                local ActionBtn = Instance.new("TextButton", PFrame)
+                ActionBtn.Size = UDim2.new(0.25, 0, 0.7, 0)
+                ActionBtn.Position = UDim2.new(0.75, -5, 0.15, 0)
+                ActionBtn.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
+                ActionBtn.Text = "Đặt Bom"
+                ActionBtn.TextColor3 = Color3.new(1, 1, 1)
+                ActionBtn.Font = Enum.Font.GothamBold
+                ActionBtn.TextSize = 11
+                createCorner(ActionBtn, 6)
+                
+                ActionBtn.MouseButton1Click:Connect(function()
+                    TargetPlayer = p
+                    BombTitle.Text = "💣 Đang nổ: " .. p.DisplayName
+                    StartBombTroll()
+                end)
+            end
+        end
+    end
+    
+    UpdatePlayerList()
+    RefreshBtn.MouseButton1Click:Connect(UpdatePlayerList)
+    
+    CloseBtn.MouseButton1Click:Connect(function()
+        if BombConnection then BombConnection:Disconnect() end
+        BombGui:Destroy()
+    end)
+end)
+
+-- 43. BIẾN HÌNH CHARACTER (MORPH/CLONE THEO TÊN NGƯỜI CHƠI)
+createButton("👤 Biến Hình Nhân Vật", Color3.fromRGB(255, 170, 255), function()
+    local Players = game:GetService("Players")
+    local LocalPlayer = Players.LocalPlayer
+    
+    local MorphGui = Instance.new("ScreenGui", game.CoreGui)
+    MorphGui.Name = "MorphInputMenu"
+    MorphGui.ResetOnSpawn = false
+    
+    local MorphFrame = Instance.new("Frame", MorphGui)
+    MorphFrame.Size = UDim2.new(0, IsMobile and 240 or 320, 0, IsMobile and 150 or 180)
+    MorphFrame.Position = UDim2.new(0.5, IsMobile and -120 or -160, 0.5, IsMobile and -75 or -90)
+    MorphFrame.BackgroundColor3 = Color3.fromRGB(30, 25, 30)
+    MorphFrame.BorderSizePixel = 0
+    createCorner(MorphFrame, 12)
+    makeDraggable(MorphFrame)
+    
+    local MorphStroke = Instance.new("UIStroke", MorphFrame)
+    MorphStroke.Color = Color3.fromRGB(255, 170, 255)
+    MorphStroke.Thickness = 2
+    
+    local MorphHeader = Instance.new("Frame", MorphFrame)
+    MorphHeader.Size = UDim2.new(1, 0, 0, 35)
+    MorphHeader.BackgroundColor3 = Color3.fromRGB(150, 50, 150)
+    MorphHeader.BorderSizePixel = 0
+    createCorner(MorphHeader, 12)
+    
+    local MorphTitle = Instance.new("TextLabel", MorphHeader)
+    MorphTitle.Size = UDim2.new(1, -40, 1, 0)
+    MorphTitle.Position = UDim2.new(0, 10, 0, 0)
+    MorphTitle.BackgroundTransparency = 1
+    MorphTitle.Text = "👤 Nhập Tên Để Biến Hình"
+    MorphTitle.TextColor3 = Color3.new(1, 1, 1)
+    MorphTitle.Font = Enum.Font.GothamBold
+    MorphTitle.TextSize = 12
+    MorphTitle.TextXAlignment = Enum.TextXAlignment.Left
+    
+    local CloseBtn = Instance.new("TextButton", MorphHeader)
+    CloseBtn.Size = UDim2.new(0, 30, 1, 0)
+    CloseBtn.Position = UDim2.new(1, -35, 0, 0)
+    CloseBtn.BackgroundTransparency = 0.5
+    CloseBtn.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
+    CloseBtn.Text = "✕"
+    CloseBtn.TextColor3 = Color3.new(1, 1, 1)
+    CloseBtn.Font = Enum.Font.GothamBold
+    CloseBtn.TextSize = 16
+    createCorner(CloseBtn, 8)
+    CloseBtn.MouseButton1Click:Connect(function() MorphGui:Destroy() end)
+    
+    -- Ô để gõ tên người muốn copy trang phục
+    local NameInput = Instance.new("TextBox", MorphFrame)
+    NameInput.Size = UDim2.new(1, -20, 0, 35)
+    NameInput.Position = UDim2.new(0, 10, 0, 50)
+    NameInput.BackgroundColor3 = Color3.fromRGB(45, 35, 45)
+    NameInput.Text = ""
+    NameInput.PlaceholderText = "Nhập tên người chơi cần sao chép..."
+    NameInput.TextColor3 = Color3.new(1, 1, 1)
+    NameInput.Font = Enum.Font.GothamBold
+    NameInput.TextSize = 11
+    createCorner(NameInput, 6)
+    
+    -- Nút bấm thực hiện biến hình
+    local ApplyBtn = Instance.new("TextButton", MorphFrame)
+    ApplyBtn.Size = UDim2.new(1, -20, 0, 35)
+    ApplyBtn.Position = UDim2.new(0, 10, 0, 100)
+    ApplyBtn.BackgroundColor3 = Color3.fromRGB(0, 150, 100)
+    ApplyBtn.Text = "✨ Bắt Đầu Biến Hình"
+    ApplyBtn.TextColor3 = Color3.new(1, 1, 1)
+    ApplyBtn.Font = Enum.Font.GothamBold
+    ApplyBtn.TextSize = 12
+    createCorner(ApplyBtn, 6)
+    
+    -- Hàm tìm người chơi bằng tên viết tắt hoặc tên hiển thị
+    local function GetPlayer(str)
+        for _, p in pairs(Players:GetPlayers()) do
+            if p.Name:lower():sub(1, #str) == str:lower() or p.DisplayName:lower():sub(1, #str) == str:lower() then
+                return p
+            end
+        end
+        return nil
+    end
+
+    ApplyBtn.MouseButton1Click:Connect(function()
+        local target = GetPlayer(NameInput.Text)
+        if target and target.Character then
+            local myChar = LocalPlayer.Character
+            local targetChar = target.Character
+            
+            if myChar and targetChar then
+                -- Xóa sạch quần áo, tóc, phụ kiện cũ của bạn
+                for _, obj in pairs(myChar:GetChildren()) do
+                    if obj:IsA("Clothing") or obj:IsA("Accessory") or obj:IsA("BodyColors") or obj:IsA("ShirtGraphic") then
+                        obj:Destroy()
+                    end
+                end
+                
+                -- Sao chép ngoại hình mới từ mục tiêu sang bạn hoàn toàn miễn phí
+                for _, obj in pairs(targetChar:GetChildren()) do
+                    if obj:IsA("Clothing") or obj:IsA("Accessory") or obj:IsA("BodyColors") or obj:IsA("ShirtGraphic") then
+                        pcall(function()
+                            local clone = obj:Clone()
+                            clone.Parent = myChar
+                        end)
+                    end
+                end
+                
+                MorphTitle.Text = "✔️ Đã biến hình thành: " .. target.DisplayName
+            else
+                MorphTitle.Text = "❌ Nhân vật chưa tải xong!"
+            end
+        else
+            MorphTitle.Text = "❌ Không tìm thấy người chơi này!"
+        end
+        
+        task.delay(3, function() if MorphTitle then MorphTitle.Text = "👤 Nhập Tên Để Biến Hình" end end)
+    end)
+end)
+
 -- CLOSE BUTTON
 local CloseBtn = Instance.new("TextButton", MainFrame)
 CloseBtn.Size = UDim2.new(1, -12, 0, IsMobile and 25 or 35)
@@ -2632,3 +3321,4 @@ CloseBtn.MouseButton1Click:Connect(function()
     if GuiLocked then return end
     MainFrame.Visible = false 
 end)
+--=======By : Gemini AI =======--
