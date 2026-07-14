@@ -3184,44 +3184,44 @@ createButton("💣 Bom Troll Server", Color3.fromRGB(255, 50, 50), function()
     end)
 end)
 
--- 43. BIẾN HÌNH CHARACTER (MORPH/CLONE THEO TÊN NGƯỜI CHƠI)
-createButton("👤 Biến Hình Nhân Vật", Color3.fromRGB(255, 170, 255), function()
+-- 43. BIẾN HÌNH TỰ DO (GÕ CHỮ BẤT KỲ - TỰ ĐỘNG TẠO ĐỒ + TAG CHỮ TRÊN ĐẦU)
+createButton("👤 Biến Hình Tự Do", Color3.fromRGB(170, 255, 255), function()
     local Players = game:GetService("Players")
     local LocalPlayer = Players.LocalPlayer
     
-    local MorphGui = Instance.new("ScreenGui", game.CoreGui)
-    MorphGui.Name = "MorphInputMenu"
-    MorphGui.ResetOnSpawn = false
+    local FreeGui = Instance.new("ScreenGui", game.CoreGui)
+    FreeGui.Name = "FreeMorphMenu"
+    FreeGui.ResetOnSpawn = false
     
-    local MorphFrame = Instance.new("Frame", MorphGui)
-    MorphFrame.Size = UDim2.new(0, IsMobile and 240 or 320, 0, IsMobile and 150 or 180)
-    MorphFrame.Position = UDim2.new(0.5, IsMobile and -120 or -160, 0.5, IsMobile and -75 or -90)
-    MorphFrame.BackgroundColor3 = Color3.fromRGB(30, 25, 30)
-    MorphFrame.BorderSizePixel = 0
-    createCorner(MorphFrame, 12)
-    makeDraggable(MorphFrame)
+    local FreeFrame = Instance.new("Frame", FreeGui)
+    FreeFrame.Size = UDim2.new(0, IsMobile and 240 or 320, 0, IsMobile and 150 or 180)
+    FreeFrame.Position = UDim2.new(0.5, IsMobile and -120 or -160, 0.5, IsMobile and -75 or -90)
+    FreeFrame.BackgroundColor3 = Color3.fromRGB(20, 30, 30)
+    FreeFrame.BorderSizePixel = 0
+    createCorner(FreeFrame, 12)
+    makeDraggable(FreeFrame)
     
-    local MorphStroke = Instance.new("UIStroke", MorphFrame)
-    MorphStroke.Color = Color3.fromRGB(255, 170, 255)
-    MorphStroke.Thickness = 2
+    local FreeStroke = Instance.new("UIStroke", FreeFrame)
+    FreeStroke.Color = Color3.fromRGB(85, 255, 255)
+    FreeStroke.Thickness = 2
     
-    local MorphHeader = Instance.new("Frame", MorphFrame)
-    MorphHeader.Size = UDim2.new(1, 0, 0, 35)
-    MorphHeader.BackgroundColor3 = Color3.fromRGB(150, 50, 150)
-    MorphHeader.BorderSizePixel = 0
-    createCorner(MorphHeader, 12)
+    local FreeHeader = Instance.new("Frame", FreeFrame)
+    FreeHeader.Size = UDim2.new(1, 0, 0, 35)
+    FreeHeader.BackgroundColor3 = Color3.fromRGB(0, 150, 150)
+    FreeHeader.BorderSizePixel = 0
+    createCorner(FreeHeader, 12)
     
-    local MorphTitle = Instance.new("TextLabel", MorphHeader)
-    MorphTitle.Size = UDim2.new(1, -40, 1, 0)
-    MorphTitle.Position = UDim2.new(0, 10, 0, 0)
-    MorphTitle.BackgroundTransparency = 1
-    MorphTitle.Text = "👤 Nhập Tên Để Biến Hình"
-    MorphTitle.TextColor3 = Color3.new(1, 1, 1)
-    MorphTitle.Font = Enum.Font.GothamBold
-    MorphTitle.TextSize = 12
-    MorphTitle.TextXAlignment = Enum.TextXAlignment.Left
+    local FreeTitle = Instance.new("TextLabel", FreeHeader)
+    FreeTitle.Size = UDim2.new(1, -40, 1, 0)
+    FreeTitle.Position = UDim2.new(0, 10, 0, 0)
+    FreeTitle.BackgroundTransparency = 1
+    FreeTitle.Text = "👤 Nhập Chữ Bất Kỳ Để Biến Hình"
+    FreeTitle.TextColor3 = Color3.new(1, 1, 1)
+    FreeTitle.Font = Enum.Font.GothamBold
+    FreeTitle.TextSize = 12
+    FreeTitle.TextXAlignment = Enum.TextXAlignment.Left
     
-    local CloseBtn = Instance.new("TextButton", MorphHeader)
+    local CloseBtn = Instance.new("TextButton", FreeHeader)
     CloseBtn.Size = UDim2.new(0, 30, 1, 0)
     CloseBtn.Position = UDim2.new(1, -35, 0, 0)
     CloseBtn.BackgroundTransparency = 0.5
@@ -3231,74 +3231,279 @@ createButton("👤 Biến Hình Nhân Vật", Color3.fromRGB(255, 170, 255), fun
     CloseBtn.Font = Enum.Font.GothamBold
     CloseBtn.TextSize = 16
     createCorner(CloseBtn, 8)
-    CloseBtn.MouseButton1Click:Connect(function() MorphGui:Destroy() end)
+    CloseBtn.MouseButton1Click:Connect(function() FreeGui:Destroy() end)
     
-    -- Ô để gõ tên người muốn copy trang phục
-    local NameInput = Instance.new("TextBox", MorphFrame)
+    local NameInput = Instance.new("TextBox", FreeFrame)
     NameInput.Size = UDim2.new(1, -20, 0, 35)
     NameInput.Position = UDim2.new(0, 10, 0, 50)
-    NameInput.BackgroundColor3 = Color3.fromRGB(45, 35, 45)
+    NameInput.BackgroundColor3 = Color3.fromRGB(30, 45, 45)
     NameInput.Text = ""
-    NameInput.PlaceholderText = "Nhập tên người chơi cần sao chép..."
+    NameInput.PlaceholderText = "Gõ bất kỳ chữ gì (Ví dụ: ADMIN, VIP...)"
     NameInput.TextColor3 = Color3.new(1, 1, 1)
     NameInput.Font = Enum.Font.GothamBold
     NameInput.TextSize = 11
     createCorner(NameInput, 6)
     
-    -- Nút bấm thực hiện biến hình
-    local ApplyBtn = Instance.new("TextButton", MorphFrame)
+    local ApplyBtn = Instance.new("TextButton", FreeFrame)
     ApplyBtn.Size = UDim2.new(1, -20, 0, 35)
     ApplyBtn.Position = UDim2.new(0, 10, 0, 100)
-    ApplyBtn.BackgroundColor3 = Color3.fromRGB(0, 150, 100)
-    ApplyBtn.Text = "✨ Bắt Đầu Biến Hình"
+    ApplyBtn.BackgroundColor3 = Color3.fromRGB(0, 150, 120)
+    ApplyBtn.Text = "✨ Biến Hình Lập Tức"
     ApplyBtn.TextColor3 = Color3.new(1, 1, 1)
     ApplyBtn.Font = Enum.Font.GothamBold
     ApplyBtn.TextSize = 12
     createCorner(ApplyBtn, 6)
-    
-    -- Hàm tìm người chơi bằng tên viết tắt hoặc tên hiển thị
-    local function GetPlayer(str)
-        for _, p in pairs(Players:GetPlayers()) do
-            if p.Name:lower():sub(1, #str) == str:lower() or p.DisplayName:lower():sub(1, #str) == str:lower() then
-                return p
-            end
+
+    -- Hàm chuyển đổi chuỗi chữ bất kỳ thành 1 con số ID ngẫu nhiên nhưng cố định
+    local function stringToId(str)
+        local num = 0
+        for i = 1, #str do
+            num = num + str:byte(i) * i
         end
-        return nil
+        math.randomseed(num)
+        return math.random(100000, 5000000000) -- Tạo ID ngẫu nhiên trong khoảng tài khoản thật
     end
 
     ApplyBtn.MouseButton1Click:Connect(function()
-        local target = GetPlayer(NameInput.Text)
-        if target and target.Character then
+        local text = NameInput.Text
+        if text == "" then return end
+        
+        ApplyBtn.Text = "⏳ Đang ảo hóa trang phục..."
+        
+        task.spawn(function()
+            local targetId = stringToId(text)
             local myChar = LocalPlayer.Character
-            local targetChar = target.Character
+            local humanoid = myChar and myChar:FindFirstChildOfClass("Humanoid")
+            local head = myChar and myChar:FindFirstChild("Head")
             
-            if myChar and targetChar then
-                -- Xóa sạch quần áo, tóc, phụ kiện cũ của bạn
-                for _, obj in pairs(myChar:GetChildren()) do
-                    if obj:IsA("Clothing") or obj:IsA("Accessory") or obj:IsA("BodyColors") or obj:IsA("ShirtGraphic") then
-                        obj:Destroy()
+            if humanoid and head then
+                -- 1. Tiến hành tải và thay đổi trang phục dựa trên ID ảo hóa từ chữ bạn gõ
+                local morphSuccess, humanoidDesc = pcall(function()
+                    return Players:GetHumanoidDescriptionFromUserId(targetId)
+                end)
+                
+                if morphSuccess and humanoidDesc then
+                    for _, item in pairs(myChar:GetChildren()) do
+                        if item:IsA("Accessory") or item:IsA("Clothing") then item:Destroy() end
                     end
+                    pcall(function() humanoid:ApplyDescription(humanoidDesc) end)
                 end
                 
-                -- Sao chép ngoại hình mới từ mục tiêu sang bạn hoàn toàn miễn phí
-                for _, obj in pairs(targetChar:GetChildren()) do
-                    if obj:IsA("Clothing") or obj:IsA("Accessory") or obj:IsA("BodyColors") or obj:IsA("ShirtGraphic") then
-                        pcall(function()
-                            local clone = obj:Clone()
-                            clone.Parent = myChar
+                -- 2. Tạo Tag chữ (Danh hiệu) bay trên đầu hiển thị đúng chữ bạn gõ
+                if head:FindFirstChild("FreeMorphTag") then head.FreeMorphTag:Destroy() end
+                
+                local billboard = Instance.new("BillboardGui")
+                billboard.Name = "FreeMorphTag"
+                billboard.Size = UDim2.new(0, 200, 0, 50)
+                billboard.StudsOffset = Vector3.new(0, 3.5, 0) -- Độ cao trên đầu
+                billboard.AlwaysOnTop = true
+                
+                local label = Instance.new("TextLabel", billboard)
+                label.Size = UDim2.new(1, 0, 1, 0)
+                label.BackgroundTransparency = 1
+                label.Text = "[" .. text:upper() .. "]"
+                label.TextColor3 = Color3.fromRGB(255, 255, 85) -- Màu vàng rực rỡ giống Admin
+                label.Font = Enum.Font.GothamBold
+                label.TextSize = 14
+                
+                -- Tạo viền chữ cho đẹp
+                local stroke = Instance.new("UIStroke", label)
+                stroke.Color = Color3.new(0, 0, 0)
+                stroke.Thickness = 2
+                
+                billboard.Parent = head
+                FreeTitle.Text = "✔️ Đã hóa thân thành: " .. text
+            else
+                FreeTitle.Text = "❌ Lỗi: Không tìm thấy nhân vật!"
+            end
+            
+            ApplyBtn.Text = "✨ Biến Hình Lập Tức"
+            task.wait(3)
+            if FreeTitle then FreeTitle.Text = "👤 Nhập Chữ Bất Kỳ Để Biến Hình" end
+        end)
+    end)
+end)
+
+-- 44. BẢNG TÌM KIẾM GAME TỰ ĐỘNG TOÀN ROBLOX (TỰ QUÉT TÊN, ID, ẢNH)
+createButton("🔍 Tìm & Chơi Game", Color3.fromRGB(170, 85, 255), function()
+    local TeleportService = game:GetService("TeleportService")
+    local HttpService = game:GetService("HttpService")
+    local Players = game:GetService("Players")
+    local LocalPlayer = Players.LocalPlayer
+    
+    local SearchGui = Instance.new("ScreenGui", game.CoreGui)
+    SearchGui.Name = "AutoGameSearchMenu"
+    SearchGui.ResetOnSpawn = false
+    
+    local SearchFrame = Instance.new("Frame", SearchGui)
+    SearchFrame.Size = UDim2.new(0, IsMobile and 260 or 420, 0, IsMobile and 340 or 450)
+    SearchFrame.Position = UDim2.new(0.5, IsMobile and -130 or -210, 0.5, IsMobile and -170 or -225)
+    SearchFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 25)
+    SearchFrame.BorderSizePixel = 0
+    createCorner(SearchFrame, 12)
+    makeDraggable(SearchFrame)
+    
+    local SearchStroke = Instance.new("UIStroke", SearchFrame)
+    SearchStroke.Color = Color3.fromRGB(170, 85, 255)
+    SearchStroke.Thickness = 2
+    
+    -- Thanh tiêu đề
+    local Header = Instance.new("Frame", SearchFrame)
+    Header.Size = UDim2.new(1, 0, 0, 35)
+    Header.BackgroundColor3 = Color3.fromRGB(90, 40, 150)
+    Header.BorderSizePixel = 0
+    createCorner(Header, 12)
+    
+    local Title = Instance.new("TextLabel", Header)
+    Title.Size = UDim2.new(1, -40, 1, 0)
+    Title.Position = UDim2.new(0, 10, 0, 0)
+    Title.BackgroundTransparency = 1
+    Title.Text = "🔍 Tự Động Tìm Kiếm Game Toàn Roblox"
+    Title.TextColor3 = Color3.new(1, 1, 1)
+    Title.Font = Enum.Font.GothamBold
+    Title.TextSize = 12
+    Title.TextXAlignment = Enum.TextXAlignment.Left
+    
+    local CloseBtn = Instance.new("TextButton", Header)
+    CloseBtn.Size = UDim2.new(0, 30, 1, 0)
+    CloseBtn.Position = UDim2.new(1, -35, 0, 0)
+    CloseBtn.BackgroundTransparency = 0.5
+    CloseBtn.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
+    CloseBtn.Text = "✕"
+    CloseBtn.TextColor3 = Color3.new(1, 1, 1)
+    CloseBtn.Font = Enum.Font.GothamBold
+    CloseBtn.TextSize = 16
+    createCorner(CloseBtn, 8)
+    CloseBtn.MouseButton1Click:Connect(function() SearchGui:Destroy() end)
+    
+    -- Ô gõ tên game để tìm kiếm
+    local SearchInput = Instance.new("TextBox", SearchFrame)
+    SearchInput.Size = UDim2.new(1, -95, 0, 35)
+    SearchInput.Position = UDim2.new(0, 10, 0, 45)
+    SearchInput.BackgroundColor3 = Color3.fromRGB(35, 35, 45)
+    SearchInput.Text = ""
+    SearchInput.PlaceholderText = "Nhập tên game cần tìm vào đây..."
+    SearchInput.TextColor3 = Color3.new(1, 1, 1)
+    SearchInput.Font = Enum.Font.GothamBold
+    SearchInput.TextSize = 11
+    createCorner(SearchInput, 6)
+    
+    -- Nút bấm thực hiện tìm kiếm
+    local SearchBtn = Instance.new("TextButton", SearchFrame)
+    SearchBtn.Size = UDim2.new(0, 75, 0, 35)
+    SearchBtn.Position = UDim2.new(1, -85, 0, 45)
+    SearchBtn.BackgroundColor3 = Color3.fromRGB(0, 150, 100)
+    SearchBtn.Text = "TÌM KIẾM"
+    SearchBtn.TextColor3 = Color3.new(1, 1, 1)
+    SearchBtn.Font = Enum.Font.GothamBold
+    SearchBtn.TextSize = 11
+    createCorner(SearchBtn, 6)
+    
+    -- Vùng cuộn hiển thị kết quả tìm được
+    local ResultScroll = Instance.new("ScrollingFrame", SearchFrame)
+    ResultScroll.Size = UDim2.new(1, -20, 1, -95)
+    ResultScroll.Position = UDim2.new(0, 10, 0, 90)
+    ResultScroll.BackgroundColor3 = Color3.fromRGB(15, 15, 20)
+    ResultScroll.ScrollBarThickness = 4
+    createCorner(ResultScroll, 8)
+    
+    local ListLayout = Instance.new("UIListLayout", ResultScroll)
+    ListLayout.Padding = UDim.new(0, 8)
+    ListLayout.SortOrder = Enum.SortOrder.LayoutOrder
+    
+    ListLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+        ResultScroll.CanvasSize = UDim2.new(0, 0, 0, ListLayout.AbsoluteContentSize.Y + 10)
+    end)
+    
+    -- Hàm xóa danh sách cũ khi tìm từ khóa mới
+    local function clearResults()
+        for _, child in pairs(ResultScroll:GetChildren()) do
+            if child:IsA("Frame") then child:Destroy() end
+        end
+    end
+    
+    -- Xử lý nút tìm kiếm tự động
+    SearchBtn.MouseButton1Click:Connect(function()
+        local keyword = SearchInput.Text
+        if keyword == "" then return end
+        
+        SearchBtn.Text = "⏳ Đang quét..."
+        SearchBtn.BackgroundColor3 = Color3.fromRGB(150, 120, 50)
+        clearResults()
+        
+        task.spawn(function()
+            -- Sử dụng RoProxy an toàn để quét dữ liệu vũ trụ game của Roblox
+            local url = "https://games.roproxy.com/v1/games/list?model.keyword=" .. HttpService:UrlEncode(keyword) .. "&model.maxRows=10"
+            local success, response = pcall(function()
+                return game:HttpGet(url)
+            end)
+            
+            if success and response then
+                local data = HttpService:JSONDecode(response)
+                if data and data.games and #data.games > 0 then
+                    for i, gameData in pairs(data.games) do
+                        local placeId = gameData.placeId
+                        local gameName = gameData.name
+                        local creator = gameData.creatorName or "Unknown"
+                        local playerCount = gameData.playerCount or 0
+                        
+                        -- Tạo thẻ game
+                        local Card = Instance.new("Frame", ResultScroll)
+                        Card.Size = UDim2.new(1, -10, 0, 65)
+                        Card.BackgroundColor3 = Color3.fromRGB(35, 30, 45)
+                        createCorner(Card, 8)
+                        
+                        -- Tự động lấy ảnh của game từ hệ thống bằng PlaceID vừa tìm được
+                        local GameImg = Instance.new("ImageLabel", Card)
+                        GameImg.Size = UDim2.new(0, 55, 0, 55)
+                        GameImg.Position = UDim2.new(0, 5, 0, 5)
+                        GameImg.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+                        GameImg.Image = "rbxthumb://type=Asset&id=" .. placeId .. "&w=150&h=150"
+                        createCorner(GameImg, 6)
+                        
+                        -- Thông tin Game
+                        local InfoLabel = Instance.new("TextLabel", Card)
+                        InfoLabel.Size = UDim2.new(0.6, -5, 1, -10)
+                        InfoLabel.Position = UDim2.new(0, 68, 0, 5)
+                        InfoLabel.BackgroundTransparency = 1
+                        InfoLabel.Text = "<b>" .. gameName .. "</b>\n<font color='rgb(160,160,160)'>Bởi: " .. creator .. "</font>\n<font color='rgb(85,255,120)'>👥 " .. playerCount .. " đang chơi</font>"
+                        InfoLabel.TextColor3 = Color3.new(1, 1, 1)
+                        InfoLabel.Font = Enum.Font.Gotham
+                        InfoLabel.TextSize = 10
+                        InfoLabel.RichText = true
+                        InfoLabel.TextXAlignment = Enum.TextXAlignment.Left
+                        InfoLabel.TextYAlignment = Enum.TextYAlignment.Top
+                        
+                        -- Nút bấm dịch chuyển vào game
+                        local PlayBtn = Instance.new("TextButton", Card)
+                        PlayBtn.Size = UDim2.new(0, IsMobile and 55 or 70, 0, 32)
+                        PlayBtn.Position = UDim2.new(1, IsMobile and -60 or -75, 0.5, -16)
+                        PlayBtn.BackgroundColor3 = Color3.fromRGB(0, 160, 100)
+                        PlayBtn.Text = "VÀO CHƠI"
+                        PlayBtn.TextColor3 = Color3.new(1, 1, 1)
+                        PlayBtn.Font = Enum.Font.GothamBold
+                        PlayBtn.TextSize = IsMobile and 9 or 10
+                        createCorner(PlayBtn, 6)
+                        
+                        PlayBtn.MouseButton1Click:Connect(function()
+                            PlayBtn.Text = "⏳ Đi..."
+                            pcall(function()
+                                TeleportService:Teleport(placeId, LocalPlayer)
+                            end)
                         end)
                     end
+                else
+                    Title.Text = "❌ Không tìm thấy game nào phù hợp!"
                 end
-                
-                MorphTitle.Text = "✔️ Đã biến hình thành: " .. target.DisplayName
             else
-                MorphTitle.Text = "❌ Nhân vật chưa tải xong!"
+                Title.Text = "❌ Lỗi kết nối hệ thống tìm kiếm!"
             end
-        else
-            MorphTitle.Text = "❌ Không tìm thấy người chơi này!"
-        end
-        
-        task.delay(3, function() if MorphTitle then MorphTitle.Text = "👤 Nhập Tên Để Biến Hình" end end)
+            
+            SearchBtn.Text = "TÌM KIẾM"
+            SearchBtn.BackgroundColor3 = Color3.fromRGB(0, 150, 100)
+            task.wait(3)
+            if Title then Title.Text = "🔍 Tự Động Tìm Kiếm Game Toàn Roblox" end
+        end)
     end)
 end)
 
