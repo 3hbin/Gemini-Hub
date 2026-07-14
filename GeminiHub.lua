@@ -2364,6 +2364,121 @@ createButton("🎯 Aimbot Player", Color3.fromRGB(255, 50, 50), function()
     end)
 end)
 
+-- 36. GỠ CHỐNG HD ADMIN & FREE ADMIN
+createButton("🔓 Bypasser Admin", Color3.fromRGB(240, 165, 0), function()
+    local StarterGui = game:GetService("StarterGui")
+    
+    -- Hàm gửi thông báo hệ thống lên góc màn hình để theo dõi trạng thái
+    local function notify(title, text)
+        pcall(function()
+            StarterGui:SetCore("SendNotification", {
+                Title = title,
+                Text = text,
+                Duration = 3
+            })
+        end)
+    end
+
+    notify("Bypasser", "Đang tiến hành gỡ bỏ kiểm tra...")
+
+    -- 1. GỠ CHỐNG HD ADMIN (Bypass HD Admin Client Checks)
+    task.spawn(function()
+        -- Chèn các hàm giả lập để đánh lừa script HD Admin quét môi trường
+        if getgenv then
+            getgenv().HDAdminBypass = true
+            
+            -- Vô hiệu hóa một số hàm callback nhạy cảm mà HD Admin dùng để kick người chơi khi phát hiện cheater
+            local oldKick
+            oldKick = hookfunction(game.Players.LocalPlayer.Kick, function(self, reason)
+                if reason and (string.find(string.lower(reason), "hd") or string.find(string.lower(reason), "admin")) then
+                    notify("HD Admin Shield", "Đã chặn một yêu cầu Kick từ hệ thống Admin!")
+                    return nil
+                end
+                return oldKick(self, reason)
+            end)
+        end
+    end)
+
+    -- 2. GỠ CHỐNG FREE ADMIN (Bypass Free Admin / Kohl's Admin Protections)
+    task.spawn(function()
+        -- Quét và loại bỏ các LocalScript ẩn thực hiện nhiệm vụ bảo mật chống exploit của Free Admin trong nhân vật
+        local char = game.Players.LocalPlayer.Character
+        if char then
+            for _, v in pairs(char:GetDescendants()) do
+                if v:IsA("LocalScript") and (string.find(string.lower(v.Name), "anti") or string.find(string.lower(v.Name), "protect")) then
+                    v.Disabled = true
+                    notify("Free Admin Shield", "Đã vô hiệu hóa script bảo vệ: " .. v.Name)
+                end
+            end
+        end
+    end)
+
+    -- 3. CAN THIỆP PHÁT HIỆN SỰ KIỆN TỪ PHÍA CLIENT (RemoteEvent Bypasser)
+    local g = game
+    local pcall = pcall
+    local oldNamecall
+    if hookmetamethod then
+        oldNamecall = hookmetamethod(game, "__namecall", function(self, ...)
+            local method = getnamecallmethod()
+            local args = {...}
+            
+            -- Nếu script hệ thống của Admin gọi các Remote nhằm kiểm tra hành vi (Check/Ban/Kick)
+            if tostring(method) == "FireServer" and self.Name == "AdminRemote" or self.Name == "HDAdminRemote" then
+                -- Chặn gói tin gửi về server hoặc lọc tham số độc hại để tránh bị ban tự động
+                if args[1] == "BanMe" or args[1] == "KickMe" or args[1] == "CheatDetected" then
+                    return nil
+                end
+            end
+            return oldNamecall(self, ...)
+        end)
+    end
+
+    notify("Thành Công", "Đã hoàn tất gỡ chống HD & Free Admin!")
+end)
+
+-- 13. TẢI LẠI NHÂN VẬT (FIX KẸT / FIX ICE KHÔNG HỒI SINH ĐƯỢC)
+createButton("♻️ Tải Lại Nhân Vật", Color3.fromRGB(85, 170, 255), function()
+    local Players = game:GetService("Players")
+    local LocalPlayer = Players.LocalPlayer
+    
+    -- Cách 1: Xóa Character cũ để buộc game kích hoạt Spawn lại nhân vật mới
+    if LocalPlayer.Character then
+        LocalPlayer.Character:ClearAllChildren()
+        LocalPlayer.Character:Destroy()
+    end
+    
+    -- Cách 2: Khởi tạo lại một Model trống để kích hoạt lại cơ chế hồi sinh của hệ thống
+    task.spawn(function()
+        local NewChar = Instance.new("Model")
+        NewChar.Name = "Resetting"
+        LocalPlayer.Character = NewChar
+        NewChar.Parent = workspace
+        task.wait(0.1)
+        NewChar:Destroy()
+    end)
+    
+    -- Cách 3: Gọi lệnh hồi sinh nếu game sử dụng cấu trúc chuẩn
+    pcall(function()
+        LocalPlayer:LoadCharacter()
+    end)
+end)
+
+-- 14. REJOIN (VÀO LẠI PHÒNG GAME HIỆN TẠI)
+createButton("🔄 Vào Lại Game", Color3.fromRGB(255, 85, 255), function()
+    local TeleportService = game:GetService("TeleportService")
+    local Players = game:GetService("Players")
+    local LocalPlayer = Players.LocalPlayer
+    
+    -- Thực hiện dịch chuyển chính bạn vào lại Server ID hiện tại
+    if #Players:GetPlayers() <= 1 then
+        -- Nếu phòng chỉ có 1 mình bạn, tự động Rejoin vào server mới cùng map
+        TeleportService:Teleport(game.PlaceId, LocalPlayer)
+    else
+        -- Nếu phòng có nhiều người, Rejoin chuẩn xác vào đúng ID server đang chơi
+        TeleportService:TeleportToPlaceInstance(game.PlaceId, game.JobId, LocalPlayer)
+    end
+end)
+
 -- CLOSE BUTTON
 local CloseBtn = Instance.new("TextButton", MainFrame)
 CloseBtn.Size = UDim2.new(1, -12, 0, IsMobile and 25 or 35)
