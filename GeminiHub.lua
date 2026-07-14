@@ -1697,6 +1697,10 @@ end)
 
 -- 30. DANH SÁCH MUA GAMEPASS
 createButton("🎟️ Mua Gamepass", Color3.fromRGB(255, 170, 0), function()
+    -- Khai báo bổ sung các Service cần thiết để tránh lỗi bị trống bảng
+    local HttpService = game:GetService("HttpService")
+    local MarketplaceService = game:GetService("MarketplaceService")
+    
     local GpGui = Instance.new("ScreenGui", game.CoreGui)
     GpGui.Name = "GamepassBrowser"
     GpGui.ResetOnSpawn = false
@@ -1780,7 +1784,17 @@ createButton("🎟️ Mua Gamepass", Color3.fromRGB(255, 170, 0), function()
             if not success then return end
             
             local data = HttpService:JSONDecode(rawData)
-            if not data or not data.data then return end
+            if not data or not data.data or #data.data == 0 then 
+                -- Hiển thị thông báo nếu game không có gamepass nào
+                local NoGpLabel = Instance.new("TextLabel", ListScroll)
+                NoGpLabel.Size = UDim2.new(1, 0, 0, 50)
+                NoGpLabel.BackgroundTransparency = 1
+                NoGpLabel.TextColor3 = Color3.fromRGB(150, 150, 150)
+                NoGpLabel.Font = Enum.Font.GothamBold
+                NoGpLabel.TextSize = 12
+                NoGpLabel.Text = "Game này không có Gamepass nào!"
+                return 
+            end
             
             for i, gp in ipairs(data.data) do
                 local ItemFrame = Instance.new("Frame", ListScroll)
@@ -1829,7 +1843,7 @@ createButton("🎟️ Mua Gamepass", Color3.fromRGB(255, 170, 0), function()
                 createCorner(BuyBtn, 6)
                 
                 BuyBtn.MouseButton1Click:Connect(function()
-                    game:GetService("MarketplaceService"):PromptGamePassPurchase(game.Players.LocalPlayer, gp.id)
+                    MarketplaceService:PromptGamePassPurchase(game.Players.LocalPlayer, gp.id)
                 end)
             end
         end)
@@ -1840,6 +1854,26 @@ createButton("🎟️ Mua Gamepass", Color3.fromRGB(255, 170, 0), function()
     RefreshGp.MouseButton1Click:Connect(function()
         LoadGamepasses()
     end)
+end)
+
+-- 31.NÚT CHỐNG BỊ TÁT / VĂNG (ĐỂ RIÊNG)
+createToggle("🛡️ Khóa Nhân Vật (Anti-Slap)", function(state)
+    local char = LocalPlayer.Character
+    if char then
+        local HRP = char:FindFirstChild("HumanoidRootPart")
+        if HRP then
+            -- Khóa cứng vị trí vật lý để không bị tác động lực làm văng đi
+            HRP.Anchored = state
+        end
+        
+        -- Chặn các lực kéo/đẩy vật lý bất ngờ từ bên ngoài tác động lên các bộ phận khác
+        for _, part in pairs(char:GetDescendants()) do
+            if part:IsA("BasePart") then
+                part.Velocity = Vector3.new(0, 0, 0)
+                part.RotVelocity = Vector3.new(0, 0, 0)
+            end
+        end
+    end
 end)
 
 -- CLOSE BUTTON
