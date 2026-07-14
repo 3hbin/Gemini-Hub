@@ -1876,6 +1876,218 @@ createToggle("🛡️ Khóa Nhân Vật (Anti-Slap)", function(state)
     end
 end)
 
+-- 32. BIỂU CẢM (EMOTES R6/R15 - TỰ NGỪNG KHI DI CHUYỂN)
+createButton("🎭 Biểu Cảm", Color3.fromRGB(170, 85, 255), function()
+    local Players = game:GetService("Players")
+    local LocalPlayer = Players.LocalPlayer
+    
+    local EmoteGui = Instance.new("ScreenGui", game.CoreGui)
+    EmoteGui.Name = "EmoteMenu"
+    EmoteGui.ResetOnSpawn = false
+    
+    local EmoteFrame = Instance.new("Frame", EmoteGui)
+    EmoteFrame.Size = UDim2.new(0, IsMobile and 220 or 400, 0, IsMobile and 300 or 420)
+    EmoteFrame.Position = UDim2.new(0.5, IsMobile and -110 or -200, 0.5, IsMobile and -150 or -210)
+    EmoteFrame.BackgroundColor3 = Color3.fromRGB(20, 15, 25)
+    EmoteFrame.BorderSizePixel = 0
+    createCorner(EmoteFrame, 12)
+    makeDraggable(EmoteFrame)
+    
+    local EmoteStroke = Instance.new("UIStroke", EmoteFrame)
+    EmoteStroke.Color = Color3.fromRGB(170, 85, 255)
+    EmoteStroke.Thickness = 2
+    
+    local EmoteHeader = Instance.new("Frame", EmoteFrame)
+    EmoteHeader.Size = UDim2.new(1, 0, 0, 35)
+    EmoteHeader.BackgroundColor3 = Color3.fromRGB(130, 60, 200)
+    EmoteHeader.BorderSizePixel = 0
+    createCorner(EmoteHeader, 12)
+    
+    local EmoteTitle = Instance.new("TextLabel", EmoteHeader)
+    EmoteTitle.Size = UDim2.new(1, -40, 1, 0)
+    EmoteTitle.Position = UDim2.new(0, 10, 0, 0)
+    EmoteTitle.BackgroundTransparency = 1
+    EmoteTitle.Text = "🎭 Biểu Cảm Nhân Vật (R6 & R15)"
+    EmoteTitle.TextColor3 = Color3.new(1, 1, 1)
+    EmoteTitle.Font = Enum.Font.GothamBold
+    EmoteTitle.TextSize = 12
+    EmoteTitle.TextXAlignment = Enum.TextXAlignment.Left
+    EmoteTitle.TextYAlignment = Enum.TextYAlignment.Center
+    
+    local CloseEmote = Instance.new("TextButton", EmoteHeader)
+    CloseEmote.Size = UDim2.new(0, 30, 1, 0)
+    CloseEmote.Position = UDim2.new(1, -35, 0, 0)
+    CloseEmote.BackgroundTransparency = 0.5
+    CloseEmote.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
+    CloseEmote.Text = "✕"
+    CloseEmote.TextColor3 = Color3.new(1, 1, 1)
+    CloseEmote.Font = Enum.Font.GothamBold
+    CloseEmote.TextSize = 16
+    createCorner(CloseEmote, 8)
+    CloseEmote.MouseButton1Click:Connect(function() EmoteGui:Destroy() end)
+    
+    local ListScroll = Instance.new("ScrollingFrame", EmoteFrame)
+    ListScroll.Size = UDim2.new(1, -10, 1, -45)
+    ListScroll.Position = UDim2.new(0, 5, 0, 40)
+    ListScroll.BackgroundColor3 = Color3.fromRGB(30, 25, 35)
+    ListScroll.ScrollBarThickness = 3
+    ListScroll.CanvasSize = UDim2.new(0, 0, 0, 0)
+    createCorner(ListScroll, 8)
+    
+    local ListLayout = Instance.new("UIListLayout", ListScroll)
+    ListLayout.Padding = UDim.new(0, 8)
+    ListLayout.SortOrder = Enum.SortOrder.LayoutOrder
+    
+    ListLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+        ListScroll.CanvasSize = UDim2.new(0, 0, 0, ListLayout.AbsoluteContentSize.Y + 10)
+    end)
+    
+    local emotes = {
+        {Name = "👋 Vẫy Tay (Wave)", R6 = 128777973, R15 = 507770239},
+        {Name = "👉 Chỉ Tay (Point)", R6 = 128853357, R15 = 507770453},
+        {Name = "💃 Nhảy 1 (Dance #1)", R6 = 182435998, R15 = 507771019},
+        {Name = "🕺 Nhảy 2 (Dance #2)", R6 = 182436842, R15 = 507776043},
+        {Name = "👯 Nhảy 3 (Dance #3)", R6 = 182436935, R15 = 507777268},
+        {Name = "😆 Cười (Laugh)", R6 = 129423131, R15 = 507770818},
+        {Name = "🙌 Cổ Vũ (Cheer)", R6 = 129423030, R15 = 507770677}
+    }
+    
+    -- Hàm quét và tắt toàn bộ biểu cảm đang chạy
+    local function StopAllEmotes()
+        local character = LocalPlayer.Character
+        if not character then return end
+        local humanoid = character:FindFirstChildOfClass("Humanoid")
+        if not humanoid then return end
+        
+        for _, track in pairs(humanoid:GetPlayingAnimationTracks()) do
+            if track.Name == "CustomEmote" then
+                track:Stop()
+            end
+        end
+    end
+    
+    -- Hàm chạy Animation mới
+    local function PlayEmote(r6Id, r15Id)
+        local character = LocalPlayer.Character
+        if not character then return end
+        local humanoid = character:FindFirstChildOfClass("Humanoid")
+        if not humanoid then return end
+        
+        local animId = (humanoid.RigType == Enum.HumanoidRigType.R6) and r6Id or r15Id
+        
+        StopAllEmotes() -- Tắt biểu cảm cũ trước khi chạy cái mới
+        
+        local anim = Instance.new("Animation")
+        anim.Name = "CustomEmote"
+        anim.AnimationId = "rbxassetid://" .. tostring(animId)
+        
+        local track = humanoid:LoadAnimation(anim)
+        track:Play()
+        
+        -- KÍCH HOẠT TÍNH NĂNG TỰ NGỪNG KHI DI CHUYỂN:
+        -- Khi tốc độ di chuyển (speed) lớn hơn 0.1, lập tức dừng Anim biểu cảm
+        local moveConnection
+        moveConnection = humanoid.Running:Connect(function(speed)
+            if speed > 0.1 then
+                track:Stop()
+                if moveConnection then
+                    moveConnection:Disconnect()
+                end
+            end
+        end)
+        
+        -- Nếu nhân vật bị chết/reset, tự hủy kết nối để tránh rác bộ nhớ
+        track.Stopped:Connect(function()
+            if moveConnection then moveConnection:Disconnect() end
+        end)
+    end
+    
+    -- Tạo danh sách nút bấm
+    for i, emote in ipairs(emotes) do
+        local Btn = Instance.new("TextButton", ListScroll)
+        Btn.Size = UDim2.new(1, -10, 0, 40)
+        Btn.BackgroundColor3 = Color3.fromRGB(50, 40, 60)
+        Btn.TextColor3 = Color3.new(1, 1, 1)
+        Btn.Font = Enum.Font.GothamBold
+        Btn.TextSize = 11
+        Btn.Text = emote.Name
+        createCorner(Btn, 8)
+        
+        local Stroke = Instance.new("UIStroke", Btn)
+        Stroke.Color = Color3.fromRGB(170, 85, 255)
+        Stroke.Thickness = 1
+        Stroke.Enabled = false
+        
+        Btn.MouseEnter:Connect(function() Stroke.Enabled = true end)
+        Btn.MouseLeave:Connect(function() Stroke.Enabled = false end)
+        
+        Btn.MouseButton1Click:Connect(function()
+            PlayEmote(emote.R6, emote.R15)
+        end)
+    end
+end)
+
+-- 33. FAKE GAMEPASS (MUA THỬ)
+createButton("🎟️ Fake Gamepass", Color3.fromRGB(255, 85, 85), function()
+    local MarketplaceService = game:GetService("MarketplaceService")
+    local Players = game:GetService("Players")
+    local LocalPlayer = Players.LocalPlayer
+    
+    local FakeGui = Instance.new("ScreenGui", game.CoreGui)
+    FakeGui.Name = "FakeGpMenu"
+    
+    local FakeFrame = Instance.new("Frame", FakeGui)
+    FakeFrame.Size = UDim2.new(0, 200, 0, 150)
+    FakeFrame.Position = UDim2.new(0.5, -100, 0.5, -75)
+    FakeFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+    FakeFrame.BorderSizePixel = 0
+    createCorner(FakeFrame, 12)
+    makeDraggable(FakeFrame)
+    
+    local InputBox = Instance.new("TextBox", FakeFrame)
+    InputBox.Size = UDim2.new(0.8, 0, 0.3, 0)
+    InputBox.Position = UDim2.new(0.1, 0, 0.2, 0)
+    InputBox.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+    InputBox.TextColor3 = Color3.new(1, 1, 1)
+    InputBox.PlaceholderText = "Nhập ID Gamepass..."
+    InputBox.Text = ""
+    InputBox.Font = Enum.Font.GothamBold
+    InputBox.TextSize = 12
+    createCorner(InputBox, 8)
+    
+    local BuyBtn = Instance.new("TextButton", FakeFrame)
+    BuyBtn.Size = UDim2.new(0.8, 0, 0.3, 0)
+    BuyBtn.Position = UDim2.new(0.1, 0, 0.6, 0)
+    BuyBtn.BackgroundColor3 = Color3.fromRGB(255, 85, 85)
+    BuyBtn.TextColor3 = Color3.new(1, 1, 1)
+    BuyBtn.Text = "Mua Thử"
+    BuyBtn.Font = Enum.Font.GothamBold
+    BuyBtn.TextSize = 14
+    createCorner(BuyBtn, 8)
+    
+    local CloseBtn = Instance.new("TextButton", FakeFrame)
+    CloseBtn.Size = UDim2.new(0, 20, 0, 20)
+    CloseBtn.Position = UDim2.new(1, -25, 0, 5)
+    CloseBtn.BackgroundColor3 = Color3.fromRGB(150, 50, 50)
+    CloseBtn.Text = "X"
+    CloseBtn.TextColor3 = Color3.new(1, 1, 1)
+    createCorner(CloseBtn, 5)
+    
+    CloseBtn.MouseButton1Click:Connect(function() FakeGui:Destroy() end)
+    
+    BuyBtn.MouseButton1Click:Connect(function()
+        local id = tonumber(InputBox.Text)
+        if id then
+            -- Gọi hàm Prompt để hiện bảng mua hàng
+            MarketplaceService:PromptGamePassPurchase(LocalPlayer, id)
+        else
+            InputBox.Text = "ID không hợp lệ!"
+            task.wait(1)
+            InputBox.Text = ""
+        end
+    end)
+end)
+
 -- CLOSE BUTTON
 local CloseBtn = Instance.new("TextButton", MainFrame)
 CloseBtn.Size = UDim2.new(1, -12, 0, IsMobile and 25 or 35)
