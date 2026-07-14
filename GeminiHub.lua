@@ -699,7 +699,7 @@ createButton("🌐 Danh Sách Server", Color3.fromRGB(0, 120, 180), function()
     CloseServer.Position = UDim2.new(1, -35, 0, 0)
     CloseServer.BackgroundTransparency = 0.5
     CloseServer.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
-    CloseServer.Text = "✕"
+    CloseServer.Text = "X"
     CloseServer.TextColor3 = Color3.new(1, 1, 1)
     CloseServer.Font = Enum.Font.GothamBold
     CloseServer.TextSize = 16
@@ -712,7 +712,7 @@ createButton("🌐 Danh Sách Server", Color3.fromRGB(0, 120, 180), function()
     RefreshServer.Position = UDim2.new(1, -70, 0, 0)
     RefreshServer.BackgroundTransparency = 0.5
     RefreshServer.BackgroundColor3 = Color3.fromRGB(0, 180, 100)
-    RefreshServer.Text = "↻"
+    RefreshServer.Text = "🔄"
     RefreshServer.TextColor3 = Color3.new(1, 1, 1)
     RefreshServer.Font = Enum.Font.GothamBold
     RefreshServer.TextSize = 18
@@ -871,7 +871,7 @@ createButton("👥 Danh Sách Server (Big First)", Color3.fromRGB(200, 50, 50), 
     CloseServer.Position = UDim2.new(1, -35, 0, 0)
     CloseServer.BackgroundTransparency = 0.5
     CloseServer.BackgroundColor3 = Color3.fromRGB(150, 30, 30)
-    CloseServer.Text = "✕"
+    CloseServer.Text = "X"
     CloseServer.TextColor3 = Color3.new(1, 1, 1)
     CloseServer.Font = Enum.Font.GothamBold
     CloseServer.TextSize = 16
@@ -884,7 +884,7 @@ createButton("👥 Danh Sách Server (Big First)", Color3.fromRGB(200, 50, 50), 
     RefreshServer.Position = UDim2.new(1, -70, 0, 0)
     RefreshServer.BackgroundTransparency = 0.5
     RefreshServer.BackgroundColor3 = Color3.fromRGB(0, 180, 100)
-    RefreshServer.Text = "↻"
+    RefreshServer.Text = "🔄"
     RefreshServer.TextColor3 = Color3.new(1, 1, 1)
     RefreshServer.Font = Enum.Font.GothamBold
     RefreshServer.TextSize = 18
@@ -1600,6 +1600,245 @@ createButton("👕 Đổi Áo Avatar", Color3.fromRGB(180, 100, 50), function()
             shirt.ShirtTemplate = "rbxassetid://" .. id
         end
         ShirtGui:Destroy()
+    end)
+end)
+
+-- 28.NÚT NHẬP SỐ FPS (ĐỂ RIÊNG)
+createButton("⚡ Set FPS Cap", Color3.fromRGB(0, 180, 255), function()
+    -- Tạo khung nhập số FPS nhanh
+    local FpsGui = Instance.new("ScreenGui", game.CoreGui)
+    FpsGui.Name = "FpsCapChanger"
+    
+    local Frame = Instance.new("Frame", FpsGui)
+    Frame.Size = UDim2.new(0, 200, 0, 90)
+    Frame.Position = UDim2.new(0.5, -100, 0.4, -45)
+    Frame.BackgroundColor3 = Color3.fromRGB(20, 20, 30)
+    createCorner(Frame, 8)
+    
+    local Box = Instance.new("TextBox", Frame)
+    Box.Size = UDim2.new(1, -20, 0, 30)
+    Box.Position = UDim2.new(0, 10, 0, 10)
+    Box.PlaceholderText = "Nhập số FPS (Ví dụ: 60)..."
+    Box.Text = ""
+    Box.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
+    Box.TextColor3 = Color3.new(1, 1, 1)
+    createCorner(Box, 6)
+    
+    local Apply = Instance.new("TextButton", Frame)
+    Apply.Size = UDim2.new(0, 80, 0, 30)
+    Apply.Position = UDim2.new(0, 10, 0, 50)
+    Apply.BackgroundColor3 = Color3.fromRGB(0, 120, 200)
+    Apply.Text = "Áp Dụng"
+    Apply.TextColor3 = Color3.new(1, 1, 1)
+    createCorner(Apply, 6)
+    
+    local Close = Instance.new("TextButton", Frame)
+    Close.Size = UDim2.new(0, 80, 0, 30)
+    Close.Position = UDim2.new(1, -90, 0, 50)
+    Close.BackgroundColor3 = Color3.fromRGB(150, 50, 50)
+    Close.Text = "Hủy"
+    Close.TextColor3 = Color3.new(1, 1, 1)
+    createCorner(Close, 6)
+    
+    -- Nút hủy để đóng bảng
+    Close.MouseButton1Click:Connect(function() FpsGui:Destroy() end)
+    
+    -- Nút áp dụng để set FPS thực tế
+    Apply.MouseButton1Click:Connect(function()
+        local fps = tonumber(Box.Text:match("%d+"))
+        if fps then
+            if setfpscap then
+                setfpscap(fps)
+            elseif set_fps_cap then
+                set_fps_cap(fps)
+            end
+        end
+        FpsGui:Destroy()
+    end)
+end)
+
+-- 29. GIẢM LAG
+createButton("⚡ Giảm Lag", Color3.fromRGB(85, 255, 127), function()
+    local Lighting = game:GetService("Lighting")
+    Lighting.GlobalShadows = false
+    Lighting.FogEnd = 9e9
+    Lighting.ShadowMapEnabled = false
+    
+    for _, effect in pairs(Lighting:GetChildren()) do
+        if effect:IsA("PostEffect") or effect:IsA("BloomEffect") or effect:IsA("BlurEffect") or effect:IsA("DepthOfFieldEffect") or effect:IsA("SunRaysEffect") then
+            effect.Enabled = false
+        end
+    end
+
+    local Terrain = workspace:FindFirstChildOfClass("Terrain")
+    if Terrain then
+        Terrain.WaterWaveSize = 0
+        Terrain.WaterWaveSpeed = 0
+        Terrain.WaterReflectance = 0
+        Terrain.WaterTransparency = 0
+    end
+
+    for _, obj in pairs(workspace:GetDescendants()) do
+        if obj:IsA("BasePart") and not obj:IsA("MeshPart") then
+            obj.Material = Enum.Material.SmoothPlastic
+            obj.Reflectance = 0
+            obj.CastShadow = false
+        elseif obj:IsA("Decal") or obj:IsA("Texture") then
+            obj:Destroy()
+        elseif obj:IsA("ParticleEmitter") or obj:IsA("Trail") or obj:IsA("Smoke") or obj:IsA("Sparkles") then
+            obj.Enabled = false
+        end
+    end
+
+    if collectgarbage then
+        collectgarbage("collect")
+    end
+end)
+
+-- 30. DANH SÁCH MUA GAMEPASS
+createButton("🎟️ Mua Gamepass", Color3.fromRGB(255, 170, 0), function()
+    local GpGui = Instance.new("ScreenGui", game.CoreGui)
+    GpGui.Name = "GamepassBrowser"
+    GpGui.ResetOnSpawn = false
+    
+    local GpFrame = Instance.new("Frame", GpGui)
+    GpFrame.Size = UDim2.new(0, IsMobile and 220 or 400, 0, IsMobile and 300 or 420)
+    GpFrame.Position = UDim2.new(0.5, IsMobile and -110 or -200, 0.5, IsMobile and -150 or -210)
+    GpFrame.BackgroundColor3 = Color3.fromRGB(25, 20, 15)
+    GpFrame.BorderSizePixel = 0
+    createCorner(GpFrame, 12)
+    makeDraggable(GpFrame)
+    
+    local GpStroke = Instance.new("UIStroke", GpFrame)
+    GpStroke.Color = Color3.fromRGB(255, 170, 0)
+    GpStroke.Thickness = 2
+    
+    local GpHeader = Instance.new("Frame", GpFrame)
+    GpHeader.Size = UDim2.new(1, 0, 0, 35)
+    GpHeader.BackgroundColor3 = Color3.fromRGB(215, 140, 0)
+    GpHeader.BorderSizePixel = 0
+    createCorner(GpHeader, 12)
+    
+    local GpTitle = Instance.new("TextLabel", GpHeader)
+    GpTitle.Size = UDim2.new(1, -75, 1, 0)
+    GpTitle.Position = UDim2.new(0, 10, 0, 0)
+    GpTitle.BackgroundTransparency = 1
+    GpTitle.Text = "🎟️ Danh Sách Gamepass"
+    GpTitle.TextColor3 = Color3.new(1, 1, 1)
+    GpTitle.Font = Enum.Font.GothamBold
+    GpTitle.TextSize = 12
+    GpTitle.TextXAlignment = Enum.TextXAlignment.Left
+    GpTitle.TextYAlignment = Enum.TextYAlignment.Center
+    
+    local CloseGp = Instance.new("TextButton", GpHeader)
+    CloseGp.Size = UDim2.new(0, 30, 1, 0)
+    CloseGp.Position = UDim2.new(1, -35, 0, 0)
+    CloseGp.BackgroundTransparency = 0.5
+    CloseGp.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
+    CloseGp.Text = "✕"
+    CloseGp.TextColor3 = Color3.new(1, 1, 1)
+    CloseGp.Font = Enum.Font.GothamBold
+    CloseGp.TextSize = 16
+    createCorner(CloseGp, 8)
+    CloseGp.MouseButton1Click:Connect(function() GpGui:Destroy() end)
+
+    local RefreshGp = Instance.new("TextButton", GpHeader)
+    RefreshGp.Size = UDim2.new(0, 30, 1, 0)
+    RefreshGp.Position = UDim2.new(1, -70, 0, 0)
+    RefreshGp.BackgroundTransparency = 0.5
+    RefreshGp.BackgroundColor3 = Color3.fromRGB(0, 180, 100)
+    RefreshGp.Text = "↻"
+    RefreshGp.TextColor3 = Color3.new(1, 1, 1)
+    RefreshGp.Font = Enum.Font.GothamBold
+    RefreshGp.TextSize = 18
+    createCorner(RefreshGp, 8)
+    
+    local ListScroll = Instance.new("ScrollingFrame", GpFrame)
+    ListScroll.Size = UDim2.new(1, -10, 1, -45)
+    ListScroll.Position = UDim2.new(0, 5, 0, 40)
+    ListScroll.BackgroundColor3 = Color3.fromRGB(40, 30, 20)
+    ListScroll.ScrollBarThickness = 3
+    ListScroll.CanvasSize = UDim2.new(0, 0, 0, 0)
+    createCorner(ListScroll, 8)
+    
+    local ListLayout = Instance.new("UIListLayout", ListScroll)
+    ListLayout.Padding = UDim.new(0, 8)
+    ListLayout.SortOrder = Enum.SortOrder.LayoutOrder
+    
+    ListLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+        ListScroll.CanvasSize = UDim2.new(0, 0, 0, ListLayout.AbsoluteContentSize.Y + 10)
+    end)
+    
+    local function LoadGamepasses()
+        for _, child in pairs(ListScroll:GetChildren()) do
+            if child:IsA("Frame") then child:Destroy() end
+        end
+        
+        task.spawn(function()
+            local api = "https://games.roblox.com/v1/games/" .. game.GameId .. "/game-passes?limit=100&sortOrder=Asc"
+            local success, rawData = pcall(function() return game:HttpGet(api) end)
+            if not success then return end
+            
+            local data = HttpService:JSONDecode(rawData)
+            if not data or not data.data then return end
+            
+            for i, gp in ipairs(data.data) do
+                local ItemFrame = Instance.new("Frame", ListScroll)
+                ItemFrame.Size = UDim2.new(1, -10, 0, 55)
+                ItemFrame.BackgroundColor3 = Color3.fromRGB(50, 40, 30)
+                createCorner(ItemFrame, 8)
+                
+                local InfoLabel = Instance.new("TextLabel", ItemFrame)
+                InfoLabel.Size = UDim2.new(0.65, 0, 0.8, 0)
+                InfoLabel.Position = UDim2.new(0, 55, 0.1, 0)
+                InfoLabel.BackgroundTransparency = 1
+                InfoLabel.TextColor3 = Color3.new(1, 1, 1)
+                InfoLabel.Font = Enum.Font.GothamBold
+                InfoLabel.TextSize = 10
+                InfoLabel.TextXAlignment = Enum.TextXAlignment.Left
+                InfoLabel.TextWrapped = true
+                
+                local price = gp.price and (tostring(gp.price) .. " R$") or "Offsale"
+                InfoLabel.Text = "🎟️ " .. gp.name .. "\n💵 Giá: " .. price .. "\n🆔 ID: " .. gp.id
+                
+                local IconImg = Instance.new("ImageLabel", ItemFrame)
+                IconImg.Size = UDim2.new(0, 40, 0, 40)
+                IconImg.Position = UDim2.new(0, 8, 0.5, -20)
+                IconImg.BackgroundColor3 = Color3.fromRGB(60, 50, 40)
+                createCorner(IconImg, 6)
+                
+                task.spawn(function()
+                    pcall(function()
+                        local iconApi = "https://thumbnails.roblox.com/v1/game-passes?gamePassIds=" .. gp.id .. "&size=150x150&format=Png&isCircular=false"
+                        local iconRaw = game:HttpGet(iconApi)
+                        local iconData = HttpService:JSONDecode(iconRaw)
+                        if iconData and iconData.data and iconData.data[1] then
+                            IconImg.Image = iconData.data[1].imageUrl
+                        end
+                    end)
+                end)
+                
+                local BuyBtn = Instance.new("TextButton", ItemFrame)
+                BuyBtn.Size = UDim2.new(0.2, 0, 0.6, 0)
+                BuyBtn.Position = UDim2.new(0.8, -8, 0.2, 0)
+                BuyBtn.BackgroundColor3 = Color3.fromRGB(255, 170, 0)
+                BuyBtn.TextColor3 = Color3.new(1, 1, 1)
+                BuyBtn.Font = Enum.Font.GothamBold
+                BuyBtn.TextSize = 10
+                BuyBtn.Text = "Mua"
+                createCorner(BuyBtn, 6)
+                
+                BuyBtn.MouseButton1Click:Connect(function()
+                    game:GetService("MarketplaceService"):PromptGamePassPurchase(game.Players.LocalPlayer, gp.id)
+                end)
+            end
+        end)
+    end
+    
+    LoadGamepasses()
+    
+    RefreshGp.MouseButton1Click:Connect(function()
+        LoadGamepasses()
     end)
 end)
 
