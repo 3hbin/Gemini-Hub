@@ -2088,6 +2088,282 @@ createButton("🎟️ Fake Gamepass", Color3.fromRGB(255, 85, 85), function()
     end)
 end)
 
+-- 34. KHO ĐỒ (TOOL INVENTORY)
+createButton("🧰 Kho Đồ", Color3.fromRGB(85, 255, 170), function()
+    local Players = game:GetService("Players")
+    local LocalPlayer = Players.LocalPlayer
+    
+    local ToolGui = Instance.new("ScreenGui", game.CoreGui)
+    ToolGui.Name = "ToolMenu"
+    ToolGui.ResetOnSpawn = false
+    
+    local ToolFrame = Instance.new("Frame", ToolGui)
+    ToolFrame.Size = UDim2.new(0, 220, 0, 300)
+    ToolFrame.Position = UDim2.new(0.5, -110, 0.5, -150)
+    ToolFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+    ToolFrame.BorderSizePixel = 0
+    createCorner(ToolFrame, 12)
+    makeDraggable(ToolFrame)
+    
+    local ToolHeader = Instance.new("Frame", ToolFrame)
+    ToolHeader.Size = UDim2.new(1, 0, 0, 35)
+    ToolHeader.BackgroundColor3 = Color3.fromRGB(50, 150, 100)
+    ToolHeader.BorderSizePixel = 0
+    createCorner(ToolHeader, 12)
+    
+    local Title = Instance.new("TextLabel", ToolHeader)
+    Title.Size = UDim2.new(1, 0, 1, 0)
+    Title.BackgroundTransparency = 1
+    Title.Text = "🧰 Kho Đồ Của Bạn"
+    Title.TextColor3 = Color3.new(1, 1, 1)
+    Title.Font = Enum.Font.GothamBold
+    Title.TextSize = 12
+    
+    local RefreshBtn = Instance.new("TextButton", ToolHeader)
+    RefreshBtn.Size = UDim2.new(0, 30, 1, 0)
+    RefreshBtn.Position = UDim2.new(1, -35, 0, 0)
+    RefreshBtn.BackgroundTransparency = 1
+    RefreshBtn.Text = "↻"
+    RefreshBtn.TextColor3 = Color3.new(1, 1, 1)
+    RefreshBtn.TextSize = 20
+    
+    local ListScroll = Instance.new("ScrollingFrame", ToolFrame)
+    ListScroll.Size = UDim2.new(1, -10, 1, -45)
+    ListScroll.Position = UDim2.new(0, 5, 0, 40)
+    ListScroll.BackgroundTransparency = 1
+    ListScroll.ScrollBarThickness = 3
+    
+    local ListLayout = Instance.new("UIListLayout", ListScroll)
+    ListLayout.Padding = UDim.new(0, 5)
+    
+    local function UpdateToolList()
+        -- Xóa danh sách cũ
+        for _, child in pairs(ListScroll:GetChildren()) do
+            if child:IsA("TextButton") then child:Destroy() end
+        end
+        
+        -- Quét Backpack và Character
+        local character = LocalPlayer.Character
+        local backpack = LocalPlayer.Backpack
+        
+        local toolsFound = {}
+        
+        -- Thêm vào bảng
+        if character then
+            for _, item in pairs(character:GetChildren()) do
+                if item:IsA("Tool") then table.insert(toolsFound, item) end
+            end
+        end
+        for _, item in pairs(backpack:GetChildren()) do
+            if item:IsA("Tool") then table.insert(toolsFound, item) end
+        end
+        
+        -- Tạo nút cho mỗi tool
+        for _, tool in pairs(toolsFound) do
+            local btn = Instance.new("TextButton", ListScroll)
+            btn.Size = UDim2.new(1, 0, 0, 35)
+            btn.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+            btn.Text = tool.Name
+            btn.TextColor3 = Color3.new(1, 1, 1)
+            btn.Font = Enum.Font.Gotham
+            btn.TextSize = 12
+            createCorner(btn, 6)
+            
+            btn.MouseButton1Click:Connect(function()
+                if tool.Parent ~= character then
+                    LocalPlayer.Character.Humanoid:EquipTool(tool)
+                end
+            end)
+        end
+        
+        ListScroll.CanvasSize = UDim2.new(0, 0, 0, ListLayout.AbsoluteContentSize.Y)
+    end
+    
+    RefreshBtn.MouseButton1Click:Connect(UpdateToolList)
+    
+    -- Tự động cập nhật khi mở
+    UpdateToolList()
+    
+    local CloseBtn = Instance.new("TextButton", ToolFrame)
+    CloseBtn.Size = UDim2.new(0, 20, 0, 20)
+    CloseBtn.Position = UDim2.new(1, -25, 0, 8)
+    CloseBtn.BackgroundTransparency = 1
+    CloseBtn.Text = "X"
+    CloseBtn.TextColor3 = Color3.new(1, 1, 1)
+    CloseBtn.MouseButton1Click:Connect(function() ToolGui:Destroy() end)
+end)
+
+-- 35. AIMBOT (KHÓA MỤC TIÊU NGƯỜI CHƠI)
+createButton("🎯 Aimbot Player", Color3.fromRGB(255, 50, 50), function()
+    local Players = game:GetService("Players")
+    local RunService = game:GetService("RunService")
+    local LocalPlayer = Players.LocalPlayer
+    local Camera = workspace.CurrentCamera
+    
+    local AimGui = Instance.new("ScreenGui", game.CoreGui)
+    AimGui.Name = "AimbotMenu"
+    AimGui.ResetOnSpawn = false
+    
+    local AimFrame = Instance.new("Frame", AimGui)
+    AimFrame.Size = UDim2.new(0, IsMobile and 220 or 400, 0, IsMobile and 300 or 420)
+    AimFrame.Position = UDim2.new(0.5, IsMobile and -110 or -200, 0.5, IsMobile and -150 or -210)
+    AimFrame.BackgroundColor3 = Color3.fromRGB(25, 15, 15)
+    AimFrame.BorderSizePixel = 0
+    createCorner(AimFrame, 12)
+    makeDraggable(AimFrame)
+    
+    local AimStroke = Instance.new("UIStroke", AimFrame)
+    AimStroke.Color = Color3.fromRGB(255, 50, 50)
+    AimStroke.Thickness = 2
+    
+    local AimHeader = Instance.new("Frame", AimFrame)
+    AimHeader.Size = UDim2.new(1, 0, 0, 35)
+    AimHeader.BackgroundColor3 = Color3.fromRGB(180, 40, 40)
+    AimHeader.BorderSizePixel = 0
+    createCorner(AimHeader, 12)
+    
+    local AimTitle = Instance.new("TextLabel", AimHeader)
+    AimTitle.Size = UDim2.new(1, -75, 1, 0)
+    AimTitle.Position = UDim2.new(0, 10, 0, 0)
+    AimTitle.BackgroundTransparency = 1
+    AimTitle.Text = "🎯 Aimbot - Chọn Người Chơi"
+    AimTitle.TextColor3 = Color3.new(1, 1, 1)
+    AimTitle.Font = Enum.Font.GothamBold
+    AimTitle.TextSize = 12
+    AimTitle.TextXAlignment = Enum.TextXAlignment.Left
+    AimTitle.TextYAlignment = Enum.TextYAlignment.Center
+    
+    local CloseAim = Instance.new("TextButton", AimHeader)
+    CloseAim.Size = UDim2.new(0, 30, 1, 0)
+    CloseAim.Position = UDim2.new(1, -35, 0, 0)
+    CloseAim.BackgroundTransparency = 0.5
+    CloseAim.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
+    CloseAim.Text = "✕"
+    CloseAim.TextColor3 = Color3.new(1, 1, 1)
+    CloseAim.Font = Enum.Font.GothamBold
+    CloseAim.TextSize = 16
+    createCorner(CloseAim, 8)
+    
+    local RefreshAim = Instance.new("TextButton", AimHeader)
+    RefreshAim.Size = UDim2.new(0, 30, 1, 0)
+    RefreshAim.Position = UDim2.new(1, -70, 0, 0)
+    RefreshAim.BackgroundTransparency = 0.5
+    RefreshAim.BackgroundColor3 = Color3.fromRGB(0, 180, 100)
+    RefreshAim.Text = "↻"
+    RefreshAim.TextColor3 = Color3.new(1, 1, 1)
+    RefreshAim.Font = Enum.Font.GothamBold
+    RefreshAim.TextSize = 18
+    createCorner(RefreshAim, 8)
+    
+    local ListScroll = Instance.new("ScrollingFrame", AimFrame)
+    ListScroll.Size = UDim2.new(1, -10, 1, -45)
+    ListScroll.Position = UDim2.new(0, 5, 0, 40)
+    ListScroll.BackgroundColor3 = Color3.fromRGB(35, 20, 20)
+    ListScroll.ScrollBarThickness = 3
+    ListScroll.CanvasSize = UDim2.new(0, 0, 0, 0)
+    createCorner(ListScroll, 8)
+    
+    local ListLayout = Instance.new("UIListLayout", ListScroll)
+    ListLayout.Padding = UDim.new(0, 8)
+    ListLayout.SortOrder = Enum.SortOrder.LayoutOrder
+    
+    ListLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+        ListScroll.CanvasSize = UDim2.new(0, 0, 0, ListLayout.AbsoluteContentSize.Y + 10)
+    end)
+    
+    local TargetPlayer = nil
+    local AimbotConnection = nil
+    
+    -- Hàm thực hiện khóa Camera vào mục tiêu
+    local function StartAimbot()
+        if AimbotConnection then AimbotConnection:Disconnect() end
+        AimbotConnection = RunService.RenderStepped:Connect(function()
+            if TargetPlayer and TargetPlayer.Character and TargetPlayer.Character:FindFirstChild("Head") then
+                local Head = TargetPlayer.Character.Head
+                Camera.CFrame = CFrame.new(Camera.CFrame.Position, Head.Position)
+            else
+                TargetPlayer = nil
+            end
+        end)
+    end
+    
+    -- Hàm cập nhật danh sách người chơi trong Server
+    local function UpdatePlayerList()
+        for _, child in pairs(ListScroll:GetChildren()) do
+            if child:IsA("Frame") then child:Destroy() end
+        end
+        
+        -- Thêm nút Tắt Aimbot ở đầu danh sách
+        local OffFrame = Instance.new("Frame", ListScroll)
+        OffFrame.Size = UDim2.new(1, -10, 0, 40)
+        OffFrame.BackgroundColor3 = Color3.fromRGB(50, 30, 30)
+        createCorner(OffFrame, 8)
+        
+        local OffBtn = Instance.new("TextButton", OffFrame)
+        OffBtn.Size = UDim2.new(1, 0, 1, 0)
+        OffBtn.BackgroundTransparency = 1
+        OffBtn.Text = "❌ TẮT AIMBOT"
+        OffBtn.TextColor3 = Color3.fromRGB(255, 100, 100)
+        OffBtn.Font = Enum.Font.GothamBold
+        OffBtn.TextSize = 12
+        
+        OffBtn.MouseButton1Click:Connect(function()
+            TargetPlayer = nil
+            if AimbotConnection then
+                AimbotConnection:Disconnect()
+                AimbotConnection = nil
+            end
+            AimTitle.Text = "🎯 Aimbot - Đã Tắt"
+        end)
+        
+        -- Quét và tạo nút cho từng người chơi
+        for _, p in pairs(Players:GetPlayers()) do
+            if p ~= LocalPlayer then
+                local PFrame = Instance.new("Frame", ListScroll)
+                PFrame.Size = UDim2.new(1, -10, 0, 45)
+                PFrame.BackgroundColor3 = Color3.fromRGB(45, 30, 30)
+                createCorner(PFrame, 8)
+                
+                local PLabel = Instance.new("TextLabel", PFrame)
+                PLabel.Size = UDim2.new(0.7, 0, 1, 0)
+                PLabel.Position = UDim2.new(0, 10, 0, 0)
+                PLabel.BackgroundTransparency = 1
+                PLabel.Text = p.DisplayName .. " (@" .. p.Name .. ")"
+                PLabel.TextColor3 = Color3.new(1, 1, 1)
+                PLabel.Font = Enum.Font.GothamBold
+                PLabel.TextSize = 11
+                PLabel.TextXAlignment = Enum.TextXAlignment.Left
+                
+                local LockBtn = Instance.new("TextButton", PFrame)
+                LockBtn.Size = UDim2.new(0.25, 0, 0.7, 0)
+                LockBtn.Position = UDim2.new(0.75, -5, 0.15, 0)
+                LockBtn.BackgroundColor3 = Color3.fromRGB(180, 40, 40)
+                LockBtn.Text = "Khóa"
+                LockBtn.TextColor3 = Color3.new(1, 1, 1)
+                LockBtn.Font = Enum.Font.GothamBold
+                LockBtn.TextSize = 11
+                createCorner(LockBtn, 6)
+                
+                LockBtn.MouseButton1Click:Connect(function()
+                    TargetPlayer = p
+                    AimTitle.Text = "🎯 Khóa: " .. p.DisplayName
+                    StartAimbot()
+                end)
+            end
+        end
+    end
+    
+    UpdatePlayerList()
+    
+    RefreshAim.MouseButton1Click:Connect(UpdatePlayerList)
+    
+    -- Tự động dọn dẹp kết nối khi đóng giao diện để tránh lag game
+    CloseAim.MouseButton1Click:Connect(function()
+        if AimbotConnection then AimbotConnection:Disconnect() end
+        AimGui:Destroy()
+    end)
+end)
+
 -- CLOSE BUTTON
 local CloseBtn = Instance.new("TextButton", MainFrame)
 CloseBtn.Size = UDim2.new(1, -12, 0, IsMobile and 25 or 35)
