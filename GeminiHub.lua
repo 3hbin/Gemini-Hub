@@ -2578,6 +2578,41 @@ createButton("🔄 Vào Lại Game", Color3.fromRGB(255, 85, 255), function()
     end)
 end)
 
+-- 39. ÉP KÍCH HOẠT TOOL (FIX TOOL KHÔNG CHẠY)
+createButton("⚡ Ép Chạy Tool", Color3.fromRGB(255, 200, 50), function()
+    local Players = game:GetService("Players")
+    local LocalPlayer = Players.LocalPlayer
+    local character = LocalPlayer.Character
+    
+    if character then
+        local holdingTool = character:FindFirstChildOfClass("Tool")
+        if holdingTool then
+            -- Ép thuộc tính kích hoạt của Tool chạy trực tiếp từ Client
+            holdingTool:Activate()
+            
+            -- Thử tạo một LocalScript ảo để giả lập thao tác bấm chuột/bấm màn hình
+            pcall(function()
+                if holdingTool:FindFirstChild("LocalScript") then
+                    holdingTool.LocalScript.Disabled = true
+                    holdingTool.LocalScript.Disabled = false
+                end
+            end)
+            
+            game:GetService("StarterGui"):SetCore("SendNotification", {
+                Title = "Tool Fixer",
+                Text = "Đã ép kích hoạt Tool: " .. holdingTool.Name,
+                Duration = 2
+            })
+        else
+            game:GetService("StarterGui"):SetCore("SendNotification", {
+                Title = "Thất Bại",
+                Text = "Bạn phải cầm Tool đó trên tay trước!",
+                Duration = 2
+            })
+        end
+    end
+end)
+
 -- CLOSE BUTTON
 local CloseBtn = Instance.new("TextButton", MainFrame)
 CloseBtn.Size = UDim2.new(1, -12, 0, IsMobile and 25 or 35)
