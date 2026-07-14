@@ -1327,6 +1327,168 @@ createButton("⚙️ Lua Code", Color3.fromRGB(80, 100, 50), function()
     end)
 end)
 
+-- 26.NÚT TÀNG HÌNH & ẨN TÊN (ĐỂ RIÊNG)
+createToggle("👻 Tàng Hình & Ẩn Tên", function(state)
+    local char = LocalPlayer.Character
+    if char then
+        -- 1. Ẩn/Hiện tên trên đầu
+        local hum = char:FindFirstChildOfClass("Humanoid")
+        if hum then
+            hum.DisplayDistanceType = state and Enum.HumanoidDisplayDistanceType.None or Enum.HumanoidDisplayDistanceType.Viewer
+        end
+        
+        -- 2. Làm trong suốt nhân vật (Chỉ ảnh hưởng góc nhìn Client)
+        for _, part in pairs(char:GetDescendants()) do
+            if part:IsA("BasePart") or part:IsA("Decal") then
+                if state then
+                    if not part:FindFirstChild("OldTransparency") then
+                        local oldTrans = Instance.new("NumberValue", part)
+                        oldTrans.Name = "OldTransparency"
+                        oldTrans.Value = part.Transparency
+                    end
+                    part.Transparency = (part.Name == "HumanoidRootPart") and 1 or 0.8 -- Gần như vô hình
+                else
+                    local oldTrans = part:FindFirstChild("OldTransparency")
+                    part.Transparency = oldTrans and oldTrans.Value or 0
+                    if oldTrans then oldTrans:Destroy() end
+                end
+            end
+        end
+    end
+end)
+
+-- 27.NÚT THAY ÁO AVATAR (ĐỂ RIÊNG)
+createButton("👕 Đổi Áo Avatar", Color3.fromRGB(180, 100, 50), function()
+    -- Tạo một Gui nhập số ID nhanh trên màn hình
+    local ShirtGui = Instance.new("ScreenGui", game.CoreGui)
+    ShirtGui.Name = "ShirtChanger"
+    
+    local Frame = Instance.new("Frame", ShirtGui)
+    Frame.Size = UDim2.new(0, 200, 0, 90)
+    Frame.Position = UDim2.new(0.5, -100, 0.4, -45)
+    Frame.BackgroundColor3 = Color3.fromRGB(20, 20, 30)
+    createCorner(Frame, 8)
+    
+    local Box = Instance.new("TextBox", Frame)
+    Box.Size = UDim2.new(1, -20, 0, 30)
+    Box.Position = UDim2.new(0, 10, 0, 10)
+    Box.PlaceholderText = "Nhập ID Áo Roblox..."
+    Box.Text = ""
+    Box.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
+    Box.TextColor3 = Color3.new(1, 1, 1)
+    createCorner(Box, 6)
+    
+    local Apply = Instance.new("TextButton", Frame)
+    Apply.Size = UDim2.new(0, 80, 0, 30)
+    Apply.Position = UDim2.new(0, 10, 0, 50)
+    Apply.BackgroundColor3 = Color3.fromRGB(0, 120, 200)
+    Apply.Text = "Thay Áo"
+    Apply.TextColor3 = Color3.new(1, 1, 1)
+    createCorner(Apply, 6)
+    
+    local Close = Instance.new("TextButton", Frame)
+    Close.Size = UDim2.new(0, 80, 0, 30)
+    Close.Position = UDim2.new(1, -90, 0, 50)
+    Close.BackgroundColor3 = Color3.fromRGB(150, 50, 50)
+    Close.Text = "Hủy"
+    Close.TextColor3 = Color3.new(1, 1, 1)
+    createCorner(Close, 6)
+    
+    Close.MouseButton1Click:Connect(function() ShirtGui:Destroy() end)
+    
+    Apply.MouseButton1Click:Connect(function()
+        local id = tonumber(Box.Text:match("%d+"))
+        if id and LocalPlayer.Character then
+            -- Tìm vật phẩm áo cũ hoặc tạo mới nếu nhân vật không mặc áo
+            local shirt = LocalPlayer.Character:FindFirstChildOfClass("Shirt") or Instance.new("Shirt", LocalPlayer.Character)
+            shirt.ShirtTemplate = "rbxassetid://" .. id
+        end
+        ShirtGui:Destroy()
+    end)
+end)
+
+-- 28.NÚT BIG SERVER (ĐỂ RIÊNG)
+createButton("👥 Big Server", Color3.fromRGB(200, 50, 50), function()
+    local api = "https://games.roblox.com/v1/games/" .. game.PlaceId .. "/servers/Public?limit=25"
+    local success, rawData = pcall(function() return game:HttpGet(api) end)
+    if not success then return end
+    
+    local data = HttpService:JSONDecode(rawData)
+    local servers = {}
+    for _, v in pairs(data.data) do
+        if v.playing < v.maxPlayers and v.id ~= game.JobId then
+            table.insert(servers, v)
+        end
+    end
+    
+    -- Sắp xếp: Server đông người chơi nhất lên đầu
+    table.sort(servers, function(a, b) return a.playing > b.playing end)
+    
+    if #servers > 0 then
+        -- Kích hoạt chạy lại script chính khi chuyển server thành công
+        if syn and syn.queue_on_teleport then
+            syn.queue_on_teleport([[loadstring(game:HttpGet("https://raw.githubusercontent.com/3hbin/Gemini-Hub/refs/heads/main/GeminiHub.lua"))()]])
+        elseif queue_on_teleport then
+            queue_on_teleport([[loadstring(game:HttpGet("https://raw.githubusercontent.com/3hbin/Gemini-Hub/refs/heads/main/GeminiHub.lua"))()]])
+        end
+        game:GetService("TeleportService"):TeleportToPlaceInstance(game.PlaceId, servers[1].id, LocalPlayer)
+    end
+end)
+
+-- 29.NÚT CHỐNG BỊ TÁT / VĂNG (ĐỂ RIÊNG)
+createToggle("🛡️ Khóa Nhân Vật (Anti-Slap)", function(state)
+    local char = LocalPlayer.Character
+    if char then
+        local HRP = char:FindFirstChild("HumanoidRootPart")
+        if HRP then
+            -- Khóa cứng vị trí vật lý để không bị tác động lực làm văng đi
+            HRP.Anchored = state
+        end
+        
+        -- Chặn các lực kéo/đẩy vật lý bất ngờ từ bên ngoài tác động lên các bộ phận khác
+        for _, part in pairs(char:GetDescendants()) do
+            if part:IsA("BasePart") then
+                part.Velocity = Vector3.new(0, 0, 0)
+                part.RotVelocity = Vector3.new(0, 0, 0)
+            end
+        end
+    end
+end)
+
+-- 30.NÚT CHỈNH SỐ FPS (ĐỂ RIÊNG)
+local fpsModes = {30, 60, 120, 999} -- Các mốc FPS bạn muốn chọn
+local currentFpsIndex = 1
+
+createButton("⚡ FPS Limit: 30", Color3.fromRGB(0, 180, 255), function()
+    -- Chuyển sang mốc FPS tiếp theo trong danh sách
+    currentFpsIndex = currentFpsIndex + 1
+    if currentFpsIndex > #fpsModes then
+        currentFpsIndex = 1
+    end
+    
+    local targetFps = fpsModes[currentFpsIndex]
+    
+    -- Thực hiện giới hạn FPS (Hỗ trợ hầu hết các Executor hiện nay)
+    if setfpscap then
+        setfpscap(targetFps)
+    elseif set_fps_cap then
+        set_fps_cap(targetFps)
+    end
+    
+    -- Cập nhật lại tên hiển thị trên nút bấm để bạn biết đang ở mức nào
+    local btnText = "⚡ FPS Limit: " .. (targetFps == 999 and "Uncapped" or tostring(targetFps))
+    
+    -- Đoạn này để cập nhật Text của nút bấm ngay lập tức trong Hub của bạn
+    -- (Lưu ý: Tùy thuộc vào cách bạn viết hàm createButton, nếu hàm đó trả về Object Button, 
+    -- bạn có thể cập nhật Text trực tiếp. Đoạn dưới đây tự dò tìm nút bấm để đổi tên)
+    for _, child in pairs(game.CoreGui:GetDescendants()) do
+        if child:IsA("TextButton") and child.Text:find("FPS Limit") then
+            child.Text = btnText
+            break
+        end
+    end
+end)
+
 -- CLOSE BUTTON
 local CloseBtn = Instance.new("TextButton", MainFrame)
 CloseBtn.Size = UDim2.new(1, -12, 0, IsMobile and 25 or 35)
