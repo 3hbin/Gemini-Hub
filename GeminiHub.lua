@@ -658,7 +658,8 @@ task.spawn(function()
 end)
 createToggle("🦵 Chống Ngã", function(state) AntiRagdoll_Active = state end)
 
--- 4. TRÌNH DUYỆT DANH SÁCH SERVER (SERVER BROWSER)
+-- 4. TRÌNH DUYỆT DANH SÁCH SERVER (SMALL FIRST + REFRESH)
+-- NÚT: DANH SÁCH SERVER (BIG FIRST + REFRESH)
 createButton("🌐 Danh Sách Server", Color3.fromRGB(0, 120, 180), function()
     local ServerGui = Instance.new("ScreenGui", game.CoreGui)
     ServerGui.Name = "ServerBrowser"
@@ -683,7 +684,7 @@ createButton("🌐 Danh Sách Server", Color3.fromRGB(0, 120, 180), function()
     createCorner(ServerHeader, 12)
     
     local ServerTitle = Instance.new("TextLabel", ServerHeader)
-    ServerTitle.Size = UDim2.new(1, -40, 1, 0)
+    ServerTitle.Size = UDim2.new(1, -75, 1, 0)
     ServerTitle.Position = UDim2.new(0, 10, 0, 0)
     ServerTitle.BackgroundTransparency = 1
     ServerTitle.Text = "🌍 Danh Sách Server (Small First)"
@@ -704,6 +705,18 @@ createButton("🌐 Danh Sách Server", Color3.fromRGB(0, 120, 180), function()
     CloseServer.TextSize = 16
     createCorner(CloseServer, 8)
     CloseServer.MouseButton1Click:Connect(function() ServerGui:Destroy() end)
+
+    -- Nút Cập Nhật (Refresh) cho Small Server
+    local RefreshServer = Instance.new("TextButton", ServerHeader)
+    RefreshServer.Size = UDim2.new(0, 30, 1, 0)
+    RefreshServer.Position = UDim2.new(1, -70, 0, 0)
+    RefreshServer.BackgroundTransparency = 0.5
+    RefreshServer.BackgroundColor3 = Color3.fromRGB(0, 180, 100)
+    RefreshServer.Text = "↻"
+    RefreshServer.TextColor3 = Color3.new(1, 1, 1)
+    RefreshServer.Font = Enum.Font.GothamBold
+    RefreshServer.TextSize = 18
+    createCorner(RefreshServer, 8)
     
     local ListScroll = Instance.new("ScrollingFrame", ServerFrame)
     ListScroll.Size = UDim2.new(1, -10, 1, -45)
@@ -721,90 +734,273 @@ createButton("🌐 Danh Sách Server", Color3.fromRGB(0, 120, 180), function()
         ListScroll.CanvasSize = UDim2.new(0, 0, 0, ListLayout.AbsoluteContentSize.Y + 10)
     end)
     
-    -- Load danh sách API và vẽ từng Server Item
-    task.spawn(function()
-        local api = "https://games.roblox.com/v1/games/" .. game.PlaceId .. "/servers/Public?limit=25"
-        local success, rawData = pcall(function() return game:HttpGet(api) end)
-        if not success then return end
-        
-        local data = HttpService:JSONDecode(rawData)
-        local servers = {}
-        for _, v in pairs(data.data) do
-            if v.playing < v.maxPlayers and v.id ~= game.JobId then
-                table.insert(servers, v)
-            end
+    -- Hàm tải và vẽ danh sách Server
+    local function LoadServers()
+        -- Xóa danh sách cũ trước khi tải mới
+        for _, child in pairs(ListScroll:GetChildren()) do
+            if child:IsA("Frame") then child:Destroy() end
         end
         
-        -- Sắp xếp Server nhỏ nhất lên đầu (Small Server)
-        table.sort(servers, function(a, b) return a.playing < b.playing end)
-        
-        for i, sv in ipairs(servers) do
-            local ItemFrame = Instance.new("Frame", ListScroll)
-            ItemFrame.Size = UDim2.new(1, -10, 0, 55)
-            ItemFrame.BackgroundColor3 = Color3.fromRGB(30, 35, 50)
-            createCorner(ItemFrame, 8)
+        task.spawn(function()
+            local api = "https://games.roblox.com/v1/games/" .. game.PlaceId .. "/servers/Public?limit=25"
+            local success, rawData = pcall(function() return game:HttpGet(api) end)
+            if not success then return end
             
-            local InfoLabel = Instance.new("TextLabel", ItemFrame)
-            InfoLabel.Size = UDim2.new(0.6, 0, 0.4, 0)
-            InfoLabel.Position = UDim2.new(0, 8, 0, 4)
-            InfoLabel.BackgroundTransparency = 1
-            InfoLabel.TextColor3 = Color3.new(1, 1, 1)
-            InfoLabel.Font = Enum.Font.GothamBold
-            InfoLabel.TextSize = 10
-            InfoLabel.TextXAlignment = Enum.TextXAlignment.Left
-            InfoLabel.Text = "👤 " .. sv.playing .. "/" .. sv.maxPlayers .. "  |  🆔: " .. sv.id:sub(1, 8)
+            local data = HttpService:JSONDecode(rawData)
+            local servers = {}
+            for _, v in pairs(data.data) do
+                if v.playing < v.maxPlayers and v.id ~= game.JobId then
+                    table.insert(servers, v)
+                end
+            end
             
-            -- Vẽ Avatar của người chơi trong Server đó
-            local AvatarContainer = Instance.new("Frame", ItemFrame)
-            AvatarContainer.Size = UDim2.new(0.6, 0, 0.4, 0)
-            AvatarContainer.Position = UDim2.new(0, 8, 0.5, 2)
-            AvatarContainer.BackgroundTransparency = 1
+            -- Sắp xếp Server nhỏ nhất lên đầu (Small Server)
+            table.sort(servers, function(a, b) return a.playing < b.playing end)
             
-            local AvatarLayout = Instance.new("UIListLayout", AvatarContainer)
-            AvatarLayout.FillDirection = Enum.FillDirection.Horizontal
-            AvatarLayout.Padding = UDim.new(0, 4)
-            
-            if sv.playerTokens then
-                for idx, token in ipairs(sv.playerTokens) do
-                    if idx > 5 then break end -- Giới hạn hiển thị 5 avatar để tránh lag
-                    local Img = Instance.new("ImageLabel", AvatarContainer)
-                    Img.Size = UDim2.new(0, 18, 0, 18)
-                    Img.BackgroundColor3 = Color3.fromRGB(40, 45, 60)
-                    createCorner(Img, 9)
-                    
-                    task.spawn(function()
-                        pcall(function()
-                            -- Sử dụng API Web của Roblox để lấy headshot từ playerToken
-                            local avatarApi = "https://thumbnails.roblox.com/v1/users/avatar-headshot?size=48x48&format=Png&isCircular=true&playerToken=" .. token
-                            local avatarRaw = game:HttpGet(avatarApi)
-                            local avatarData = HttpService:JSONDecode(avatarRaw)
-                            if avatarData and avatarData.data and avatarData.data[1] then
-                                Img.Image = avatarData.data[1].imageUrl
-                            end
+            for i, sv in ipairs(servers) do
+                local ItemFrame = Instance.new("Frame", ListScroll)
+                ItemFrame.Size = UDim2.new(1, -10, 0, 55)
+                ItemFrame.BackgroundColor3 = Color3.fromRGB(30, 35, 50)
+                createCorner(ItemFrame, 8)
+                
+                local InfoLabel = Instance.new("TextLabel", ItemFrame)
+                InfoLabel.Size = UDim2.new(0.6, 0, 0.4, 0)
+                InfoLabel.Position = UDim2.new(0, 8, 0, 4)
+                InfoLabel.BackgroundTransparency = 1
+                InfoLabel.TextColor3 = Color3.new(1, 1, 1)
+                InfoLabel.Font = Enum.Font.GothamBold
+                InfoLabel.TextSize = 10
+                InfoLabel.TextXAlignment = Enum.TextXAlignment.Left
+                InfoLabel.Text = "👤 " .. sv.playing .. "/" .. sv.maxPlayers .. "  |  🆔: " .. sv.id:sub(1, 8)
+                
+                local AvatarContainer = Instance.new("Frame", ItemFrame)
+                AvatarContainer.Size = UDim2.new(0.6, 0, 0.4, 0)
+                AvatarContainer.Position = UDim2.new(0, 8, 0.5, 2)
+                AvatarContainer.BackgroundTransparency = 1
+                
+                local AvatarLayout = Instance.new("UIListLayout", AvatarContainer)
+                AvatarLayout.FillDirection = Enum.FillDirection.Horizontal
+                AvatarLayout.Padding = UDim.new(0, 4)
+                
+                if sv.playerTokens then
+                    for idx, token in ipairs(sv.playerTokens) do
+                        if idx > 5 then break end
+                        local Img = Instance.new("ImageLabel", AvatarContainer)
+                        Img.Size = UDim2.new(0, 18, 0, 18)
+                        Img.BackgroundColor3 = Color3.fromRGB(40, 45, 60)
+                        createCorner(Img, 9)
+                        
+                        task.spawn(function()
+                            pcall(function()
+                                local avatarApi = "https://thumbnails.roblox.com/v1/users/avatar-headshot?size=48x48&format=Png&isCircular=true&playerToken=" .. token
+                                local avatarRaw = game:HttpGet(avatarApi)
+                                local avatarData = HttpService:JSONDecode(avatarRaw)
+                                if avatarData and avatarData.data and avatarData.data[1] then
+                                    Img.Image = avatarData.data[1].imageUrl
+                                end
+                            end)
                         end)
-                    end)
+                    end
+                end
+                
+                local JoinBtn = Instance.new("TextButton", ItemFrame)
+                JoinBtn.Size = UDim2.new(0.3, 0, 0.6, 0)
+                JoinBtn.Position = UDim2.new(0.7, -8, 0.2, 0)
+                JoinBtn.BackgroundColor3 = Color3.fromRGB(0, 140, 220)
+                JoinBtn.TextColor3 = Color3.new(1, 1, 1)
+                JoinBtn.Font = Enum.Font.GothamBold
+                JoinBtn.TextSize = 10
+                JoinBtn.Text = "Vào"
+                createCorner(JoinBtn, 6)
+                
+                JoinBtn.MouseButton1Click:Connect(function()
+                    if syn and syn.queue_on_teleport then
+                        syn.queue_on_teleport([[loadstring(game:HttpGet("https://raw.githubusercontent.com/3hbin/Gemini-Hub/refs/heads/main/GeminiHub.lua"))()]])
+                    elseif queue_on_teleport then
+                        queue_on_teleport([[loadstring(game:HttpGet("https://raw.githubusercontent.com/3hbin/Gemini-Hub/refs/heads/main/GeminiHub.lua"))()]])
+                    end
+                    game:GetService("TeleportService"):TeleportToPlaceInstance(game.PlaceId, sv.id, LocalPlayer)
+                end)
+            end
+        end)
+    end
+    
+    LoadServers()
+    
+    RefreshServer.MouseButton1Click:Connect(function()
+        LoadServers()
+    end)
+end)
+--===================================================================================--
+createButton("👥 Danh Sách Server (Big First)", Color3.fromRGB(200, 50, 50), function()
+    local ServerGui = Instance.new("ScreenGui", game.CoreGui)
+    ServerGui.Name = "ServerBrowserBig"
+    ServerGui.ResetOnSpawn = false
+    
+    local ServerFrame = Instance.new("Frame", ServerGui)
+    ServerFrame.Size = UDim2.new(0, IsMobile and 220 or 400, 0, IsMobile and 300 or 420)
+    ServerFrame.Position = UDim2.new(0.5, IsMobile and -110 or -200, 0.5, IsMobile and -150 or -210)
+    ServerFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 25)
+    ServerFrame.BorderSizePixel = 0
+    createCorner(ServerFrame, 12)
+    makeDraggable(ServerFrame)
+    
+    local ServerStroke = Instance.new("UIStroke", ServerFrame)
+    ServerStroke.Color = Color3.fromRGB(255, 100, 100)
+    ServerStroke.Thickness = 2
+    
+    local ServerHeader = Instance.new("Frame", ServerFrame)
+    ServerHeader.Size = UDim2.new(1, 0, 0, 35)
+    ServerHeader.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
+    ServerHeader.BorderSizePixel = 0
+    createCorner(ServerHeader, 12)
+    
+    local ServerTitle = Instance.new("TextLabel", ServerHeader)
+    ServerTitle.Size = UDim2.new(1, -75, 1, 0)
+    ServerTitle.Position = UDim2.new(0, 10, 0, 0)
+    ServerTitle.BackgroundTransparency = 1
+    ServerTitle.Text = "👥 Danh Sách Server (Big First)"
+    ServerTitle.TextColor3 = Color3.new(1, 1, 1)
+    ServerTitle.Font = Enum.Font.GothamBold
+    ServerTitle.TextSize = 12
+    ServerTitle.TextXAlignment = Enum.TextXAlignment.Left
+    ServerTitle.TextYAlignment = Enum.TextYAlignment.Center
+    
+    local CloseServer = Instance.new("TextButton", ServerHeader)
+    CloseServer.Size = UDim2.new(0, 30, 1, 0)
+    CloseServer.Position = UDim2.new(1, -35, 0, 0)
+    CloseServer.BackgroundTransparency = 0.5
+    CloseServer.BackgroundColor3 = Color3.fromRGB(150, 30, 30)
+    CloseServer.Text = "✕"
+    CloseServer.TextColor3 = Color3.new(1, 1, 1)
+    CloseServer.Font = Enum.Font.GothamBold
+    CloseServer.TextSize = 16
+    createCorner(CloseServer, 8)
+    CloseServer.MouseButton1Click:Connect(function() ServerGui:Destroy() end)
+
+    -- Nút Cập Nhật (Refresh) cho Big Server
+    local RefreshServer = Instance.new("TextButton", ServerHeader)
+    RefreshServer.Size = UDim2.new(0, 30, 1, 0)
+    RefreshServer.Position = UDim2.new(1, -70, 0, 0)
+    RefreshServer.BackgroundTransparency = 0.5
+    RefreshServer.BackgroundColor3 = Color3.fromRGB(0, 180, 100)
+    RefreshServer.Text = "↻"
+    RefreshServer.TextColor3 = Color3.new(1, 1, 1)
+    RefreshServer.Font = Enum.Font.GothamBold
+    RefreshServer.TextSize = 18
+    createCorner(RefreshServer, 8)
+    
+    local ListScroll = Instance.new("ScrollingFrame", ServerFrame)
+    ListScroll.Size = UDim2.new(1, -10, 1, -45)
+    ListScroll.Position = UDim2.new(0, 5, 0, 40)
+    ListScroll.BackgroundColor3 = Color3.fromRGB(20, 25, 40)
+    ListScroll.ScrollBarThickness = 3
+    ListScroll.CanvasSize = UDim2.new(0, 0, 0, 0)
+    createCorner(ListScroll, 8)
+    
+    local ListLayout = Instance.new("UIListLayout", ListScroll)
+    ListLayout.Padding = UDim.new(0, 8)
+    ListLayout.SortOrder = Enum.SortOrder.LayoutOrder
+    
+    ListLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+        ListScroll.CanvasSize = UDim2.new(0, 0, 0, ListLayout.AbsoluteContentSize.Y + 10)
+    end)
+    
+    -- Hàm tải và vẽ danh sách Server (Sắp xếp Server lớn nhất lên đầu)
+    local function LoadServers()
+        -- Xóa danh sách cũ trước khi tải mới
+        for _, child in pairs(ListScroll:GetChildren()) do
+            if child:IsA("Frame") then child:Destroy() end
+        end
+        
+        task.spawn(function()
+            local api = "https://games.roblox.com/v1/games/" .. game.PlaceId .. "/servers/Public?limit=25"
+            local success, rawData = pcall(function() return game:HttpGet(api) end)
+            if not success then return end
+            
+            local data = HttpService:JSONDecode(rawData)
+            local servers = {}
+            for _, v in pairs(data.data) do
+                if v.playing < v.maxPlayers and v.id ~= game.JobId then
+                    table.insert(servers, v)
                 end
             end
             
-            local JoinBtn = Instance.new("TextButton", ItemFrame)
-            JoinBtn.Size = UDim2.new(0.3, 0, 0.6, 0)
-            JoinBtn.Position = UDim2.new(0.7, -8, 0.2, 0)
-            JoinBtn.BackgroundColor3 = Color3.fromRGB(0, 140, 220)
-            JoinBtn.TextColor3 = Color3.new(1, 1, 1)
-            JoinBtn.Font = Enum.Font.GothamBold
-            JoinBtn.TextSize = 10
-            JoinBtn.Text = "Vào"
-            createCorner(JoinBtn, 6)
+            -- Sắp xếp: Server đông người chơi nhất lên đầu (Big First)
+            table.sort(servers, function(a, b) return a.playing > b.playing end)
             
-            JoinBtn.MouseButton1Click:Connect(function()
-                if syn and syn.queue_on_teleport then
-                    syn.queue_on_teleport([[loadstring(game:HttpGet("https://raw.githubusercontent.com/3hbin/Gemini-Hub/refs/heads/main/GeminiHub.lua"))()]])
-                elseif queue_on_teleport then
-                    queue_on_teleport([[loadstring(game:HttpGet("https://raw.githubusercontent.com/3hbin/Gemini-Hub/refs/heads/main/GeminiHub.lua"))()]])
+            for i, sv in ipairs(servers) do
+                local ItemFrame = Instance.new("Frame", ListScroll)
+                ItemFrame.Size = UDim2.new(1, -10, 0, 55)
+                ItemFrame.BackgroundColor3 = Color3.fromRGB(30, 35, 50)
+                createCorner(ItemFrame, 8)
+                
+                local InfoLabel = Instance.new("TextLabel", ItemFrame)
+                InfoLabel.Size = UDim2.new(0.6, 0, 0.4, 0)
+                InfoLabel.Position = UDim2.new(0, 8, 0, 4)
+                InfoLabel.BackgroundTransparency = 1
+                InfoLabel.TextColor3 = Color3.new(1, 1, 1)
+                InfoLabel.Font = Enum.Font.GothamBold
+                InfoLabel.TextSize = 10
+                InfoLabel.TextXAlignment = Enum.TextXAlignment.Left
+                InfoLabel.Text = "👤 " .. sv.playing .. "/" .. sv.maxPlayers .. "  |  🆔: " .. sv.id:sub(1, 8)
+                
+                local AvatarContainer = Instance.new("Frame", ItemFrame)
+                AvatarContainer.Size = UDim2.new(0.6, 0, 0.4, 0)
+                AvatarContainer.Position = UDim2.new(0, 8, 0.5, 2)
+                AvatarContainer.BackgroundTransparency = 1
+                
+                local AvatarLayout = Instance.new("UIListLayout", AvatarContainer)
+                AvatarLayout.FillDirection = Enum.FillDirection.Horizontal
+                AvatarLayout.Padding = UDim.new(0, 4)
+                
+                if sv.playerTokens then
+                    for idx, token in ipairs(sv.playerTokens) do
+                        if idx > 5 then break end
+                        local Img = Instance.new("ImageLabel", AvatarContainer)
+                        Img.Size = UDim2.new(0, 18, 0, 18)
+                        Img.BackgroundColor3 = Color3.fromRGB(40, 45, 60)
+                        createCorner(Img, 9)
+                        
+                        task.spawn(function()
+                            pcall(function()
+                                local avatarApi = "https://thumbnails.roblox.com/v1/users/avatar-headshot?size=48x48&format=Png&isCircular=true&playerToken=" .. token
+                                local avatarRaw = game:HttpGet(avatarApi)
+                                local avatarData = HttpService:JSONDecode(avatarRaw)
+                                if avatarData and avatarData.data and avatarData.data[1] then
+                                    Img.Image = avatarData.data[1].imageUrl
+                                end
+                            end)
+                        end)
+                    end
                 end
-                game:GetService("TeleportService"):TeleportToPlaceInstance(game.PlaceId, sv.id, LocalPlayer)
-            end)
-        end
+                
+                local JoinBtn = Instance.new("TextButton", ItemFrame)
+                JoinBtn.Size = UDim2.new(0.3, 0, 0.6, 0)
+                JoinBtn.Position = UDim2.new(0.7, -8, 0.2, 0)
+                JoinBtn.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
+                JoinBtn.TextColor3 = Color3.new(1, 1, 1)
+                JoinBtn.Font = Enum.Font.GothamBold
+                JoinBtn.TextSize = 10
+                JoinBtn.Text = "Vào"
+                createCorner(JoinBtn, 6)
+                
+                JoinBtn.MouseButton1Click:Connect(function()
+                    if syn and syn.queue_on_teleport then
+                        syn.queue_on_teleport([[loadstring(game:HttpGet("https://raw.githubusercontent.com/3hbin/Gemini-Hub/refs/heads/main/GeminiHub.lua"))()]])
+                    elseif queue_on_teleport then
+                        queue_on_teleport([[loadstring(game:HttpGet("https://raw.githubusercontent.com/3hbin/Gemini-Hub/refs/heads/main/GeminiHub.lua"))()]])
+                    end
+                    game:GetService("TeleportService"):TeleportToPlaceInstance(game.PlaceId, sv.id, LocalPlayer)
+                end)
+            end
+        end)
+    end
+    
+    LoadServers()
+    
+    RefreshServer.MouseButton1Click:Connect(function()
+        LoadServers()
     end)
 end)
 
@@ -1405,88 +1601,6 @@ createButton("👕 Đổi Áo Avatar", Color3.fromRGB(180, 100, 50), function()
         end
         ShirtGui:Destroy()
     end)
-end)
-
--- 28.NÚT BIG SERVER (ĐỂ RIÊNG)
-createButton("👥 Big Server", Color3.fromRGB(200, 50, 50), function()
-    local api = "https://games.roblox.com/v1/games/" .. game.PlaceId .. "/servers/Public?limit=25"
-    local success, rawData = pcall(function() return game:HttpGet(api) end)
-    if not success then return end
-    
-    local data = HttpService:JSONDecode(rawData)
-    local servers = {}
-    for _, v in pairs(data.data) do
-        if v.playing < v.maxPlayers and v.id ~= game.JobId then
-            table.insert(servers, v)
-        end
-    end
-    
-    -- Sắp xếp: Server đông người chơi nhất lên đầu
-    table.sort(servers, function(a, b) return a.playing > b.playing end)
-    
-    if #servers > 0 then
-        -- Kích hoạt chạy lại script chính khi chuyển server thành công
-        if syn and syn.queue_on_teleport then
-            syn.queue_on_teleport([[loadstring(game:HttpGet("https://raw.githubusercontent.com/3hbin/Gemini-Hub/refs/heads/main/GeminiHub.lua"))()]])
-        elseif queue_on_teleport then
-            queue_on_teleport([[loadstring(game:HttpGet("https://raw.githubusercontent.com/3hbin/Gemini-Hub/refs/heads/main/GeminiHub.lua"))()]])
-        end
-        game:GetService("TeleportService"):TeleportToPlaceInstance(game.PlaceId, servers[1].id, LocalPlayer)
-    end
-end)
-
--- 29.NÚT CHỐNG BỊ TÁT / VĂNG (ĐỂ RIÊNG)
-createToggle("🛡️ Khóa Nhân Vật (Anti-Slap)", function(state)
-    local char = LocalPlayer.Character
-    if char then
-        local HRP = char:FindFirstChild("HumanoidRootPart")
-        if HRP then
-            -- Khóa cứng vị trí vật lý để không bị tác động lực làm văng đi
-            HRP.Anchored = state
-        end
-        
-        -- Chặn các lực kéo/đẩy vật lý bất ngờ từ bên ngoài tác động lên các bộ phận khác
-        for _, part in pairs(char:GetDescendants()) do
-            if part:IsA("BasePart") then
-                part.Velocity = Vector3.new(0, 0, 0)
-                part.RotVelocity = Vector3.new(0, 0, 0)
-            end
-        end
-    end
-end)
-
--- 30.NÚT CHỈNH SỐ FPS (ĐỂ RIÊNG)
-local fpsModes = {30, 60, 120, 999} -- Các mốc FPS bạn muốn chọn
-local currentFpsIndex = 1
-
-createButton("⚡ FPS Limit: 30", Color3.fromRGB(0, 180, 255), function()
-    -- Chuyển sang mốc FPS tiếp theo trong danh sách
-    currentFpsIndex = currentFpsIndex + 1
-    if currentFpsIndex > #fpsModes then
-        currentFpsIndex = 1
-    end
-    
-    local targetFps = fpsModes[currentFpsIndex]
-    
-    -- Thực hiện giới hạn FPS (Hỗ trợ hầu hết các Executor hiện nay)
-    if setfpscap then
-        setfpscap(targetFps)
-    elseif set_fps_cap then
-        set_fps_cap(targetFps)
-    end
-    
-    -- Cập nhật lại tên hiển thị trên nút bấm để bạn biết đang ở mức nào
-    local btnText = "⚡ FPS Limit: " .. (targetFps == 999 and "Uncapped" or tostring(targetFps))
-    
-    -- Đoạn này để cập nhật Text của nút bấm ngay lập tức trong Hub của bạn
-    -- (Lưu ý: Tùy thuộc vào cách bạn viết hàm createButton, nếu hàm đó trả về Object Button, 
-    -- bạn có thể cập nhật Text trực tiếp. Đoạn dưới đây tự dò tìm nút bấm để đổi tên)
-    for _, child in pairs(game.CoreGui:GetDescendants()) do
-        if child:IsA("TextButton") and child.Text:find("FPS Limit") then
-            child.Text = btnText
-            break
-        end
-    end
 end)
 
 -- CLOSE BUTTON
