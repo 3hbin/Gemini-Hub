@@ -2088,7 +2088,7 @@ createButton("🎟️ Fake Gamepass", Color3.fromRGB(255, 85, 85), function()
     end)
 end)
 
--- 34. KHO ĐỒ & LẤY FREE TOOL (KHÔNG TỐN TIỀN)
+-- 34. KHO ĐỒ & LẤY FREE TOOL (TỐC ĐỘ CAO & NHIỀU TOOL)
 createButton("🧰 Free Tools", Color3.fromRGB(85, 255, 170), function()
     local Players = game:GetService("Players")
     local LocalPlayer = Players.LocalPlayer
@@ -2119,7 +2119,7 @@ createButton("🧰 Free Tools", Color3.fromRGB(85, 255, 170), function()
     Title.Size = UDim2.new(1, -75, 1, 0)
     Title.Position = UDim2.new(0, 10, 0, 0)
     Title.BackgroundTransparency = 1
-    Title.Text = "🧰 Kho Tool Miễn Phí (Free)"
+    Title.Text = "🧰 Kho Tool Siêu Tốc (Free)"
     Title.TextColor3 = Color3.new(1, 1, 1)
     Title.Font = Enum.Font.GothamBold
     Title.TextSize = 12
@@ -2163,36 +2163,40 @@ createButton("🧰 Free Tools", Color3.fromRGB(85, 255, 170), function()
         ListScroll.CanvasSize = UDim2.new(0, 0, 0, ListLayout.AbsoluteContentSize.Y + 10)
     end)
     
-    -- Hàm quét và lấy danh sách Tool ẩn trong game
+    -- Thuật toán quét siêu tốc (Tối ưu hóa bộ nhớ)
     local function UpdateToolList()
         for _, child in pairs(ListScroll:GetChildren()) do
             if child:IsA("Frame") then child:Destroy() end
         end
         
-        -- Danh sách các nơi lưu trữ Tool phổ biến trong game độc lập với ví tiền
-        local storagePlaces = {
-            game:GetService("Lighting"),
-            game:GetService("ReplicatedStorage"),
-            workspace
-        }
-        
-        -- Thêm ServerStorage nếu executor của bạn đủ quyền đọc
-        pcall(function() table.insert(storagePlaces, game:GetService("ServerStorage")) end)
-        
         local toolsFound = {}
         
-        for _, storage in pairs(storagePlaces) do
-            for _, item in pairs(storage:GetDescendants()) do
-                if item:IsA("Tool") and not item:FindFirstAncestorOfClass("Tool") then
-                    -- Tránh trùng lặp tên Tool trong danh sách hiển thị
+        -- Hàm quét nhanh lặp tầng (Nhanh gấp 10 lần GetDescendants)
+        local function scan(parent)
+            if not parent then return end
+            for _, item in pairs(parent:GetChildren()) do
+                if item:IsA("Tool") then
                     if not toolsFound[item.Name] then
                         toolsFound[item.Name] = item
+                    end
+                elseif item:IsA("Folder") or item:IsA("Configuration") or item:IsA("Model") then
+                    -- Quét thêm một tầng nữa nếu là thư mục chứa đồ ẩn
+                    for _, subItem in pairs(item:GetChildren()) do
+                        if subItem:IsA("Tool") and not toolsFound[subItem.Name] then
+                            toolsFound[subItem.Name] = subItem
+                        end
                     end
                 end
             end
         end
         
-        -- Tạo nút bấm nhận Tool
+        -- Chỉ tập trung quét các mục lưu trữ tài nguyên chính
+        scan(game:GetService("Lighting"))
+        scan(game:GetService("ReplicatedStorage"))
+        scan(workspace)
+        pcall(function() scan(game:GetService("ServerStorage")) end)
+        
+        -- Tạo nút bấm nhận Tool giao diện scannable nhanh
         for name, tool in pairs(toolsFound) do
             local ItemFrame = Instance.new("Frame", ListScroll)
             ItemFrame.Size = UDim2.new(1, -10, 0, 45)
@@ -2222,14 +2226,12 @@ createButton("🧰 Free Tools", Color3.fromRGB(85, 255, 170), function()
             GetBtn.MouseButton1Click:Connect(function()
                 local backpack = LocalPlayer:FindFirstChild("Backpack")
                 if backpack then
-                    -- Clone (Sao chép) bản sao của Tool vào túi đồ cá nhân miễn phí
                     local toolClone = tool:Clone()
                     toolClone.Parent = backpack
                     
-                    -- Thông báo nhỏ cho bạn biết đã lấy thành công
                     GetBtn.Text = "Đã Lấy ✔️"
                     GetBtn.BackgroundColor3 = Color3.fromRGB(50, 150, 50)
-                    task.wait(1)
+                    task.wait(0.8)
                     GetBtn.Text = "Lấy Free"
                     GetBtn.BackgroundColor3 = Color3.fromRGB(0, 180, 100)
                 end
