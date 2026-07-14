@@ -2484,34 +2484,43 @@ createButton("🔓 Bypasser Admin", Color3.fromRGB(240, 165, 0), function()
     notify("Thành Công", "Đã hoàn tất gỡ chống HD & Free Admin!")
 end)
 
--- 13. TẢI LẠI NHÂN VẬT (FIX KẸT / FIX ICE KHÔNG HỒI SINH ĐƯỢC)
-createButton("♻️ Tải Lại Nhân Vật", Color3.fromRGB(85, 170, 255), function()
+-- 39. TẢI LẠI NHÂN VẬT (HỒI SINH TẠI CHỖ CŨ)
+createButton("♻️ Tải Lại Tại Chỗ", Color3.fromRGB(85, 170, 255), function()
     local Players = game:GetService("Players")
     local LocalPlayer = Players.LocalPlayer
     
-    -- Cách 1: Xóa Character cũ để buộc game kích hoạt Spawn lại nhân vật mới
-    if LocalPlayer.Character then
-        LocalPlayer.Character:ClearAllChildren()
-        LocalPlayer.Character:Destroy()
+    local character = LocalPlayer.Character
+    local oldCFrame = nil
+    
+    -- Bước 1: Lưu lại vị trí hiện tại (nếu nhân vật còn một bộ phận chính để lấy tọa độ)
+    if character then
+        local rootPart = character:FindFirstChild("HumanoidRootPart") or character:FindFirstChild("Head")
+        if rootPart then
+            oldCFrame = rootPart.CFrame
+        end
     end
     
-    -- Cách 2: Khởi tạo lại một Model trống để kích hoạt lại cơ chế hồi sinh của hệ thống
-    task.spawn(function()
-        local NewChar = Instance.new("Model")
-        NewChar.Name = "Resetting"
-        LocalPlayer.Character = NewChar
-        NewChar.Parent = workspace
-        task.wait(0.1)
-        NewChar:Destroy()
-    end)
-    
-    -- Cách 3: Gọi lệnh hồi sinh nếu game sử dụng cấu trúc chuẩn
+    -- Bước 2: Ép buộc game xóa nhân vật cũ để hồi sinh
     pcall(function()
         LocalPlayer:LoadCharacter()
     end)
+    
+    -- Bước 3: Đợi nhân vật mới xuất hiện và đưa về vị trí cũ
+    task.spawn(function()
+        -- Đợi cho đến khi nhân vật mới được tải xong hoàn toàn
+        local newChar = LocalPlayer.CharacterAdded:Wait()
+        local newRootPart = newChar:WaitForChild("HumanoidRootPart", 5)
+        
+        -- Nếu đã lưu được vị trí cũ, dịch chuyển về đó ngay lập tức
+        if newRootPart and oldCFrame then
+            task.wait(0.1) -- Chờ một chút để tránh bị lỗi đè vị trí của game
+            newRootPart.CFrame = oldCFrame
+        end
+    end)
 end)
 
--- 37. REJOIN (TỰ ĐỘNG CHẠY LẠI SCRIPT KHI SANG SERVER MỚI)
+
+-- 38. REJOIN (TỰ ĐỘNG CHẠY LẠI SCRIPT KHI SANG SERVER MỚI)
 createButton("🔄 Vào Lại Game", Color3.fromRGB(255, 85, 255), function()
     local TeleportService = game:GetService("TeleportService")
     local Players = game:GetService("Players")
