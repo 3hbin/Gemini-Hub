@@ -1086,7 +1086,7 @@ createButton("💬 Chat AI", Color3.fromRGB(100, 50, 150), function()
     ChatStroke.Color = Color3.fromRGB(100, 200, 255)
     ChatStroke.Thickness = 2
     
-    local ChatHeader = Instance.new("Frame", ChatGui)
+    local ChatHeader = Instance.new("Frame", ChatFrame)
     ChatHeader.Size = UDim2.new(1, 0, 0, 35)
     ChatHeader.BackgroundColor3 = Color3.fromRGB(0, 100, 180)
     ChatHeader.BorderSizePixel = 0
