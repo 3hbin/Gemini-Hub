@@ -4505,7 +4505,7 @@ createButton("🔑 Cài Đặt Key System", Color3.fromRGB(255, 200, 0), functio
     -- Sự kiện Copy Link Lấy Key (Đã dọn sạch link gốc)
     GetKeyBtn.MouseButton1Click:Connect(function()
         -- Thay thế link rút gọn Linkvertise làm nhiệm vụ của bạn ở đây
-        setclipboard("https://link-target.net/xxxxxx/key-gemini-hub") 
+        setclipboard("https://direct-link.net/6418717/dtr78S55t7ey") 
         
         game:GetService("StarterGui"):SetCore("SendNotification", {
             Title = "Hệ thống",
