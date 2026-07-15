@@ -4129,6 +4129,59 @@ createButton("⚠️ Chức Năng Error", Color3.fromRGB(255, 50, 50), function(
     end)
 end)
 
+-- 48. CHỨC NĂNG CHỐNG RƠI (ANTI-VOID FALL)
+local AntiVoidActive = false
+local Connection = nil
+
+createButton("🕳️ Chống Rơi (Anti-Void)", Color3.fromRGB(0, 200, 255), function()
+    local Players = game:GetService("Players")
+    local LocalPlayer = Players.LocalPlayer
+    
+    AntiVoidActive = not AntiVoidActive
+    
+    if AntiVoidActive then
+        local lastSafePosition = nil
+        
+        Connection = game:GetService("RunService").Heartbeat:Connect(function()
+            local char = LocalPlayer.Character
+            if char and char:FindFirstChild("HumanoidRootPart") then
+                local root = char.HumanoidRootPart
+                
+                local ray = Ray.new(root.Position, Vector3.new(0, -10, 0))
+                local hit, pos = workspace:FindPartOnRay(ray, char)
+                
+                if hit then
+                    lastSafePosition = root.CFrame
+                end
+                
+                if root.Position.Y < -500 then
+                    if lastSafePosition then
+                        root.CFrame = lastSafePosition
+                    else
+                        root.CFrame = CFrame.new(0, 50, 0)
+                    end
+                end
+            end
+        end)
+        
+        game:GetService("StarterGui"):SetCore("SendNotification", {
+            Title = "Hệ thống",
+            Text = "Đã bật: Chống rơi hố!",
+            Duration = 2
+        })
+    else
+        if Connection then
+            Connection:Disconnect()
+            Connection = nil
+        end
+        game:GetService("StarterGui"):SetCore("SendNotification", {
+            Title = "Hệ thống",
+            Text = "Đã tắt: Chống rơi hố!",
+            Duration = 2
+        })
+    end
+end)
+
 -- CLOSE BUTTON
 local CloseBtn = Instance.new("TextButton", MainFrame)
 CloseBtn.Size = UDim2.new(1, -12, 0, IsMobile and 25 or 35)
