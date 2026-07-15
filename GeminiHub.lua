@@ -4397,6 +4397,124 @@ createButton("⚙️ Cài Đặt Hệ Thống", Color3.fromRGB(150, 150, 150), f
     end)
 end)
 
+-- 52. CHỨC NĂNG HỆ THỐNG KHÓA (KEY SYSTEM - 10 KEY BẢO MẬT)
+local KeyVerified = false
+
+local ValidKeys = {
+    ["GM-9xK2-7pLm-2026"] = true,
+    ["GEMINI#u8F9_v7Y"] = true,
+    ["GM-Secure-9a8x"] = true,
+    ["Key_zB6#pQ9_v1x"] = true,
+    ["GM-Vip_8cT2-4wNz"] = true,
+    ["Hacker_7bX9_pL2k"] = true,
+    ["GM-Free_5mKp_8tR4"] = true,
+    ["Active_9yT4#u7Bx"] = true,
+    ["Gemini_Ultra_2k26"] = true,
+    ["GM-Private-99x7"] = true
+}
+
+createButton("🔑 Cài Đặt Key System", Color3.fromRGB(255, 200, 0), function()
+    local Players = game:GetService("Players")
+    local LocalPlayer = Players.LocalPlayer
+    
+    local KeyGui = Instance.new("ScreenGui", game.CoreGui)
+    KeyGui.Name = "GeminiKeySystem"
+    KeyGui.ResetOnSpawn = false
+    
+    -- Khung nhập Key bo góc nhỏ gọn
+    local KeyFrame = Instance.new("Frame", KeyGui)
+    KeyFrame.Size = UDim2.new(0, IsMobile and 240 or 280, 0, IsMobile and 140 or 160)
+    KeyFrame.Position = UDim2.new(0.5, IsMobile and -120 or -140, 0.5, IsMobile and -70 or -80)
+    KeyFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 30)
+    KeyFrame.BorderSizePixel = 0
+    createCorner(KeyFrame, 12)
+    makeDraggable(KeyFrame)
+    
+    local KeyStroke = Instance.new("UIStroke", KeyFrame)
+    KeyStroke.Color = Color3.fromRGB(255, 200, 0)
+    KeyStroke.Thickness = 2
+    
+    -- Tiêu đề
+    local Title = Instance.new("TextLabel", KeyFrame)
+    Title.Size = UDim2.new(1, 0, 0, 30)
+    Title.Position = UDim2.new(0, 0, 0, 10)
+    Title.BackgroundTransparency = 1
+    Title.Text = "🔑 GEMINI KEY SYSTEM"
+    Title.TextColor3 = Color3.new(1, 1, 1)
+    Title.Font = Enum.Font.GothamBold
+    Title.TextSize = 12
+    
+    -- Ô Nhập Key
+    local TextBox = Instance.new("TextBox", KeyFrame)
+    TextBox.Size = UDim2.new(1, -40, 0, 32)
+    TextBox.Position = UDim2.new(0, 20, 0, 45)
+    TextBox.BackgroundColor3 = Color3.fromRGB(35, 35, 40)
+    TextBox.Text = ""
+    TextBox.PlaceholderText = "Nhập một trong các Key hợp lệ..."
+    TextBox.TextColor3 = Color3.new(1, 1, 1)
+    TextBox.Font = Enum.Font.Gotham
+    TextBox.TextSize = 11
+    createCorner(TextBox, 6)
+    
+    local TextBoxStroke = Instance.new("UIStroke", TextBox)
+    TextBoxStroke.Color = Color3.fromRGB(70, 70, 75)
+    TextBoxStroke.Thickness = 1
+    
+    -- Nút Kiểm Tra Key
+    local VerifyBtn = Instance.new("TextButton", KeyFrame)
+    VerifyBtn.Size = UDim2.new(0.5, -25, 0, 30)
+    VerifyBtn.Position = UDim2.new(0, 20, 1, -42)
+    VerifyBtn.BackgroundColor3 = Color3.fromRGB(0, 170, 100)
+    VerifyBtn.Text = "XÁC NHẬN"
+    VerifyBtn.TextColor3 = Color3.new(1, 1, 1)
+    VerifyBtn.Font = Enum.Font.GothamBold
+    VerifyBtn.TextSize = 10
+    createCorner(VerifyBtn, 6)
+    
+    -- Nút Lấy Key (Link Linkvertise)
+    local GetKeyBtn = Instance.new("TextButton", KeyFrame)
+    GetKeyBtn.Size = UDim2.new(0.5, -25, 0, 30)
+    GetKeyBtn.Position = UDim2.new(0.5, 5, 1, -42)
+    GetKeyBtn.BackgroundColor3 = Color3.fromRGB(80, 80, 85)
+    GetKeyBtn.Text = "LẤY KEY LINK"
+    GetKeyBtn.TextColor3 = Color3.new(1, 1, 1)
+    GetKeyBtn.Font = Enum.Font.GothamBold
+    GetKeyBtn.TextSize = 10
+    createCorner(GetKeyBtn, 6)
+    
+    -- Sự kiện Xác Nhận Key
+    VerifyBtn.MouseButton1Click:Connect(function()
+        local EnteredKey = TextBox.Text
+        if ValidKeys[EnteredKey] then
+            KeyVerified = true
+            game:GetService("StarterGui"):SetCore("SendNotification", {
+                Title = "Hệ thống",
+                Text = "Key chính xác! Chúc bạn chơi game vui vẻ.",
+                Duration = 3
+            })
+            KeyGui:Destroy()
+        else
+            TextBox.Text = ""
+            TextBox.PlaceholderText = "Sai Key! Vui lòng thử lại..."
+            TextBoxStroke.Color = Color3.fromRGB(220, 50, 50)
+            task.wait(1.5)
+            TextBoxStroke.Color = Color3.fromRGB(70, 70, 75)
+        end
+    end)
+    
+    -- Sự kiện Copy Link Lấy Key (Đã dọn sạch link gốc)
+    GetKeyBtn.MouseButton1Click:Connect(function()
+        -- Thay thế link rút gọn Linkvertise làm nhiệm vụ của bạn ở đây
+        setclipboard("https://link-target.net/xxxxxx/key-gemini-hub") 
+        
+        game:GetService("StarterGui"):SetCore("SendNotification", {
+            Title = "Hệ thống",
+            Text = "Đã copy link lấy Key vào bộ nhớ tạm!",
+            Duration = 3
+        })
+    end)
+end)
+
 -- CLOSE BUTTON
 local CloseBtn = Instance.new("TextButton", MainFrame)
 CloseBtn.Size = UDim2.new(1, -12, 0, IsMobile and 25 or 35)
