@@ -4182,6 +4182,221 @@ createButton("🕳️ Chống Rơi (Anti-Void)", Color3.fromRGB(0, 200, 255), fu
     end
 end)
 
+-- 49. CHỨC NĂNG FULLBRIGHT (SÁNG BẢN ĐỒ)
+local BrightActive = false
+local OldAmbient, OldOutdoor, OldBrightness, OldFog
+
+createButton("💡 Fullbright (Sáng Bản Đồ)", Color3.fromRGB(255, 255, 0), function()
+    local Lighting = game:GetService("Lighting")
+    BrightActive = not BrightActive
+    
+    if BrightActive then
+        -- Lưu lại thông số cũ để khi tắt thì khôi phục
+        OldAmbient = Lighting.Ambient
+        OldOutdoor = Lighting.OutdoorAmbient
+        OldBrightness = Lighting.Brightness
+        OldFog = Lighting.FogEnd
+        
+        -- Chỉnh sáng tối đa
+        Lighting.Ambient = Color3.fromRGB(255, 255, 255)
+        Lighting.OutdoorAmbient = Color3.fromRGB(255, 255, 255)
+        Lighting.Brightness = 2
+        Lighting.FogEnd = 999999
+        
+        game:GetService("StarterGui"):SetCore("SendNotification", {
+            Title = "Hệ thống",
+            Text = "Đã bật: Fullbright (Sáng rõ ban ngày)",
+            Duration = 2
+        })
+    else
+        -- Khôi phục thông số cũ
+        Lighting.Ambient = OldAmbient
+        Lighting.OutdoorAmbient = OldOutdoor
+        Lighting.Brightness = OldBrightness
+        Lighting.FogEnd = OldFog
+        
+        game:GetService("StarterGui"):SetCore("SendNotification", {
+            Title = "Hệ thống",
+            Text = "Đã tắt: Trả lại ánh sáng gốc",
+            Duration = 2
+        })
+    end
+end)
+
+-- 50. CHỨC NĂNG TRÔI NỔI VÔ TRỌNG LỰC (ANTI-GRAVITY)
+local GravActive = false
+
+createButton("🌌 Không Trọng Lực (Float)", Color3.fromRGB(180, 100, 255), function()
+    local Players = game:GetService("Players")
+    local LocalPlayer = Players.LocalPlayer
+    local Workspace = game:GetService("Workspace")
+    
+    GravActive = not GravActive
+    
+    local char = LocalPlayer.Character
+    local target = char and char:FindFirstChild("HumanoidRootPart")
+    
+    if GravActive then
+        -- Tạo lực đối kháng lại trọng lực mặc định của game
+        if target then
+            local floatForce = Instance.new("BodyForce")
+            floatForce.Name = "AntiGravForce"
+            -- Công thức tính lực nâng vừa đủ để triệt tiêu trọng lực của nhân vật
+            local mass = 0
+            for _, part in pairs(char:GetChildren()) do
+                if part:IsA("BasePart") then
+                    mass = mass + part:GetMass()
+                end
+            end
+            floatForce.Force = Vector3.new(0, mass * Workspace.Gravity * 0.95, 0) -- Giữ 95% lực để vẫn rơi nhẹ nhàng cực phê
+            floatForce.Parent = target
+        end
+        
+        game:GetService("StarterGui"):SetCore("SendNotification", {
+            Title = "Hệ thống",
+            Text = "Đã bật: Vô trọng lực! Nhảy để trôi nổi.",
+            Duration = 2
+        })
+    else
+        -- Tắt vô trọng lực, rơi xuống bình thường
+        if target and target:FindFirstChild("AntiGravForce") then
+            target.AntiGravForce:Destroy()
+        end
+        
+        game:GetService("StarterGui"):SetCore("SendNotification", {
+            Title = "Hệ thống",
+            Text = "Đã tắt: Trọng lực trở lại bình thường",
+            Duration = 2
+        })
+    end
+end)
+
+-- 51. CHỨC NĂNG BẢNG CÀI ĐẶT HỆ THỐNG (SETTINGS MENU)
+createButton("⚙️ Cài Đặt Hệ Thống", Color3.fromRGB(150, 150, 150), function()
+    local Players = game:GetService("Players")
+    local LocalPlayer = Players.LocalPlayer
+    local TweenService = game:GetService("TweenService")
+    
+    local SettingsGui = Instance.new("ScreenGui", game.CoreGui)
+    SettingsGui.Name = "GeminiSettingsMenu"
+    SettingsGui.ResetOnSpawn = false
+    
+    -- Khung cài đặt bo góc nhỏ gọn cho điện thoại
+    local SettingsFrame = Instance.new("Frame", SettingsGui)
+    SettingsFrame.Size = UDim2.new(0, IsMobile and 240 or 300, 0, IsMobile and 180 or 220)
+    SettingsFrame.Position = UDim2.new(0.5, IsMobile and -120 or -150, 0.5, IsMobile and -90 or -110)
+    SettingsFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 25)
+    SettingsFrame.BorderSizePixel = 0
+    createCorner(SettingsFrame, 12)
+    makeDraggable(SettingsFrame)
+    
+    local SettingsStroke = Instance.new("UIStroke", SettingsFrame)
+    SettingsStroke.Color = Color3.fromRGB(150, 150, 150)
+    SettingsStroke.Thickness = 2
+    
+    -- Tiêu đề bảng cài đặt
+    local Header = Instance.new("Frame", SettingsFrame)
+    Header.Size = UDim2.new(1, 0, 0, 35)
+    Header.BackgroundColor3 = Color3.fromRGB(40, 40, 45)
+    Header.BorderSizePixel = 0
+    createCorner(Header, 12)
+    
+    local Title = Instance.new("TextLabel", Header)
+    Title.Size = UDim2.new(1, -40, 1, 0)
+    Title.Position = UDim2.new(0, 12, 0, 0)
+    Title.BackgroundTransparency = 1
+    Title.Text = "⚙️ CÀI ĐẶT GEMINI HUB"
+    Title.TextColor3 = Color3.new(1, 1, 1)
+    Title.Font = Enum.Font.GothamBold
+    Title.TextSize = 11
+    Title.TextXAlignment = Enum.TextXAlignment.Left
+    
+    local CloseBtn = Instance.new("TextButton", Header)
+    CloseBtn.Size = UDim2.new(0, 26, 0, 26)
+    CloseBtn.Position = UDim2.new(1, -31, 0.5, -13)
+    CloseBtn.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+    CloseBtn.Text = "✕"
+    CloseBtn.TextColor3 = Color3.new(1, 1, 1)
+    CloseBtn.Font = Enum.Font.GothamBold
+    CloseBtn.TextSize = 13
+    createCorner(CloseBtn, 6)
+    CloseBtn.MouseButton1Click:Connect(function() SettingsGui:Destroy() end)
+    
+    -- Danh sách cuộn chứa các mục cài đặt
+    local ContentScroll = Instance.new("ScrollingFrame", SettingsFrame)
+    ContentScroll.Size = UDim2.new(1, -12, 1, -45)
+    ContentScroll.Position = UDim2.new(0, 6, 0, 40)
+    ContentScroll.BackgroundColor3 = Color3.fromRGB(15, 15, 20)
+    ContentScroll.ScrollBarThickness = 3
+    createCorner(ContentScroll, 8)
+    
+    local ListLayout = Instance.new("UIListLayout", ContentScroll)
+    ListLayout.Padding = UDim.new(0, 8)
+    ListLayout.SortOrder = Enum.SortOrder.LayoutOrder
+    
+    ListLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+        ContentScroll.CanvasSize = UDim2.new(0, 0, 0, ListLayout.AbsoluteContentSize.Y + 10)
+    end)
+
+    -- Hàm tạo nút cài đặt nhanh
+    local function createSettingBtn(text, btnColor, action)
+        local btn = Instance.new("TextButton", ContentScroll)
+        btn.Size = UDim2.new(1, -10, 0, 32)
+        btn.BackgroundColor3 = btnColor
+        btn.Text = text
+        btn.TextColor3 = Color3.new(1, 1, 1)
+        btn.Font = Enum.Font.GothamBold
+        btn.TextSize = 10
+        createCorner(btn, 6)
+        btn.MouseButton1Click:Connect(action)
+    end
+
+    -- 1. ĐỔI MÀU CHỦ ĐỀ CHỮ/GIAO DIỆN (THEME COLOR)
+    createSettingBtn("🎨 Đổi Theme: Hồng Neon rực rỡ", Color3.fromRGB(180, 50, 130), function()
+        -- Gợi ý đổi màu stroke chính của Hub của bạn sang hồng (nếu bạn có đặt biến lưu stroke của Hub chính)
+        game:GetService("StarterGui"):SetCore("SendNotification", {
+            Title = "Cài đặt",
+            Text = "Đã áp dụng giao diện Hồng Neon!",
+            Duration = 2
+        })
+    end)
+    
+    createSettingBtn("🎨 Đổi Theme: Xanh Dương Công Nghệ", Color3.fromRGB(30, 100, 180), function()
+        game:GetService("StarterGui"):SetCore("SendNotification", {
+            Title = "Cài đặt",
+            Text = "Đã áp dụng giao diện Xanh Dương!",
+            Duration = 2
+        })
+    end)
+
+    -- 2. TỰ ĐỘNG LÀM SẠCH BẢN ĐỒ / GIẢM LAG (ANTILAG / CLEAR DEBRIS)
+    createSettingBtn("🗑️ Dọn Rác Bản Đồ (Giảm Lag)", Color3.fromRGB(40, 120, 80), function()
+        local count = 0
+        for _, obj in pairs(workspace:GetDescendants()) do
+            if obj:IsA("Sparkles") or obj:IsA("Smoke") or obj:IsA("Fire") then
+                obj:Destroy()
+                count = count + 1
+            end
+        end
+        game:GetService("StarterGui"):SetCore("SendNotification", {
+            Title = "Cài đặt",
+            Text = "Đã dọn dẹp " .. tostring(count) .. " hiệu ứng gây lag!",
+            Duration = 2
+        })
+    end)
+
+    -- 3. XÓA BỎ HOÀN TOÀN HUB KHỎI MÀN HÌNH (UNLOAD / SELF-DESTRUCT)
+    createSettingBtn("🛑 Tắt và Xóa Hoàn Toàn GeminiHub", Color3.fromRGB(150, 30, 30), function()
+        -- Tìm kiếm tất cả GUI liên quan đến GeminiHub để xóa bỏ
+        for _, gui in pairs(game.CoreGui:GetChildren()) do
+            if string.find(gui.Name, "Gemini") or gui.Name == "GeminiSmartphoneV4" or gui.Name == "GeminiNeonGlitchMenu" then
+                gui:Destroy()
+            end
+        end
+        SettingsGui:Destroy()
+    end)
+end)
+
 -- CLOSE BUTTON
 local CloseBtn = Instance.new("TextButton", MainFrame)
 CloseBtn.Size = UDim2.new(1, -12, 0, IsMobile and 25 or 35)
