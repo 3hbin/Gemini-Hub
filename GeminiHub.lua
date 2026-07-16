@@ -4515,64 +4515,131 @@ createButton("🔑 Cài Đặt Key System", Color3.fromRGB(255, 200, 0), functio
     end)
 end)
 
--- 53.TÍCH HỢP ĐIỀU KHIỂN HITBOX (SỐ & ĐỘ MỜ)
-local HitboxPlayerEnabled = false
-local HitboxNPCEnabled = false
-local HitboxSize = 10 -- Số kích thước mặc định
-local HitboxOpacity = 0.5 -- Độ mờ mặc định
-
--- Tạo Slider chỉnh Số (Size)
-createButton("📏 Chỉnh Size: " .. HitboxSize, Color3.fromRGB(80, 80, 80), function()
-    HitboxSize = (HitboxSize >= 20) and 2 or (HitboxSize + 2)
-    -- Cập nhật tên nút trực tiếp
-    script.Parent.Text = "📏 Chỉnh Size: " .. HitboxSize
-end)
-
--- Tạo Slider chỉnh Độ mờ (Transparency)
-createButton("👻 Độ mờ: " .. HitboxOpacity, Color3.fromRGB(80, 80, 80), function()
-    HitboxOpacity = (HitboxOpacity >= 1) and 0.1 or (HitboxOpacity + 0.1)
-    script.Parent.Text = "👻 Độ mờ: " .. math.floor(HitboxOpacity * 10) / 10
-end)
-
--- Nút Bật/Tắt
-createButton("⚡ Hitbox Player: OFF", Color3.fromRGB(200, 50, 50), function()
-    HitboxPlayerEnabled = not HitboxPlayerEnabled
-    script.Parent.Text = HitboxPlayerEnabled and "⚡ Hitbox Player: ON" or "⚡ Hitbox Player: OFF"
-end)
-
-createButton("🤖 Hitbox NPC: OFF", Color3.fromRGB(50, 150, 200), function()
-    HitboxNPCEnabled = not HitboxNPCEnabled
-    script.Parent.Text = HitboxNPCEnabled and "🤖 Hitbox NPC: ON" or "🤖 Hitbox NPC: OFF"
-end)
-
--- VÒNG LẶP XỬ LÝ (Áp dụng thông số chỉnh)
-game:GetService("RunService").RenderStepped:Connect(function()
-    for _, obj in pairs(game:GetService("Players"):GetPlayers()) do
-        if obj ~= game.Players.LocalPlayer and obj.Character and obj.Character:FindFirstChild("HumanoidRootPart") then
-            local root = obj.Character.HumanoidRootPart
-            if HitboxPlayerEnabled then
-                root.Size = Vector3.new(HitboxSize, HitboxSize, HitboxSize)
-                root.Transparency = HitboxOpacity
-                root.CanCollide = false
-            else
-                root.Size = Vector3.new(2, 2, 1)
-                root.Transparency = 1
+-- ============== HITBOX PLAYER & NPC (CẬP NHẬT ĐẦY ĐỦ) ==============
+-- 53. HITBOX NGƯỜI CHƠI
+local HitboxPlayer_Active = false
+local HitboxPlayer_Size = 10
+local HitboxPlayer_Trans = 0.3 -- Độ mờ mặc định
+createToggle("📦 Hitbox Người Chơi", function(state)
+    HitboxPlayer_Active = state
+    if state then
+        task.spawn(function()
+            while HitboxPlayer_Active do
+                task.wait(0.1)
+                pcall(function()
+                    for _, p in pairs(Players:GetPlayers()) do
+                        if p ~= LocalPlayer and p.Character and p.Character:FindFirstChild("HumanoidRootPart") then
+                            local root = p.Character.HumanoidRootPart
+                            root.Size = Vector3.new(HitboxPlayer_Size, HitboxPlayer_Size, HitboxPlayer_Size)
+                            root.Transparency = HitboxPlayer_Trans
+                            root.CanCollide = false
+                        end
+                    end
+                end)
             end
-        end
+        end)
     end
-    
-    for _, obj in pairs(workspace:GetDescendants()) do
-        if obj:IsA("Model") and obj:FindFirstChild("Humanoid") and not game.Players:GetPlayerFromCharacter(obj) then
-            local root = obj:FindFirstChild("HumanoidRootPart")
-            if root and HitboxNPCEnabled then
-                root.Size = Vector3.new(HitboxSize, HitboxSize, HitboxSize)
-                root.Transparency = HitboxOpacity
-            elseif root then
-                root.Size = Vector3.new(2, 2, 1)
-                root.Transparency = 1
+end)
+createSlider("Kích Thước", 5, 50, HitboxPlayer_Size, function(val) HitboxPlayer_Size = val end)
+createSlider("Độ Mờ", 0, 10, HitboxPlayer_Trans*10, function(val) HitboxPlayer_Trans = val/10 end)
+createButton("✏️ Nhập Kích Thước", Color3.fromRGB(0, 150, 200), function()
+    local InputGui = Instance.new("ScreenGui", game.CoreGui)
+    InputGui.Name = "InputSizePlayer"
+    local Frame = Instance.new("Frame", InputGui)
+    Frame.Size = UDim2.new(0, 180, 0, 80)
+    Frame.Position = UDim2.new(0.5, -90, 0.4, -40)
+    Frame.BackgroundColor3 = Color3.fromRGB(20,20,30)
+    createCorner(Frame, 8)
+    local Box = Instance.new("TextBox", Frame)
+    Box.Size = UDim2.new(1, -20, 0, 28)
+    Box.Position = UDim2.new(0,10,0,8)
+    Box.PlaceholderText = "Nhập kích thước..."
+    Box.BackgroundColor3 = Color3.fromRGB(40,40,50)
+    Box.TextColor3 = Color3.new(1,1,1)
+    createCorner(Box,6)
+    local Ok = Instance.new("TextButton", Frame)
+    Ok.Size = UDim2.new(0,70,0,28)
+    Ok.Position = UDim2.new(0,10,0,45)
+    Ok.BackgroundColor3 = Color3.fromRGB(0,140,220)
+    Ok.Text = "Đồng Ý"
+    Ok.TextColor3 = Color3.new(1,1,1)
+    createCorner(Ok,6)
+    local Close = Instance.new("TextButton", Frame)
+    Close.Size = UDim2.new(0,70,0,28)
+    Close.Position = UDim2.new(1,-80,0,45)
+    Close.BackgroundColor3 = Color3.fromRGB(180,50,50)
+    Close.Text = "Đóng"
+    Close.TextColor3 = Color3.new(1,1,1)
+    createCorner(Close,6)
+    Close.MouseButton1Click:Connect(function() InputGui:Destroy() end)
+    Ok.MouseButton1Click:Connect(function()
+        local num = tonumber(Box.Text:match("%d+%.?%d*"))
+        if num and num > 0 then HitboxPlayer_Size = num end
+        InputGui:Destroy()
+    end)
+end)
+
+-- 54. HITBOX NPC
+local HitboxNPC_Active = false
+local HitboxNPC_Size = 8
+local HitboxNPC_Trans = 0.3
+createToggle("📦 Hitbox NPC", function(state)
+    HitboxNPC_Active = state
+    if state then
+        task.spawn(function()
+            while HitboxNPC_Active do
+                task.wait(0.1)
+                pcall(function()
+                    for _, v in pairs(workspace:GetChildren()) do
+                        if v:IsA("Model") and not v:IsA("Player") and v:FindFirstChild("Humanoid") and v:FindFirstChild("HumanoidRootPart") then
+                            local root = v.HumanoidRootPart
+                            root.Size = Vector3.new(HitboxNPC_Size, HitboxNPC_Size, HitboxNPC_Size)
+                            root.Transparency = HitboxNPC_Trans
+                            root.CanCollide = false
+                        end
+                    end
+                end)
             end
-        end
+        end)
     end
+end)
+createSlider("Kích Thước", 3, 40, HitboxNPC_Size, function(val) HitboxNPC_Size = val end)
+createSlider("Độ Mờ", 0, 10, HitboxNPC_Trans*10, function(val) HitboxNPC_Trans = val/10 end)
+createButton("✏️ Nhập Kích Thước", Color3.fromRGB(180, 100, 50), function()
+    local InputGui = Instance.new("ScreenGui", game.CoreGui)
+    InputGui.Name = "InputSizeNPC"
+    local Frame = Instance.new("Frame", InputGui)
+    Frame.Size = UDim2.new(0, 180, 0, 80)
+    Frame.Position = UDim2.new(0.5, -90, 0.4, -40)
+    Frame.BackgroundColor3 = Color3.fromRGB(20,20,30)
+    createCorner(Frame, 8)
+    local Box = Instance.new("TextBox", Frame)
+    Box.Size = UDim2.new(1, -20, 0, 28)
+    Box.Position = UDim2.new(0,10,0,8)
+    Box.PlaceholderText = "Nhập kích thước..."
+    Box.BackgroundColor3 = Color3.fromRGB(40,40,50)
+    Box.TextColor3 = Color3.new(1,1,1)
+    createCorner(Box,6)
+    local Ok = Instance.new("TextButton", Frame)
+    Ok.Size = UDim2.new(0,70,0,28)
+    Ok.Position = UDim2.new(0,10,0,45)
+    Ok.BackgroundColor3 = Color3.fromRGB(0,140,220)
+    Ok.Text = "Đồng Ý"
+    Ok.TextColor3 = Color3.new(1,1,1)
+    createCorner(Ok,6)
+    local Close = Instance.new("TextButton", Frame)
+    Close.Size = UDim2.new(0,70,0,28)
+    Close.Position = UDim2.new(1,-80,0,45)
+    Close.BackgroundColor3 = Color3.fromRGB(180,50,50)
+    Close.Text = "Đóng"
+    Close.TextColor3 = Color3.new(1,1,1)
+    createCorner(Close,6)
+    Close.MouseButton1Click:Connect(function() InputGui:Destroy() end)
+    Ok.MouseButton1Click:Connect(function()
+        local num = tonumber(Box.Text:match("%d+%.?%d*"))
+        if num and num > 0 then HitboxNPC_Size = num end
+        InputGui:Destroy()
+    end)
 end)
 
 -- CLOSE BUTTON
