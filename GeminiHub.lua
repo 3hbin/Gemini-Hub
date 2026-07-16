@@ -4515,6 +4515,66 @@ createButton("🔑 Cài Đặt Key System", Color3.fromRGB(255, 200, 0), functio
     end)
 end)
 
+-- 53.TÍCH HỢP ĐIỀU KHIỂN HITBOX (SỐ & ĐỘ MỜ)
+local HitboxPlayerEnabled = false
+local HitboxNPCEnabled = false
+local HitboxSize = 10 -- Số kích thước mặc định
+local HitboxOpacity = 0.5 -- Độ mờ mặc định
+
+-- Tạo Slider chỉnh Số (Size)
+createButton("📏 Chỉnh Size: " .. HitboxSize, Color3.fromRGB(80, 80, 80), function()
+    HitboxSize = (HitboxSize >= 20) and 2 or (HitboxSize + 2)
+    -- Cập nhật tên nút trực tiếp
+    script.Parent.Text = "📏 Chỉnh Size: " .. HitboxSize
+end)
+
+-- Tạo Slider chỉnh Độ mờ (Transparency)
+createButton("👻 Độ mờ: " .. HitboxOpacity, Color3.fromRGB(80, 80, 80), function()
+    HitboxOpacity = (HitboxOpacity >= 1) and 0.1 or (HitboxOpacity + 0.1)
+    script.Parent.Text = "👻 Độ mờ: " .. math.floor(HitboxOpacity * 10) / 10
+end)
+
+-- Nút Bật/Tắt
+createButton("⚡ Hitbox Player: OFF", Color3.fromRGB(200, 50, 50), function()
+    HitboxPlayerEnabled = not HitboxPlayerEnabled
+    script.Parent.Text = HitboxPlayerEnabled and "⚡ Hitbox Player: ON" or "⚡ Hitbox Player: OFF"
+end)
+
+createButton("🤖 Hitbox NPC: OFF", Color3.fromRGB(50, 150, 200), function()
+    HitboxNPCEnabled = not HitboxNPCEnabled
+    script.Parent.Text = HitboxNPCEnabled and "🤖 Hitbox NPC: ON" or "🤖 Hitbox NPC: OFF"
+end)
+
+-- VÒNG LẶP XỬ LÝ (Áp dụng thông số chỉnh)
+game:GetService("RunService").RenderStepped:Connect(function()
+    for _, obj in pairs(game:GetService("Players"):GetPlayers()) do
+        if obj ~= game.Players.LocalPlayer and obj.Character and obj.Character:FindFirstChild("HumanoidRootPart") then
+            local root = obj.Character.HumanoidRootPart
+            if HitboxPlayerEnabled then
+                root.Size = Vector3.new(HitboxSize, HitboxSize, HitboxSize)
+                root.Transparency = HitboxOpacity
+                root.CanCollide = false
+            else
+                root.Size = Vector3.new(2, 2, 1)
+                root.Transparency = 1
+            end
+        end
+    end
+    
+    for _, obj in pairs(workspace:GetDescendants()) do
+        if obj:IsA("Model") and obj:FindFirstChild("Humanoid") and not game.Players:GetPlayerFromCharacter(obj) then
+            local root = obj:FindFirstChild("HumanoidRootPart")
+            if root and HitboxNPCEnabled then
+                root.Size = Vector3.new(HitboxSize, HitboxSize, HitboxSize)
+                root.Transparency = HitboxOpacity
+            elseif root then
+                root.Size = Vector3.new(2, 2, 1)
+                root.Transparency = 1
+            end
+        end
+    end
+end)
+
 -- CLOSE BUTTON
 local CloseBtn = Instance.new("TextButton", MainFrame)
 CloseBtn.Size = UDim2.new(1, -12, 0, IsMobile and 25 or 35)
