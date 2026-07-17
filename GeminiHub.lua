@@ -4515,6 +4515,34 @@ createButton("🔑 Cài Đặt Key System", Color3.fromRGB(255, 200, 0), functio
     end)
 end)
 
+-- 53.NÚT BẤM KÍCH HOẠT PROMPT NHANH 0S
+createButton("⚡ Prompt Nhanh 0s", Color3.fromRGB(230, 130, 10), function()
+    local count = 0
+    -- Quét toàn bộ map và giảm HoldDuration về 0
+    for _, obj in pairs(workspace:GetDescendants()) do
+        if obj:IsA("ProximityPrompt") then
+            obj.HoldDuration = 0
+            count = count + 1
+        end
+    end
+    
+    -- Tự động xử lý các Prompt xuất hiện sau đó
+    if not _G.PromptFastConnection then
+        _G.PromptFastConnection = workspace.DescendantAdded:Connect(function(obj)
+            if obj:IsA("ProximityPrompt") then
+                obj.HoldDuration = 0
+            end
+        end)
+    end
+    
+    -- Thông báo sau khi nhấn nút
+    game:GetService("StarterGui"):SetCore("SendNotification", {
+        Title = "Gemini Hub",
+        Text = "Đã kích hoạt Prompt 0s cho " .. tostring(count) .. " đối tượng!",
+        Duration = 2
+    })
+end)
+
 -- CLOSE BUTTON
 local CloseBtn = Instance.new("TextButton", MainFrame)
 CloseBtn.Size = UDim2.new(1, -12, 0, IsMobile and 25 or 35)
