@@ -4543,6 +4543,57 @@ createButton("⚡ Prompt Nhanh 0s", Color3.fromRGB(230, 130, 10), function()
     })
 end)
 
+-- 54.TRẠNG THÁI MẶC ĐỊNH LÀ TẮT
+_G.AntiTouchEnabled = false
+
+createButton("🛡️ Anti-Touch (Bật/Tắt)", Color3.fromRGB(200, 50, 50), function()
+    _G.AntiTouchEnabled = not _G.AntiTouchEnabled -- Đảo ngược trạng thái
+    local keywords = {"lava", "kill", "damage", "laser", "hazard", "spike"}
+    
+    -- Hàm xử lý trạng thái
+    local function processPart(part, state)
+        if part:IsA("BasePart") then
+            local name = string.lower(part.Name)
+            for _, word in pairs(keywords) do
+                if string.find(name, word) then
+                    part.CanTouch = state -- true (được chạm) hoặc false (bất tử)
+                    break
+                end
+            end
+        end
+    end
+
+    -- Nếu Bật thì CanTouch = false (bất tử), nếu Tắt thì CanTouch = true (nguy hiểm lại)
+    local targetState = not _G.AntiTouchEnabled 
+
+    -- Quét toàn bộ vật thể hiện có trong map
+    for _, obj in pairs(workspace:GetDescendants()) do
+        processPart(obj, targetState)
+    end
+    
+    -- Lắng nghe vật thể mới spawn
+    if _G.AntiTouchEnabled then
+        if not _G.AntiTouchConnection then
+            _G.AntiTouchConnection = workspace.DescendantAdded:Connect(function(obj)
+                if _G.AntiTouchEnabled then processPart(obj, false) end
+            end)
+        end
+    else
+        -- Nếu tắt, ngắt kết nối lắng nghe để không làm lag game
+        if _G.AntiTouchConnection then
+            _G.AntiTouchConnection:Disconnect()
+            _G.AntiTouchConnection = nil
+        end
+    end
+    
+    -- Thông báo trạng thái
+    game:GetService("StarterGui"):SetCore("SendNotification", {
+        Title = "Anti-Touch",
+        Text = _G.AntiTouchEnabled and "🛡️ Đã Bật: Bạn bất tử với Lava!" or "⚠️ Đã Tắt: Lava gây sát thương!",
+        Duration = 2
+    })
+end)
+
 -- CLOSE BUTTON
 local CloseBtn = Instance.new("TextButton", MainFrame)
 CloseBtn.Size = UDim2.new(1, -12, 0, IsMobile and 25 or 35)
