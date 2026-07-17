@@ -4594,6 +4594,134 @@ createButton("🛡️ Anti-Touch (Bật/Tắt)", Color3.fromRGB(200, 50, 50), fu
     })
 end)
 
+-- 55.TRẠNG THÁI MẶC ĐỊNH
+_G.AutoTranslateEnabled = false
+
+createButton("🌐 Dịch Tiếng Việt (On/Off)", Color3.fromRGB(30, 140, 200), function()
+    _G.AutoTranslateEnabled = not _G.AutoTranslateEnabled
+    local LocalizationService = game:GetService("LocalizationService")
+    
+    -- Hàm thực hiện dịch văn bản
+    local function translateUi(obj)
+        if obj:IsA("TextLabel") or obj:IsA("TextButton") or obj:IsA("TextBox") then
+            -- Chỉ dịch nếu text không trống và không phải toàn số
+            if obj.Text ~= "" and not tonumber(obj.Text) then
+                pcall(function()
+                    local success, result = pcall(function()
+                        return LocalizationService:FilterStringForPlayerAsync(obj.Text, game.Players.LocalPlayer, Enum.TranslatorCategory.GameContent)
+                    end)
+                    -- Nếu hệ thống trả về kết quả dịch chuẩn, áp dụng luôn
+                    if success and result then
+                        obj.Text = result
+                    end
+                end)
+            end
+        end
+    end
+
+    if _G.AutoTranslateEnabled then
+        -- Dịch toàn bộ UI hiện tại
+        for _, obj in pairs(game.Players.LocalPlayer.PlayerGui:GetDescendants()) do
+            translateUi(obj)
+        end
+        for _, obj in pairs(game.CoreGui:GetDescendants()) do
+            translateUi(obj)
+        end
+
+        -- Tự động dịch các UI mới xuất hiện sau đó
+        if not _G.TranslateConnection then
+            _G.TranslateConnection = game.Players.LocalPlayer.PlayerGui.DescendantAdded:Connect(function(obj)
+                if _G.AutoTranslateEnabled then
+                    task.wait(0.1) -- Đợi văn bản load xong rồi dịch
+                    translateUi(obj)
+                end
+            end)
+        end
+    else
+        -- Tắt lắng nghe tự động dịch khi tắt nút
+        if _G.TranslateConnection then
+            _G.TranslateConnection:Disconnect()
+            _G.TranslateConnection = nil
+        end
+    end
+
+    game:GetService("StarterGui"):SetCore("SendNotification", {
+        Title = "Dịch Thuật",
+        Text = _G.AutoTranslateEnabled and "🌐 Đã bật tự động dịch tiếng Việt!" or "⚠️ Đã tắt tự động dịch!",
+        Duration = 2
+    })
+end)
+
+-- 56.TRẠNG THÁI MẶC ĐỊNH
+_G.AutoClickEnabled = false
+
+createButton("🖱️ Auto Click Tool (On/Off)", Color3.fromRGB(40, 160, 80), function()
+    _G.AutoClickEnabled = not _G.AutoClickEnabled
+    
+    if _G.AutoClickEnabled then
+        -- Chạy vòng lặp click liên tục trong nền
+        task.spawn(function()
+            local Player = game.Players.LocalPlayer
+            while _G.AutoClickEnabled do
+                local Character = Player.Character
+                if Character then
+                    -- Tìm kiếm Tool đang được nhân vật cầm trên tay
+                    local Tool = Character:FindFirstChildOfClass("Tool")
+                    if Tool then
+                        Tool:Activate() -- Kích hoạt (click) tool
+                    end
+                end
+                task.wait(0.01) -- Khoảng thời gian giữa mỗi lần click (0.01s là siêu nhanh)
+            end
+        end)
+    end
+
+    game:GetService("StarterGui"):SetCore("SendNotification", {
+        Title = "Auto Click",
+        Text = _G.AutoClickEnabled and "🖱️ Đã Bật: Hãy cầm tool lên để tự động click!" or "⚠️ Đã Tắt Auto Click!",
+        Duration = 2
+    })
+end)
+
+-- 57.TRẠNG THÁI MẶC ĐỊNH
+_G.AutoWallHopEnabled = false
+
+createButton("🧗 Auto Wall Hop (On/Off)", Color3.fromRGB(100, 200, 50), function()
+    _G.AutoWallHopEnabled = not _G.AutoWallHopEnabled
+    
+    if _G.AutoWallHopEnabled then
+        -- Vòng lặp kiểm tra trạng thái nhảy
+        task.spawn(function()
+            local RunService = game:GetService("RunService")
+            local Player = game.Players.LocalPlayer
+            
+            while _G.AutoWallHopEnabled do
+                local Character = Player.Character
+                if Character and Character:FindFirstChild("Humanoid") and Character:FindFirstChild("HumanoidRootPart") then
+                    local Humanoid = Character.Humanoid
+                    local RootPart = Character.HumanoidRootPart
+                    
+                    -- Kiểm tra xem có đang ở trên không và đang chạm tường không
+                    -- Raycast ngắn phía trước mặt để phát hiện tường
+                    local ray = Ray.new(RootPart.Position, RootPart.CFrame.LookVector * 3)
+                    local hit, position = workspace:FindPartOnRayWithIgnoreList(ray, {Character})
+                    
+                    if hit and (Humanoid:GetState() == Enum.HumanoidStateType.Jumping or Humanoid:GetState() == Enum.HumanoidStateType.Freefall) then
+                        Humanoid.Jump = true
+                    end
+                end
+                RunService.RenderStepped:Wait()
+            end
+        end)
+    end
+
+    game:GetService("StarterGui"):SetCore("SendNotification", {
+        Title = "Wall Hop",
+        Text = _G.AutoWallHopEnabled and "🧗 Đã Bật: Tự động Wall Hop!" or "⚠️ Đã Tắt Wall Hop!",
+        Duration = 2
+    })
+end)
+
 -- CLOSE BUTTON
 local CloseBtn = Instance.new("TextButton", MainFrame)
 CloseBtn.Size = UDim2.new(1, -12, 0, IsMobile and 25 or 35)
