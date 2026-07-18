@@ -4879,6 +4879,79 @@ createButton("🔗 Link & Server", Color3.fromRGB(150, 50, 200), function()
     end)
 end)
 
+createButton("⌨️ Bàn Phím Ảo", Color3.fromRGB(85, 85, 85), function()
+    -- Tạo một bảng bàn phím ảo di động trên màn hình
+    local KeyboardGui = Instance.new("ScreenGui", game.CoreGui)
+    KeyboardGui.Name = "GeminiVirtualKeyboard"
+
+    local MainFrame = Instance.new("Frame", KeyboardGui)
+    MainFrame.Size = UDim2.new(0, 260, 0, 110)
+    MainFrame.Position = UDim2.new(0.5, -130, 0.7, 0) -- Nằm dịch xuống phía dưới cho đỡ vướng
+    MainFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+    MainFrame.Active = true
+    MainFrame.Draggable = true -- Có thể kéo thả vị trí tùy ý trên màn hình điện thoại
+    Instance.new("UICorner", MainFrame).CornerRadius = UDim.new(0, 10)
+
+    -- Layout xếp các nút bàn phím tự động cho đẹp
+    local UIGridLayout = Instance.new("UIGridLayout", MainFrame)
+    UIGridLayout.CellSize = UDim2.new(0, 45, 0, 40)
+    UIGridLayout.CellPadding = UDim2.new(0, 5, 0, 5)
+    UIGridLayout.StartCorner = Enum.GridCorner.TopLeft
+    UIGridLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+    UIGridLayout.VerticalAlignment = Enum.VerticalAlignment.Center
+
+    -- Danh sách các nút phím PC phổ biến cần dùng trong game
+    local keys = {
+        {Text = "Shift", Key = Enum.KeyCode.LeftShift},
+        {Text = "Ctrl", Key = Enum.KeyCode.LeftControl},
+        {Text = "E", Key = Enum.KeyCode.E},
+        {Text = "Q", Key = Enum.KeyCode.Q},
+        {Text = "F", Key = Enum.KeyCode.F},
+        {Text = "Space", Key = Enum.KeyCode.Space},
+        {Text = "✕", Close = true} -- Nút đóng bàn phím ảo
+    }
+
+    local VirtualInputManager = game:GetService("VirtualInputManager")
+
+    for _, keyData in ipairs(keys) do
+        local KeyBtn = Instance.new("TextButton", MainFrame)
+        KeyBtn.Text = keyData.Text
+        KeyBtn.TextColor3 = Color3.new(1, 1, 1)
+        KeyBtn.Font = Enum.Font.GothamBold
+        
+        if keyData.Close then
+            -- Xử lý nút Tắt bàn phím
+            KeyBtn.BackgroundColor3 = Color3.fromRGB(150, 0, 0)
+            KeyBtn.TextSize = 16
+            KeyBtn.MouseButton1Click:Connect(function()
+                KeyboardGui:Destroy()
+            end)
+        else
+            -- Xử lý mô phỏng bấm phím PC thực tế
+            KeyBtn.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+            KeyBtn.TextSize = 14
+            Instance.new("UICorner", KeyBtn).CornerRadius = UDim.new(0, 6)
+
+            KeyBtn.MouseButton1Down:Connect(function()
+                KeyBtn.BackgroundColor3 = Color3.fromRGB(100, 100, 100) -- Hiệu ứng đổi màu khi nhấn giữ
+                VirtualInputManager:SendKeyEvent(true, keyData.Key, false, game)
+            end)
+
+            KeyBtn.MouseButton1Up:Connect(function()
+                KeyBtn.BackgroundColor3 = Color3.fromRGB(50, 50, 50) -- Trở lại màu cũ khi thả tay
+                VirtualInputManager:SendKeyEvent(false, keyData.Key, false, game)
+            end)
+        end
+    end
+
+    -- Thông báo nhỏ khi mở bàn phím thành công
+    game:GetService("StarterGui"):SetCore("SendNotification", {
+        Title = "Bàn Phím",
+        Text = "⌨️ Đã mở bàn phím ảo máy tính (Có thể kéo thả)!",
+        Duration = 2
+    })
+end)
+
 -- CLOSE BUTTON
 local CloseBtn = Instance.new("TextButton", MainFrame)
 CloseBtn.Size = UDim2.new(1, -12, 0, IsMobile and 25 or 35)
