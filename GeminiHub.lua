@@ -4722,6 +4722,80 @@ createButton("🧗 Auto Wall Hop (On/Off)", Color3.fromRGB(100, 200, 50), functi
     })
 end)
 
+-- 58.TRẠNG THÁI MẶC ĐỊNH
+_G.FullBrightEnabled = false
+
+createButton("💡 FullBright (Bật/Tắt)", Color3.fromRGB(255, 200, 50), function()
+    _G.FullBrightEnabled = not _G.FullBrightEnabled
+    local Player = game.Players.LocalPlayer
+    local Character = Player.Character or Player.CharacterAdded:Wait()
+    local RootPart = Character:FindFirstChild("HumanoidRootPart")
+    
+    if _G.FullBrightEnabled then
+        if RootPart and not RootPart:FindFirstChild("GeminiLight") then
+            -- Tạo đèn nếu chưa có
+            local light = Instance.new("PointLight")
+            light.Name = "GeminiLight"
+            light.Brightness = 3 -- Độ sáng
+            light.Range = 25     -- Bán kính sáng
+            light.Color = Color3.fromRGB(255, 255, 255)
+            light.Parent = RootPart
+        end
+    else
+        -- Tắt đèn: Xóa PointLight nếu nó tồn tại
+        if RootPart and RootPart:FindFirstChild("GeminiLight") then
+            RootPart.GeminiLight:Destroy()
+        end
+    end
+    
+    game:GetService("StarterGui"):SetCore("SendNotification", {
+        Title = "FullBright",
+        Text = _G.FullBrightEnabled and "💡 Đã Bật: Nhân vật tỏa sáng!" or "⚠️ Đã Tắt: Trở lại bình thường!",
+        Duration = 2
+    })
+end)
+
+-- 59.TRẠNG THÁI MẶC ĐỊNH
+_G.AntiNPCEnabled = false
+
+createButton("👻 Anti-NPC (Chống đuổi)", Color3.fromRGB(120, 40, 160), function()
+    _G.AntiNPCEnabled = not _G.AntiNPCEnabled
+    local Player = game.Players.LocalPlayer
+    local NPCs = {} -- Lưu tạm danh sách NPC bị xóa để khôi phục nếu cần
+
+    if _G.AntiNPCEnabled then
+        -- Vòng lặp liên tục quét và "xóa" NPC
+        task.spawn(function()
+            while _G.AntiNPCEnabled do
+                for _, obj in pairs(workspace:GetDescendants()) do
+                    -- Tìm vật thể có Humanoid (NPC) và không phải là người chơi
+                    if obj:IsA("Model") and obj:FindFirstChild("Humanoid") and obj.Name ~= Player.Name then
+                        -- Kiểm tra nếu nó không phải là người chơi khác
+                        if not game.Players:GetPlayerFromCharacter(obj) then
+                            -- Ẩn/Xóa cục bộ (Local)
+                            obj.Parent = nil 
+                        end
+                    end
+                end
+                task.wait(0.5) -- Quét mỗi nửa giây
+            end
+        end)
+    else
+        -- Khi tắt, khuyến khích bạn Reset nhân vật (hoặc game sẽ tự load lại NPC khi bạn sang vùng mới)
+        game:GetService("StarterGui"):SetCore("SendNotification", {
+            Title = "Anti-NPC",
+            Text = "Đã tắt: NPC sẽ dần xuất hiện lại!",
+            Duration = 3
+        })
+    end
+    
+    game:GetService("StarterGui"):SetCore("SendNotification", {
+        Title = "Anti-NPC",
+        Text = _G.AntiNPCEnabled and "👻 Đã Bật: NPC sẽ biến mất khỏi tầm mắt bạn!" or "⚠️ Đã Tắt Anti-NPC!",
+        Duration = 2
+    })
+end)
+
 -- CLOSE BUTTON
 local CloseBtn = Instance.new("TextButton", MainFrame)
 CloseBtn.Size = UDim2.new(1, -12, 0, IsMobile and 25 or 35)
