@@ -4797,6 +4797,39 @@ createButton("👻 Anti-NPC (Chống đuổi)", Color3.fromRGB(120, 40, 160), fu
     })
 end)
 
+_G.FullBrightSkyEnabled = false
+
+createButton("🌌 Sáng Bầu Trời", Color3.fromRGB(255, 255, 255), function()
+    _G.FullBrightSkyEnabled = not _G.FullBrightSkyEnabled
+    local Lighting = game:GetService("Lighting")
+
+    if _G.FullBrightSkyEnabled then
+        -- Lưu lại cài đặt gốc của game để khôi phục khi tắt
+        _G.OriginalAmbient = Lighting.Ambient
+        _G.OriginalOutdoorAmbient = Lighting.OutdoorAmbient
+        _G.OriginalBrightness = Lighting.Brightness
+        _G.OriginalClockTime = Lighting.ClockTime
+
+        -- Bật sáng toàn bộ bầu trời và map
+        Lighting.Ambient = Color3.fromRGB(255, 255, 255)
+        Lighting.OutdoorAmbient = Color3.fromRGB(255, 255, 255)
+        Lighting.Brightness = 3
+        Lighting.ClockTime = 14 -- Ép thời gian về buổi trưa để trời sáng nhất
+    else
+        -- Khôi phục lại trạng thái ban đầu của game
+        Lighting.Ambient = _G.OriginalAmbient or Color3.fromRGB(128, 128, 128)
+        Lighting.OutdoorAmbient = _G.OriginalOutdoorAmbient or Color3.fromRGB(128, 128, 128)
+        Lighting.Brightness = _G.OriginalBrightness or 1
+        Lighting.ClockTime = _G.OriginalClockTime or 12
+    end
+
+    game:GetService("StarterGui"):SetCore("SendNotification", {
+        Title = "Bầu Trời",
+        Text = _G.FullBrightSkyEnabled and "🌌 Đã bật sáng bầu trời!" or "⚠️ Đã tắt sáng bầu trời!",
+        Duration = 2
+    })
+end)
+
 -- CLOSE BUTTON
 local CloseBtn = Instance.new("TextButton", MainFrame)
 CloseBtn.Size = UDim2.new(1, -12, 0, IsMobile and 25 or 35)
