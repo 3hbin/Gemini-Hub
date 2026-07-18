@@ -4952,6 +4952,34 @@ createButton("⌨️ Bàn Phím Ảo", Color3.fromRGB(85, 85, 85), function()
     })
 end)
 
+_G.HomePosition = nil
+
+createButton("🏠 Set Home / Go", Color3.fromRGB(0, 150, 255), function()
+    local Player = game.Players.LocalPlayer
+    local Character = Player.Character
+    local RootPart = Character and Character:FindFirstChild("HumanoidRootPart")
+
+    if not RootPart then return end
+
+    if not _G.HomePosition then
+        -- Lưu vị trí
+        _G.HomePosition = RootPart.CFrame
+        game:GetService("StarterGui"):SetCore("SendNotification", {
+            Title = "Home",
+            Text = "🏠 Đã lưu vị trí Home!",
+            Duration = 2
+        })
+    else
+        -- Teleport về vị trí đã lưu
+        RootPart.CFrame = _G.HomePosition
+        game:GetService("StarterGui"):SetCore("SendNotification", {
+            Title = "Home",
+            Text = "🚀 Đã về vị trí Home đã lưu!",
+            Duration = 2
+        })
+    end
+end)
+
 -- CLOSE BUTTON
 local CloseBtn = Instance.new("TextButton", MainFrame)
 CloseBtn.Size = UDim2.new(1, -12, 0, IsMobile and 25 or 35)
