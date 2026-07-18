@@ -4866,126 +4866,32 @@ createButton("🌌 Sáng Bầu Trời", Color3.fromRGB(255, 255, 255), function(
 end)
 
 createButton("🔗 Link & Server", Color3.fromRGB(150, 50, 200), function()
-    -- Dùng PlayerGui thay vì CoreGui để đảm bảo luôn hiện
     local Player = game:GetService("Players").LocalPlayer
-    local PlayerGui = Player:WaitForChild("PlayerGui")
-    
-    local ScreenGui = Instance.new("ScreenGui", PlayerGui)
-    ScreenGui.Name = "GeminiLinkServer"
-    ScreenGui.ResetOnSpawn = false
-
-    local Frame = Instance.new("Frame", ScreenGui)
-    Frame.Size = UDim2.new(0, 220, 0, 180)
-    Frame.Position = UDim2.new(0.5, -110, 0.5, -90)
-    Frame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-    Frame.Active = true
-    Frame.Draggable = true
-    Instance.new("UICorner", Frame).CornerRadius = UDim.new(0, 10)
-
-    -- Nút đóng (X)
-    local CloseBtn = Instance.new("TextButton", Frame)
-    CloseBtn.Size = UDim2.new(0, 30, 0, 30)
-    CloseBtn.Position = UDim2.new(0.85, 0, 0, 0)
-    CloseBtn.Text = "✕"
-    CloseBtn.BackgroundColor3 = Color3.fromRGB(200, 0, 0)
-    CloseBtn.TextColor3 = Color3.new(1, 1, 1)
-    CloseBtn.Font = Enum.Font.Bold
-    Instance.new("UICorner", CloseBtn)
-    CloseBtn.MouseButton1Click:Connect(function() ScreenGui:Destroy() end)
-
-    local Input = Instance.new("TextBox", Frame)
-    Input.Size = UDim2.new(0.8, 0, 0, 35)
-    Input.Position = UDim2.new(0.1, 0, 0.2, 0)
-    Input.PlaceholderText = "Nhập Job ID"
-    Input.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-    Input.TextColor3 = Color3.new(1, 1, 1)
-    Instance.new("UICorner", Input)
-
-    -- Nút Join Server
-    local JoinBtn = Instance.new("TextButton", Frame)
-    JoinBtn.Size = UDim2.new(0.8, 0, 0, 35)
-    JoinBtn.Position = UDim2.new(0.1, 0, 0.45, 0)
-    JoinBtn.Text = "Join Server"
-    JoinBtn.BackgroundColor3 = Color3.fromRGB(0, 150, 0)
-    JoinBtn.TextColor3 = Color3.new(1, 1, 1)
-    Instance.new("UICorner", JoinBtn)
-    
-    JoinBtn.MouseButton1Click:Connect(function()
-        if Input.Text ~= "" then
-            game:GetService("TeleportService"):TeleportToPlaceInstance(game.PlaceId, Input.Text, game.Players.LocalPlayer)
-        end
-    end)
-
-    -- Nút Restart Script
-    local RestartBtn = Instance.new("TextButton", Frame)
-    RestartBtn.Size = UDim2.new(0.8, 0, 0, 35)
-    RestartBtn.Position = UDim2.new(0.1, 0, 0.75, 0)
-    RestartBtn.Text = "Restart Script"
-    RestartBtn.BackgroundColor3 = Color3.fromRGB(150, 50, 200)
-    RestartBtn.TextColor3 = Color3.new(1, 1, 1)
-    Instance.new("UICorner", RestartBtn)
-    
-    RestartBtn.MouseButton1Click:Connect(function()
-        ScreenGui:Destroy()
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/3hbin/Gemini-Hub/refs/heads/main/GeminiHub.lua"))()
-    end)
+    local LinkGui = Instance.new("ScreenGui", Player:WaitForChild("PlayerGui"))
+    local Frame = Instance.new("Frame", LinkGui)
+    Frame.Size = UDim2.new(0, 220, 0, 180); Frame.Position = UDim2.new(0.5, -110, 0.5, -90); Frame.Active = true; Frame.Draggable = true
+    Instance.new("UICorner", Frame)
+    local CloseBtn = Instance.new("TextButton", Frame); CloseBtn.Size = UDim2.new(0, 30, 0, 30); CloseBtn.Position = UDim2.new(0.85, 0, 0, 0); CloseBtn.Text = "✕"; CloseBtn.BackgroundColor3 = Color3.fromRGB(200, 0, 0)
+    CloseBtn.MouseButton1Click:Connect(function() LinkGui:Destroy() end)
+    local Input = Instance.new("TextBox", Frame); Input.Size = UDim2.new(0.8, 0, 0, 35); Input.Position = UDim2.new(0.1, 0, 0.2, 0); Input.PlaceholderText = "Nhập Job ID"
+    local JoinBtn = Instance.new("TextButton", Frame); JoinBtn.Size = UDim2.new(0.8, 0, 0, 35); JoinBtn.Position = UDim2.new(0.1, 0, 0.45, 0); JoinBtn.Text = "Join Server"
+    JoinBtn.MouseButton1Click:Connect(function() game:GetService("TeleportService"):TeleportToPlaceInstance(game.PlaceId, Input.Text, game.Players.LocalPlayer) end)
+    local RestartBtn = Instance.new("TextButton", Frame); RestartBtn.Size = UDim2.new(0.8, 0, 0, 35); RestartBtn.Position = UDim2.new(0.1, 0, 0.75, 0); RestartBtn.Text = "Restart Script"
+    RestartBtn.MouseButton1Click:Connect(function() LinkGui:Destroy(); loadstring(game:HttpGet("https://raw.githubusercontent.com/3hbin/Gemini-Hub/refs/heads/main/GeminiHub.lua"))() end)
 end)
 
 createButton("⌨️ Bàn Phím Ảo", Color3.fromRGB(85, 85, 85), function()
-    -- Dùng PlayerGui thay vì CoreGui để đảm bảo hiện trong mọi game
-    local Player = game:GetService("Players").LocalPlayer
-    local PlayerGui = Player:WaitForChild("PlayerGui")
-    
-    local ScreenGui = Instance.new("ScreenGui", PlayerGui)
-    ScreenGui.Name = "GeminiKeyboard"
-    ScreenGui.ResetOnSpawn = false
-
-    local MainFrame = Instance.new("Frame", ScreenGui)
-    MainFrame.Size = UDim2.new(0, 280, 0, 130)
-    MainFrame.Position = UDim2.new(0.5, -140, 0.6, 0)
-    MainFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-    MainFrame.Active = true
-    MainFrame.Draggable = true -- Có thể kéo thả
-    Instance.new("UICorner", MainFrame).CornerRadius = UDim.new(0, 10)
-
-    -- Nút đóng (X)
-    local CloseBtn = Instance.new("TextButton", MainFrame)
-    CloseBtn.Size = UDim2.new(0, 30, 0, 30)
-    CloseBtn.Position = UDim2.new(0.9, 0, 0, 0)
-    CloseBtn.Text = "✕"
-    CloseBtn.BackgroundColor3 = Color3.fromRGB(200, 0, 0)
-    CloseBtn.TextColor3 = Color3.new(1, 1, 1)
-    CloseBtn.Font = Enum.Font.Bold
-    Instance.new("UICorner", CloseBtn)
-    CloseBtn.MouseButton1Click:Connect(function() ScreenGui:Destroy() end)
-
-    -- Grid cho các nút
-    local Container = Instance.new("Frame", MainFrame)
-    Container.Size = UDim2.new(0.9, 0, 0.7, 0)
-    Container.Position = UDim2.new(0.05, 0, 0.25, 0)
-    Container.BackgroundTransparency = 1
-    
-    local UIGridLayout = Instance.new("UIGridLayout", Container)
-    UIGridLayout.CellSize = UDim2.new(0, 50, 0, 35)
-    UIGridLayout.CellPadding = UDim2.new(0, 5, 0, 5)
-
-    local keys = {
-        {"Shift", Enum.KeyCode.LeftShift}, {"Ctrl", Enum.KeyCode.LeftControl},
-        {"E", Enum.KeyCode.E}, {"Q", Enum.KeyCode.Q},
-        {"F", Enum.KeyCode.F}, {"Space", Enum.KeyCode.Space}
-    }
-
-    local VirtualInputManager = game:GetService("VirtualInputManager")
-
+    local KeyGui = Instance.new("ScreenGui", game:GetService("Players").LocalPlayer:WaitForChild("PlayerGui"))
+    local MainFrame = Instance.new("Frame", KeyGui); MainFrame.Size = UDim2.new(0, 280, 0, 130); MainFrame.Position = UDim2.new(0.5, -140, 0.6, 0); MainFrame.Active = true; MainFrame.Draggable = true
+    local CloseBtn = Instance.new("TextButton", MainFrame); CloseBtn.Size = UDim2.new(0, 30, 0, 30); CloseBtn.Position = UDim2.new(0.85, 0, 0, 0); CloseBtn.Text = "✕"; CloseBtn.BackgroundColor3 = Color3.fromRGB(200, 0, 0)
+    CloseBtn.MouseButton1Click:Connect(function() KeyGui:Destroy() end)
+    local Container = Instance.new("Frame", MainFrame); Container.Size = UDim2.new(0.9, 0, 0.7, 0); Container.Position = UDim2.new(0.05, 0, 0.25, 0); Container.BackgroundTransparency = 1
+    Instance.new("UIGridLayout", Container).CellSize = UDim2.new(0, 50, 0, 35)
+    local keys = {{Enum.KeyCode.LeftShift, "Shift"}, {Enum.KeyCode.LeftControl, "Ctrl"}, {Enum.KeyCode.E, "E"}, {Enum.KeyCode.Q, "Q"}, {Enum.KeyCode.F, "F"}, {Enum.KeyCode.Space, "Space"}}
     for _, v in pairs(keys) do
-        local btn = Instance.new("TextButton", Container)
-        btn.Text = v[1]
-        btn.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
-        btn.TextColor3 = Color3.new(1, 1, 1)
-        Instance.new("UICorner", btn)
-        
-        btn.MouseButton1Down:Connect(function() VirtualInputManager:SendKeyEvent(true, v[2], false, game) end)
-        btn.MouseButton1Up:Connect(function() VirtualInputManager:SendKeyEvent(false, v[2], false, game) end)
+        local btn = Instance.new("TextButton", Container); btn.Text = v[2]
+        btn.MouseButton1Down:Connect(function() game:GetService("VirtualInputManager"):SendKeyEvent(true, v[1], false, game) end)
+        btn.MouseButton1Up:Connect(function() game:GetService("VirtualInputManager"):SendKeyEvent(false, v[1], false, game) end)
     end
 end)
 
