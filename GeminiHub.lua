@@ -514,6 +514,43 @@ ToggleBtn.MouseButton1Click:Connect(function()
     MainFrame.Visible = not MainFrame.Visible 
 end)
 
+-- Hàm tạo hiệu ứng Loading
+local function ShowLoading()
+    local Player = game:GetService("Players").LocalPlayer
+    local PlayerGui = Player:WaitForChild("PlayerGui")
+    
+    local ScreenGui = Instance.new("ScreenGui", PlayerGui)
+    ScreenGui.Name = "GeminiLoading"
+    
+    local Frame = Instance.new("Frame", ScreenGui)
+    Frame.Size = UDim2.new(0, 200, 0, 50)
+    Frame.Position = UDim2.new(0.5, -100, 0.5, -25)
+    Frame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+    Instance.new("UICorner", Frame).CornerRadius = UDim.new(0, 10)
+    
+    local Label = Instance.new("TextLabel", Frame)
+    Label.Size = UDim2.new(1, 0, 1, 0)
+    Label.Text = "Gemini Hub Loading... 0%"
+    Label.TextColor3 = Color3.new(1, 1, 1)
+    Label.BackgroundTransparency = 1
+    Label.Font = Enum.Font.GothamBold
+    
+    -- Chạy hiệu ứng %
+    for i = 1, 100, 5 do
+        Label.Text = "Gemini Hub Loading... " .. i .. "%"
+        task.wait(0.05) -- Tốc độ loading
+    end
+    
+    Label.Text = "Gemini Hub Loaded!"
+    task.wait(0.5)
+    ScreenGui:Destroy()
+end
+
+-- Gọi hàm Loading ngay khi script bắt đầu
+ShowLoading()
+
+-- Sau đó mới chạy phần code tạo các nút bấm của bạn bên dưới...
+
 -- ============== CÁC TÍNH NĂNG MỚI & SỬA ĐỔI ==============
 
 -- 1. BAY (FLY MODE)
@@ -4831,30 +4868,48 @@ createButton("🌌 Sáng Bầu Trời", Color3.fromRGB(255, 255, 255), function(
 end)
 
 createButton("🔗 Link & Server", Color3.fromRGB(150, 50, 200), function()
-    -- Tạo một GUI tạm thời để nhập ID và Restart
-    local ScreenGui = Instance.new("ScreenGui", game.CoreGui)
+    -- Dùng PlayerGui thay vì CoreGui để đảm bảo luôn hiện
+    local Player = game:GetService("Players").LocalPlayer
+    local PlayerGui = Player:WaitForChild("PlayerGui")
+    
+    local ScreenGui = Instance.new("ScreenGui", PlayerGui)
+    ScreenGui.Name = "GeminiLinkServer"
+    ScreenGui.ResetOnSpawn = false
+
     local Frame = Instance.new("Frame", ScreenGui)
-    Frame.Size = UDim2.new(0, 200, 0, 150)
-    Frame.Position = UDim2.new(0.5, -100, 0.5, -75)
+    Frame.Size = UDim2.new(0, 220, 0, 180)
+    Frame.Position = UDim2.new(0.5, -110, 0.5, -90)
     Frame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
     Frame.Active = true
-    Frame.Draggable = true -- Cho phép kéo thả bảng
-    Instance.new("UICorner", Frame)
+    Frame.Draggable = true
+    Instance.new("UICorner", Frame).CornerRadius = UDim.new(0, 10)
+
+    -- Nút đóng (X)
+    local CloseBtn = Instance.new("TextButton", Frame)
+    CloseBtn.Size = UDim2.new(0, 30, 0, 30)
+    CloseBtn.Position = UDim2.new(0.85, 0, 0, 0)
+    CloseBtn.Text = "✕"
+    CloseBtn.BackgroundColor3 = Color3.fromRGB(200, 0, 0)
+    CloseBtn.TextColor3 = Color3.new(1, 1, 1)
+    CloseBtn.Font = Enum.Font.Bold
+    Instance.new("UICorner", CloseBtn)
+    CloseBtn.MouseButton1Click:Connect(function() ScreenGui:Destroy() end)
 
     local Input = Instance.new("TextBox", Frame)
-    Input.Size = UDim2.new(0.8, 0, 0, 30)
-    Input.Position = UDim2.new(0.1, 0, 0.1, 0)
-    Input.PlaceholderText = "Nhập Job ID ở đây"
+    Input.Size = UDim2.new(0.8, 0, 0, 35)
+    Input.Position = UDim2.new(0.1, 0, 0.2, 0)
+    Input.PlaceholderText = "Nhập Job ID"
     Input.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
     Input.TextColor3 = Color3.new(1, 1, 1)
     Instance.new("UICorner", Input)
 
     -- Nút Join Server
     local JoinBtn = Instance.new("TextButton", Frame)
-    JoinBtn.Size = UDim2.new(0.8, 0, 0, 30)
-    JoinBtn.Position = UDim2.new(0.1, 0, 0.4, 0)
+    JoinBtn.Size = UDim2.new(0.8, 0, 0, 35)
+    JoinBtn.Position = UDim2.new(0.1, 0, 0.45, 0)
     JoinBtn.Text = "Join Server"
     JoinBtn.BackgroundColor3 = Color3.fromRGB(0, 150, 0)
+    JoinBtn.TextColor3 = Color3.new(1, 1, 1)
     Instance.new("UICorner", JoinBtn)
     
     JoinBtn.MouseButton1Click:Connect(function()
@@ -4863,97 +4918,83 @@ createButton("🔗 Link & Server", Color3.fromRGB(150, 50, 200), function()
         end
     end)
 
-    -- Nút Restart Script (Dùng link của bạn)
+    -- Nút Restart Script
     local RestartBtn = Instance.new("TextButton", Frame)
-    RestartBtn.Size = UDim2.new(0.8, 0, 0, 30)
-    RestartBtn.Position = UDim2.new(0.1, 0, 0.7, 0)
+    RestartBtn.Size = UDim2.new(0.8, 0, 0, 35)
+    RestartBtn.Position = UDim2.new(0.1, 0, 0.75, 0)
     RestartBtn.Text = "Restart Script"
-    RestartBtn.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
+    RestartBtn.BackgroundColor3 = Color3.fromRGB(150, 50, 200)
+    RestartBtn.TextColor3 = Color3.new(1, 1, 1)
     Instance.new("UICorner", RestartBtn)
     
     RestartBtn.MouseButton1Click:Connect(function()
-        -- Xóa UI cũ đi trước khi load lại script mới
         ScreenGui:Destroy()
-        -- Load lại script từ link GitHub của bạn
         loadstring(game:HttpGet("https://raw.githubusercontent.com/3hbin/Gemini-Hub/refs/heads/main/GeminiHub.lua"))()
     end)
 end)
 
 createButton("⌨️ Bàn Phím Ảo", Color3.fromRGB(85, 85, 85), function()
-    -- Tạo một bảng bàn phím ảo di động trên màn hình
-    local KeyboardGui = Instance.new("ScreenGui", game.CoreGui)
-    KeyboardGui.Name = "GeminiVirtualKeyboard"
+    -- Dùng PlayerGui thay vì CoreGui để đảm bảo hiện trong mọi game
+    local Player = game:GetService("Players").LocalPlayer
+    local PlayerGui = Player:WaitForChild("PlayerGui")
+    
+    local ScreenGui = Instance.new("ScreenGui", PlayerGui)
+    ScreenGui.Name = "GeminiKeyboard"
+    ScreenGui.ResetOnSpawn = false
 
-    local MainFrame = Instance.new("Frame", KeyboardGui)
-    MainFrame.Size = UDim2.new(0, 260, 0, 110)
-    MainFrame.Position = UDim2.new(0.5, -130, 0.7, 0) -- Nằm dịch xuống phía dưới cho đỡ vướng
-    MainFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+    local MainFrame = Instance.new("Frame", ScreenGui)
+    MainFrame.Size = UDim2.new(0, 280, 0, 130)
+    MainFrame.Position = UDim2.new(0.5, -140, 0.6, 0)
+    MainFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
     MainFrame.Active = true
-    MainFrame.Draggable = true -- Có thể kéo thả vị trí tùy ý trên màn hình điện thoại
+    MainFrame.Draggable = true -- Có thể kéo thả
     Instance.new("UICorner", MainFrame).CornerRadius = UDim.new(0, 10)
 
-    -- Layout xếp các nút bàn phím tự động cho đẹp
-    local UIGridLayout = Instance.new("UIGridLayout", MainFrame)
-    UIGridLayout.CellSize = UDim2.new(0, 45, 0, 40)
-    UIGridLayout.CellPadding = UDim2.new(0, 5, 0, 5)
-    UIGridLayout.StartCorner = Enum.GridCorner.TopLeft
-    UIGridLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
-    UIGridLayout.VerticalAlignment = Enum.VerticalAlignment.Center
+    -- Nút đóng (X)
+    local CloseBtn = Instance.new("TextButton", MainFrame)
+    CloseBtn.Size = UDim2.new(0, 30, 0, 30)
+    CloseBtn.Position = UDim2.new(0.9, 0, 0, 0)
+    CloseBtn.Text = "✕"
+    CloseBtn.BackgroundColor3 = Color3.fromRGB(200, 0, 0)
+    CloseBtn.TextColor3 = Color3.new(1, 1, 1)
+    CloseBtn.Font = Enum.Font.Bold
+    Instance.new("UICorner", CloseBtn)
+    CloseBtn.MouseButton1Click:Connect(function() ScreenGui:Destroy() end)
 
-    -- Danh sách các nút phím PC phổ biến cần dùng trong game
+    -- Grid cho các nút
+    local Container = Instance.new("Frame", MainFrame)
+    Container.Size = UDim2.new(0.9, 0, 0.7, 0)
+    Container.Position = UDim2.new(0.05, 0, 0.25, 0)
+    Container.BackgroundTransparency = 1
+    
+    local UIGridLayout = Instance.new("UIGridLayout", Container)
+    UIGridLayout.CellSize = UDim2.new(0, 50, 0, 35)
+    UIGridLayout.CellPadding = UDim2.new(0, 5, 0, 5)
+
     local keys = {
-        {Text = "Shift", Key = Enum.KeyCode.LeftShift},
-        {Text = "Ctrl", Key = Enum.KeyCode.LeftControl},
-        {Text = "E", Key = Enum.KeyCode.E},
-        {Text = "Q", Key = Enum.KeyCode.Q},
-        {Text = "F", Key = Enum.KeyCode.F},
-        {Text = "Space", Key = Enum.KeyCode.Space},
-        {Text = "✕", Close = true} -- Nút đóng bàn phím ảo
+        {"Shift", Enum.KeyCode.LeftShift}, {"Ctrl", Enum.KeyCode.LeftControl},
+        {"E", Enum.KeyCode.E}, {"Q", Enum.KeyCode.Q},
+        {"F", Enum.KeyCode.F}, {"Space", Enum.KeyCode.Space}
     }
 
     local VirtualInputManager = game:GetService("VirtualInputManager")
 
-    for _, keyData in ipairs(keys) do
-        local KeyBtn = Instance.new("TextButton", MainFrame)
-        KeyBtn.Text = keyData.Text
-        KeyBtn.TextColor3 = Color3.new(1, 1, 1)
-        KeyBtn.Font = Enum.Font.GothamBold
+    for _, v in pairs(keys) do
+        local btn = Instance.new("TextButton", Container)
+        btn.Text = v[1]
+        btn.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+        btn.TextColor3 = Color3.new(1, 1, 1)
+        Instance.new("UICorner", btn)
         
-        if keyData.Close then
-            -- Xử lý nút Tắt bàn phím
-            KeyBtn.BackgroundColor3 = Color3.fromRGB(150, 0, 0)
-            KeyBtn.TextSize = 16
-            KeyBtn.MouseButton1Click:Connect(function()
-                KeyboardGui:Destroy()
-            end)
-        else
-            -- Xử lý mô phỏng bấm phím PC thực tế
-            KeyBtn.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-            KeyBtn.TextSize = 14
-            Instance.new("UICorner", KeyBtn).CornerRadius = UDim.new(0, 6)
-
-            KeyBtn.MouseButton1Down:Connect(function()
-                KeyBtn.BackgroundColor3 = Color3.fromRGB(100, 100, 100) -- Hiệu ứng đổi màu khi nhấn giữ
-                VirtualInputManager:SendKeyEvent(true, keyData.Key, false, game)
-            end)
-
-            KeyBtn.MouseButton1Up:Connect(function()
-                KeyBtn.BackgroundColor3 = Color3.fromRGB(50, 50, 50) -- Trở lại màu cũ khi thả tay
-                VirtualInputManager:SendKeyEvent(false, keyData.Key, false, game)
-            end)
-        end
+        btn.MouseButton1Down:Connect(function() VirtualInputManager:SendKeyEvent(true, v[2], false, game) end)
+        btn.MouseButton1Up:Connect(function() VirtualInputManager:SendKeyEvent(false, v[2], false, game) end)
     end
-
-    -- Thông báo nhỏ khi mở bàn phím thành công
-    game:GetService("StarterGui"):SetCore("SendNotification", {
-        Title = "Bàn Phím",
-        Text = "⌨️ Đã mở bàn phím ảo máy tính (Có thể kéo thả)!",
-        Duration = 2
-    })
 end)
 
+-- Khởi tạo biến toàn cục cho Home
 _G.HomePosition = nil
 
+-- Nút 1: Set Home / Teleport Home
 createButton("🏠 Set Home / Go", Color3.fromRGB(0, 150, 255), function()
     local Player = game.Players.LocalPlayer
     local Character = Player.Character
@@ -4962,7 +5003,6 @@ createButton("🏠 Set Home / Go", Color3.fromRGB(0, 150, 255), function()
     if not RootPart then return end
 
     if not _G.HomePosition then
-        -- Lưu vị trí
         _G.HomePosition = RootPart.CFrame
         game:GetService("StarterGui"):SetCore("SendNotification", {
             Title = "Home",
@@ -4970,21 +5010,21 @@ createButton("🏠 Set Home / Go", Color3.fromRGB(0, 150, 255), function()
             Duration = 2
         })
     else
-        -- Teleport về vị trí đã lưu
         RootPart.CFrame = _G.HomePosition
         game:GetService("StarterGui"):SetCore("SendNotification", {
             Title = "Home",
-            Text = "🚀 Đã về vị trí Home đã lưu!",
+            Text = "🚀 Đã về vị trí Home!",
             Duration = 2
         })
     end
 end)
 
+-- Nút 2: Reset Home
 createButton("🔄 Reset Home", Color3.fromRGB(255, 100, 0), function()
     _G.HomePosition = nil
     game:GetService("StarterGui"):SetCore("SendNotification", {
         Title = "Home",
-        Text = "🔄 Đã reset! Bạn có thể Set Home lại từ đầu.",
+        Text = "🔄 Đã reset! Đang đợi vị trí mới.",
         Duration = 2
     })
 end)
