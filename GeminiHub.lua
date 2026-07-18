@@ -493,28 +493,7 @@ local function createButton(text, color, callback)
     end)
 end
 
--- TOGGLE MENU BUTTON
-local ButtonSize = IsMobile and 45 or 65
-ToggleBtn = Instance.new("TextButton", ScreenGui)
-ToggleBtn.Size = UDim2.new(0, ButtonSize, 0, ButtonSize)
-ToggleBtn.Position = UDim2.new(0, 15, 0.4, 0)
-ToggleBtn.BackgroundColor3 = Color3.fromRGB(0, 150, 255)
-ToggleBtn.Text = "📜"
-ToggleBtn.TextColor3 = Color3.new(1, 1, 1)
-ToggleBtn.TextSize = IsMobile and 24 or 30
-createCorner(ToggleBtn, ButtonSize / 2)
-makeDraggable(ToggleBtn)
-
-local UIStrokeToggle = Instance.new("UIStroke", ToggleBtn)
-UIStrokeToggle.Color = Color3.fromRGB(0, 200, 255)
-UIStrokeToggle.Thickness = 2
-
-ToggleBtn.MouseButton1Click:Connect(function()
-    if GuiLocked then return end
-    MainFrame.Visible = not MainFrame.Visible 
-end)
-
--- Hàm tạo hiệu ứng Loading
+-- 1. Định nghĩa hàm Loading trước (nhưng chưa gọi ngay)
 local function ShowLoading()
     local Player = game:GetService("Players").LocalPlayer
     local PlayerGui = Player:WaitForChild("PlayerGui")
@@ -538,7 +517,7 @@ local function ShowLoading()
     -- Chạy hiệu ứng %
     for i = 1, 100, 5 do
         Label.Text = "Gemini Hub Loading... " .. i .. "%"
-        task.wait(0.05) -- Tốc độ loading
+        task.wait(0.05)
     end
     
     Label.Text = "Gemini Hub Loaded!"
@@ -546,10 +525,29 @@ local function ShowLoading()
     ScreenGui:Destroy()
 end
 
--- Gọi hàm Loading ngay khi script bắt đầu
-ShowLoading()
+-- 2. Gọi hàm Loading (dùng task.spawn để nó chạy song song, không làm đơ script)
+task.spawn(ShowLoading)
 
--- Sau đó mới chạy phần code tạo các nút bấm của bạn bên dưới...
+-- 3. Sau đó mới chạy code tạo giao diện chính
+local ButtonSize = IsMobile and 45 or 65
+ToggleBtn = Instance.new("TextButton", ScreenGui)
+ToggleBtn.Size = UDim2.new(0, ButtonSize, 0, ButtonSize)
+ToggleBtn.Position = UDim2.new(0, 15, 0.4, 0)
+ToggleBtn.BackgroundColor3 = Color3.fromRGB(0, 150, 255)
+ToggleBtn.Text = "📜"
+ToggleBtn.TextColor3 = Color3.new(1, 1, 1)
+ToggleBtn.TextSize = IsMobile and 24 or 30
+createCorner(ToggleBtn, ButtonSize / 2)
+makeDraggable(ToggleBtn)
+
+local UIStrokeToggle = Instance.new("UIStroke", ToggleBtn)
+UIStrokeToggle.Color = Color3.fromRGB(0, 200, 255)
+UIStrokeToggle.Thickness = 2
+
+ToggleBtn.MouseButton1Click:Connect(function()
+    if GuiLocked then return end
+    MainFrame.Visible = not MainFrame.Visible 
+end)
 
 -- ============== CÁC TÍNH NĂNG MỚI & SỬA ĐỔI ==============
 
