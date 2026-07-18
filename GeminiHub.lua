@@ -4684,16 +4684,16 @@ createButton("🖱️ Auto Click Tool (On/Off)", Color3.fromRGB(40, 160, 80), fu
 end)
 
 -- 57.TRẠNG THÁI MẶC ĐỊNH
+
 _G.AutoWallHopEnabled = false
 
-createButton("🧗 Auto Wall Hop (On/Off)", Color3.fromRGB(100, 200, 50), function()
+createButton("🧗 Wall Hop (Sửa Lỗi)", Color3.fromRGB(100, 200, 50), function()
     _G.AutoWallHopEnabled = not _G.AutoWallHopEnabled
     
     if _G.AutoWallHopEnabled then
-        -- Vòng lặp kiểm tra trạng thái nhảy
         task.spawn(function()
-            local RunService = game:GetService("RunService")
             local Player = game.Players.LocalPlayer
+            local RunService = game:GetService("RunService")
             
             while _G.AutoWallHopEnabled do
                 local Character = Player.Character
@@ -4701,28 +4701,29 @@ createButton("🧗 Auto Wall Hop (On/Off)", Color3.fromRGB(100, 200, 50), functi
                     local Humanoid = Character.Humanoid
                     local RootPart = Character.HumanoidRootPart
                     
-                    -- Kiểm tra xem có đang ở trên không và đang chạm tường không
-                    -- Raycast ngắn phía trước mặt để phát hiện tường
+                    -- Bắn tia Ray để check tường chính xác hơn
                     local ray = Ray.new(RootPart.Position, RootPart.CFrame.LookVector * 3)
-                    local hit, position = workspace:FindPartOnRayWithIgnoreList(ray, {Character})
+                    local hit = workspace:FindPartOnRayWithIgnoreList(ray, {Character})
                     
+                    -- Nếu chạm tường và đang ở trên không hoặc đang nhảy thì ép nhảy tiếp lập tức
                     if hit and (Humanoid:GetState() == Enum.HumanoidStateType.Jumping or Humanoid:GetState() == Enum.HumanoidStateType.Freefall) then
                         Humanoid.Jump = true
                     end
                 end
-                RunService.RenderStepped:Wait()
+                RunService.RenderStepped:Wait() -- Chạy theo khung hình máy để mượt nhất
             end
         end)
     end
 
     game:GetService("StarterGui"):SetCore("SendNotification", {
         Title = "Wall Hop",
-        Text = _G.AutoWallHopEnabled and "🧗 Đã Bật: Tự động Wall Hop!" or "⚠️ Đã Tắt Wall Hop!",
+        Text = _G.AutoWallHopEnabled and "🧗 Đã Bật: Auto Wall Hop mượt mà!" or "⚠️ Đã Tắt Wall Hop!",
         Duration = 2
     })
 end)
 
 -- 58.TRẠNG THÁI MẶC ĐỊNH
+
 _G.FullBrightEnabled = false
 
 createButton("💡 FullBright (Bật/Tắt)", Color3.fromRGB(255, 200, 50), function()
@@ -4736,8 +4737,8 @@ createButton("💡 FullBright (Bật/Tắt)", Color3.fromRGB(255, 200, 50), func
             -- Tạo đèn nếu chưa có
             local light = Instance.new("PointLight")
             light.Name = "GeminiLight"
-            light.Brightness = 3 -- Độ sáng
-            light.Range = 25     -- Bán kính sáng
+            light.Brightness = 5 -- Độ sáng
+            light.Range = 50     -- Bán kính sáng
             light.Color = Color3.fromRGB(255, 255, 255)
             light.Parent = RootPart
         end
