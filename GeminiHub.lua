@@ -4980,6 +4980,15 @@ createButton("🏠 Set Home / Go", Color3.fromRGB(0, 150, 255), function()
     end
 end)
 
+createButton("🔄 Reset Home", Color3.fromRGB(255, 100, 0), function()
+    _G.HomePosition = nil
+    game:GetService("StarterGui"):SetCore("SendNotification", {
+        Title = "Home",
+        Text = "🔄 Đã reset! Bạn có thể Set Home lại từ đầu.",
+        Duration = 2
+    })
+end)
+
 -- CLOSE BUTTON
 local CloseBtn = Instance.new("TextButton", MainFrame)
 CloseBtn.Size = UDim2.new(1, -12, 0, IsMobile and 25 or 35)
