@@ -4830,6 +4830,55 @@ createButton("🌌 Sáng Bầu Trời", Color3.fromRGB(255, 255, 255), function(
     })
 end)
 
+createButton("🔗 Link & Server", Color3.fromRGB(150, 50, 200), function()
+    -- Tạo một GUI tạm thời để nhập ID và Restart
+    local ScreenGui = Instance.new("ScreenGui", game.CoreGui)
+    local Frame = Instance.new("Frame", ScreenGui)
+    Frame.Size = UDim2.new(0, 200, 0, 150)
+    Frame.Position = UDim2.new(0.5, -100, 0.5, -75)
+    Frame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+    Frame.Active = true
+    Frame.Draggable = true -- Cho phép kéo thả bảng
+    Instance.new("UICorner", Frame)
+
+    local Input = Instance.new("TextBox", Frame)
+    Input.Size = UDim2.new(0.8, 0, 0, 30)
+    Input.Position = UDim2.new(0.1, 0, 0.1, 0)
+    Input.PlaceholderText = "Nhập Job ID ở đây"
+    Input.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+    Input.TextColor3 = Color3.new(1, 1, 1)
+    Instance.new("UICorner", Input)
+
+    -- Nút Join Server
+    local JoinBtn = Instance.new("TextButton", Frame)
+    JoinBtn.Size = UDim2.new(0.8, 0, 0, 30)
+    JoinBtn.Position = UDim2.new(0.1, 0, 0.4, 0)
+    JoinBtn.Text = "Join Server"
+    JoinBtn.BackgroundColor3 = Color3.fromRGB(0, 150, 0)
+    Instance.new("UICorner", JoinBtn)
+    
+    JoinBtn.MouseButton1Click:Connect(function()
+        if Input.Text ~= "" then
+            game:GetService("TeleportService"):TeleportToPlaceInstance(game.PlaceId, Input.Text, game.Players.LocalPlayer)
+        end
+    end)
+
+    -- Nút Restart Script (Dùng link của bạn)
+    local RestartBtn = Instance.new("TextButton", Frame)
+    RestartBtn.Size = UDim2.new(0.8, 0, 0, 30)
+    RestartBtn.Position = UDim2.new(0.1, 0, 0.7, 0)
+    RestartBtn.Text = "Restart Script"
+    RestartBtn.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
+    Instance.new("UICorner", RestartBtn)
+    
+    RestartBtn.MouseButton1Click:Connect(function()
+        -- Xóa UI cũ đi trước khi load lại script mới
+        ScreenGui:Destroy()
+        -- Load lại script từ link GitHub của bạn
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/3hbin/Gemini-Hub/refs/heads/main/GeminiHub.lua"))()
+    end)
+end)
+
 -- CLOSE BUTTON
 local CloseBtn = Instance.new("TextButton", MainFrame)
 CloseBtn.Size = UDim2.new(1, -12, 0, IsMobile and 25 or 35)
