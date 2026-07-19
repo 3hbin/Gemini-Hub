@@ -1164,7 +1164,7 @@ createToggle("📱 Shift Lock Mobile", function(state)
         Crosshair.Size = UDim2.new(0,30,0,30)
         Crosshair.Position = UDim2.new(0.5,-15,0.5,-15)
         Crosshair.BackgroundTransparency = 1
-        Crosshair.Image = "rbxthumb://type=Asset&id=16812589035&w=150&h=150"
+        Crosshair.Image = "rbxassetid://120266558538428"
 
         local Button = Instance.new("ImageButton")
         Button.Parent = Gui
