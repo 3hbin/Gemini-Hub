@@ -1133,15 +1133,10 @@ end)
 createToggle("🛡️ Chống Kick", function(state) AntiKick_Active = state end)
 
 -- 10. SHIFT LOCK
--- Biến toàn cục để dùng chung
-local ShiftLock_Active = false
-local Crosshair = nil
-local ToggleFrame = nil
-
 createToggle("📱 Shift Lock Mobile", function(state)
     ShiftLock_Active = state
     if state then
-        -- 1. Hiện Tâm Ngắm
+        -- Hiện tâm ngắm
         if not Crosshair then
             Crosshair = Instance.new("ImageLabel", game:GetService("Players").LocalPlayer:WaitForChild("PlayerGui"))
             Crosshair.Size = UDim2.new(0, 30, 0, 30); Crosshair.Position = UDim2.new(0.5, -15, 0.5, -15)
@@ -1150,22 +1145,20 @@ createToggle("📱 Shift Lock Mobile", function(state)
         Crosshair.Visible = true
         UserInputService.MouseBehavior = Enum.MouseBehavior.LockCenter
 
-        -- 2. Tạo Bảng Nút ON/OFF (Bên phải nút nhảy)
+        -- Hiện nút ON/OFF
         if not ToggleFrame then
             ToggleFrame = Instance.new("Frame", game:GetService("Players").LocalPlayer:WaitForChild("PlayerGui"))
-            ToggleFrame.Size = UDim2.new(0, 100, 0, 50); ToggleFrame.Position = UDim2.new(0.85, 0, 0.7, 0) -- Vị trí góc phải
+            ToggleFrame.Size = UDim2.new(0, 100, 0, 50); ToggleFrame.Position = UDim2.new(0.85, 0, 0.6, 0)
             ToggleFrame.BackgroundTransparency = 1
             
-            -- Nút ON
             local OnBtn = Instance.new("ImageButton", ToggleFrame)
             OnBtn.Size = UDim2.new(0, 45, 0, 45); OnBtn.Position = UDim2.new(0, 0, 0, 0)
-            OnBtn.Image = "rbxassetid://83349936062601"
+            OnBtn.Image = "rbxassetid://83349936062601" -- ID ON
             OnBtn.MouseButton1Click:Connect(function() UserInputService.MouseBehavior = Enum.MouseBehavior.LockCenter end)
             
-            -- Nút OFF
             local OffBtn = Instance.new("ImageButton", ToggleFrame)
             OffBtn.Size = UDim2.new(0, 45, 0, 45); OffBtn.Position = UDim2.new(0.55, 0, 0, 0)
-            OffBtn.Image = "rbxassetid://72173899346121"
+            OffBtn.Image = "rbxassetid://72173899346121" -- ID OFF
             OffBtn.MouseButton1Click:Connect(function() UserInputService.MouseBehavior = Enum.MouseBehavior.Default end)
         end
         ToggleFrame.Visible = true
@@ -1173,15 +1166,6 @@ createToggle("📱 Shift Lock Mobile", function(state)
         if Crosshair then Crosshair.Visible = false end
         if ToggleFrame then ToggleFrame.Visible = false end
         UserInputService.MouseBehavior = Enum.MouseBehavior.Default
-    end
-end)
-
--- Vòng lặp khóa camera (Giữ nguyên)
-RunService.RenderStepped:Connect(function()
-    if ShiftLock_Active and game.Players.LocalPlayer.Character and game.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
-        local HRP = game.Players.LocalPlayer.Character.HumanoidRootPart
-        local Camera = workspace.CurrentCamera
-        HRP.CFrame = CFrame.new(HRP.Position, HRP.Position + Vector3.new(Camera.CFrame.LookVector.X, 0, Camera.CFrame.LookVector.Z))
     end
 end)
 
