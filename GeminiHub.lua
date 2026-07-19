@@ -1134,38 +1134,79 @@ createToggle("🛡️ Chống Kick", function(state) AntiKick_Active = state end
 
 -- 10. SHIFT LOCK
 createToggle("📱 Shift Lock Mobile", function(state)
-    ShiftLock_Active = state
-    if state then
-        -- Hiện tâm ngắm
-        if not Crosshair then
-            Crosshair = Instance.new("ImageLabel", game:GetService("Players").LocalPlayer:WaitForChild("PlayerGui"))
-            Crosshair.Size = UDim2.new(0, 30, 0, 30); Crosshair.Position = UDim2.new(0.5, -15, 0.5, -15)
-            Crosshair.BackgroundTransparency = 1; Crosshair.Image = "rbxassetid://120266558538428"; Crosshair.ZIndex = 10
-        end
-        Crosshair.Visible = true
-        UserInputService.MouseBehavior = Enum.MouseBehavior.LockCenter
+    local Players = game:GetService("Players")
+    local UIS = game:GetService("UserInputService")
+    local RunService = game:GetService("RunService")
 
-        -- Hiện nút ON/OFF
-        if not ToggleFrame then
-            ToggleFrame = Instance.new("Frame", game:GetService("Players").LocalPlayer:WaitForChild("PlayerGui"))
-            ToggleFrame.Size = UDim2.new(0, 100, 0, 50); ToggleFrame.Position = UDim2.new(0.85, 0, 0.6, 0)
-            ToggleFrame.BackgroundTransparency = 1
-            
-            local OnBtn = Instance.new("ImageButton", ToggleFrame)
-            OnBtn.Size = UDim2.new(0, 45, 0, 45); OnBtn.Position = UDim2.new(0, 0, 0, 0)
-            OnBtn.Image = "rbxassetid://83349936062601" -- ID ON
-            OnBtn.MouseButton1Click:Connect(function() UserInputService.MouseBehavior = Enum.MouseBehavior.LockCenter end)
-            
-            local OffBtn = Instance.new("ImageButton", ToggleFrame)
-            OffBtn.Size = UDim2.new(0, 45, 0, 45); OffBtn.Position = UDim2.new(0.55, 0, 0, 0)
-            OffBtn.Image = "rbxassetid://72173899346121" -- ID OFF
-            OffBtn.MouseButton1Click:Connect(function() UserInputService.MouseBehavior = Enum.MouseBehavior.Default end)
-        end
-        ToggleFrame.Visible = true
+    local Player = Players.LocalPlayer
+    local Character = Player.Character or Player.CharacterAdded:Wait()
+    local Humanoid = Character:WaitForChild("Humanoid")
+    local Camera = workspace.CurrentCamera
+
+    _G.MobileShiftLock = _G.MobileShiftLock or {}
+
+    if state then
+        if _G.MobileShiftLock.Enabled then return end
+        _G.MobileShiftLock.Enabled = true
+
+        local gui = Instance.new("ScreenGui")
+        gui.Name = "MobileShiftLock"
+        gui.ResetOnSpawn = false
+        gui.Parent = Player:WaitForChild("PlayerGui")
+        _G.MobileShiftLock.Gui = gui
+
+        local crosshair = Instance.new("ImageLabel")
+        crosshair.Size = UDim2.new(0,30,0,30)
+        crosshair.Position = UDim2.new(0.5,-15,0.5,-15)
+        crosshair.BackgroundTransparency = 1
+        crosshair.Image = "rbxassetid://120266558538428"
+        crosshair.Parent = gui
+
+        local button = Instance.new("TextButton")
+        button.Size = UDim2.new(0,90,0,40)
+        button.Position = UDim2.new(0.8,0,0.65,0)
+        button.Text = "SHIFT : ON"
+        button.Parent = gui
+
+        local lock = true
+
+        button.MouseButton1Click:Connect(function()
+            lock = not lock
+            button.Text = lock and "SHIFT : ON" or "SHIFT : OFF"
+        end)
+
+        _G.MobileShiftLock.Connection = RunService.RenderStepped:Connect(function()
+            if not _G.MobileShiftLock.Enabled then return end
+
+            Character = Player.Character or Character
+            Humanoid = Character:FindFirstChild("Humanoid")
+            local Root = Character:FindFirstChild("HumanoidRootPart")
+
+            if lock and Root and Humanoid then
+                Humanoid.AutoRotate = false
+                local look = Camera.CFrame.LookVector
+                Root.CFrame = CFrame.new(Root.Position, Root.Position + Vector3.new(look.X,0,look.Z))
+            elseif Humanoid then
+                Humanoid.AutoRotate = true
+            end
+        end)
+
     else
-        if Crosshair then Crosshair.Visible = false end
-        if ToggleFrame then ToggleFrame.Visible = false end
-        UserInputService.MouseBehavior = Enum.MouseBehavior.Default
+        _G.MobileShiftLock.Enabled = false
+
+        if _G.MobileShiftLock.Connection then
+            _G.MobileShiftLock.Connection:Disconnect()
+            _G.MobileShiftLock.Connection = nil
+        end
+
+        if _G.MobileShiftLock.Gui then
+            _G.MobileShiftLock.Gui:Destroy()
+            _G.MobileShiftLock.Gui = nil
+        end
+
+        if Humanoid then
+            Humanoid.AutoRotate = true
+        end
     end
 end)
 
