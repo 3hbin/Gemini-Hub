@@ -1133,20 +1133,57 @@ end)
 createToggle("🛡️ Chống Kick", function(state) AntiKick_Active = state end)
 
 -- 10. SHIFT LOCK
-if IsMobile then
-    local ShiftLock_Active = false
-    createToggle("📱 Khóa Tâm", function(state) 
-        ShiftLock_Active = state 
-        if not state then UserInputService.MouseBehavior = Enum.MouseBehavior.Default end 
-    end)
-    RunService.RenderStepped:Connect(function()
-        if ShiftLock_Active and IsMobile and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
-            UserInputService.MouseBehavior = Enum.MouseBehavior.LockCenter
-            local HRP = LocalPlayer.Character.HumanoidRootPart
-            HRP.CFrame = CFrame.new(HRP.Position, HRP.Position + Vector3.new(Camera.CFrame.LookVector.X, 0, Camera.CFrame.LookVector.Z))
+-- Biến toàn cục để dùng chung
+local ShiftLock_Active = false
+local Crosshair = nil
+local ToggleFrame = nil
+
+createToggle("📱 Shift Lock Mobile", function(state)
+    ShiftLock_Active = state
+    if state then
+        -- 1. Hiện Tâm Ngắm
+        if not Crosshair then
+            Crosshair = Instance.new("ImageLabel", game:GetService("Players").LocalPlayer:WaitForChild("PlayerGui"))
+            Crosshair.Size = UDim2.new(0, 30, 0, 30); Crosshair.Position = UDim2.new(0.5, -15, 0.5, -15)
+            Crosshair.BackgroundTransparency = 1; Crosshair.Image = "rbxassetid://120266558538428"; Crosshair.ZIndex = 10
         end
-    end)
-end
+        Crosshair.Visible = true
+        UserInputService.MouseBehavior = Enum.MouseBehavior.LockCenter
+
+        -- 2. Tạo Bảng Nút ON/OFF (Bên phải nút nhảy)
+        if not ToggleFrame then
+            ToggleFrame = Instance.new("Frame", game:GetService("Players").LocalPlayer:WaitForChild("PlayerGui"))
+            ToggleFrame.Size = UDim2.new(0, 100, 0, 50); ToggleFrame.Position = UDim2.new(0.85, 0, 0.7, 0) -- Vị trí góc phải
+            ToggleFrame.BackgroundTransparency = 1
+            
+            -- Nút ON
+            local OnBtn = Instance.new("ImageButton", ToggleFrame)
+            OnBtn.Size = UDim2.new(0, 45, 0, 45); OnBtn.Position = UDim2.new(0, 0, 0, 0)
+            OnBtn.Image = "rbxassetid://83349936062601"
+            OnBtn.MouseButton1Click:Connect(function() UserInputService.MouseBehavior = Enum.MouseBehavior.LockCenter end)
+            
+            -- Nút OFF
+            local OffBtn = Instance.new("ImageButton", ToggleFrame)
+            OffBtn.Size = UDim2.new(0, 45, 0, 45); OffBtn.Position = UDim2.new(0.55, 0, 0, 0)
+            OffBtn.Image = "rbxassetid://72173899346121"
+            OffBtn.MouseButton1Click:Connect(function() UserInputService.MouseBehavior = Enum.MouseBehavior.Default end)
+        end
+        ToggleFrame.Visible = true
+    else
+        if Crosshair then Crosshair.Visible = false end
+        if ToggleFrame then ToggleFrame.Visible = false end
+        UserInputService.MouseBehavior = Enum.MouseBehavior.Default
+    end
+end)
+
+-- Vòng lặp khóa camera (Giữ nguyên)
+RunService.RenderStepped:Connect(function()
+    if ShiftLock_Active and game.Players.LocalPlayer.Character and game.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+        local HRP = game.Players.LocalPlayer.Character.HumanoidRootPart
+        local Camera = workspace.CurrentCamera
+        HRP.CFrame = CFrame.new(HRP.Position, HRP.Position + Vector3.new(Camera.CFrame.LookVector.X, 0, Camera.CFrame.LookVector.Z))
+    end
+end)
 
 -- 11. GAME INVITE
 createButton("📧 Mời Bạn", Color3.fromRGB(60, 130, 80), function()
