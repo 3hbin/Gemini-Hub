@@ -1164,7 +1164,7 @@ createToggle("📱 Shift Lock Mobile", function(state)
         Crosshair.Size = UDim2.new(0,30,0,30)
         Crosshair.Position = UDim2.new(0.5,-15,0.5,-15)
         Crosshair.BackgroundTransparency = 1
-        Crosshair.Image = "rbxassetid://120266558538428"
+        Crosshair.Image = "rbxthumb://type=Asset&id=16812589035&w=150&h=150"
 
         local Button = Instance.new("ImageButton")
         Button.Parent = Gui
@@ -1173,15 +1173,15 @@ createToggle("📱 Shift Lock Mobile", function(state)
         Button.BackgroundTransparency = 1
 
         local Lock = false
-        Button.Image = "rbxassetid://72173899346121" -- OFF
+        Button.Image = "rbxthumb://type=Asset&id=16812589035&w=150&h=150" -- OFF
 
         Button.MouseButton1Click:Connect(function()
             Lock = not Lock
 
             if Lock then
-                Button.Image = "rbxassetid://83349936062601" -- ON
+                Button.Image = "rbxthumb://type=Asset&id=16812591449&w=150&h=150" -- ON
             else
-                Button.Image = "rbxassetid://72173899346121" -- OFF
+                Button.Image = "rbxthumb://type=Asset&id=16812589035&w=150&h=150" -- OFF
             end
         end)
 
