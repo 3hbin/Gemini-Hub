@@ -4948,41 +4948,73 @@ createButton("⌨️ Bàn Phím Ảo", Color3.fromRGB(85, 85, 85), function()
 end)
 
 -- Khởi tạo biến toàn cục cho Home
-_G.HomePosition = nil
+_G.HomeList = {}
 
--- Nút 1: Set Home / Teleport Home
-createButton("🏠 Set Home / Go", Color3.fromRGB(0, 150, 255), function()
-    local Player = game.Players.LocalPlayer
-    local Character = Player.Character
-    local RootPart = Character and Character:FindFirstChild("HumanoidRootPart")
-
-    if not RootPart then return end
-
-    if not _G.HomePosition then
-        _G.HomePosition = RootPart.CFrame
-        game:GetService("StarterGui"):SetCore("SendNotification", {
-            Title = "Home",
-            Text = "🏠 Đã lưu vị trí Home!",
-            Duration = 2
-        })
-    else
-        RootPart.CFrame = _G.HomePosition
-        game:GetService("StarterGui"):SetCore("SendNotification", {
-            Title = "Home",
-            Text = "🚀 Đã về vị trí Home!",
-            Duration = 2
-        })
-    end
-end)
-
--- Nút 2: Reset Home
-createButton("🔄 Reset Home", Color3.fromRGB(255, 100, 0), function()
-    _G.HomePosition = nil
+-- Hàm tạo thông báo
+local function ModernNotify(msg)
     game:GetService("StarterGui"):SetCore("SendNotification", {
-        Title = "Home",
-        Text = "🔄 Đã reset! Đang đợi vị trí mới.",
-        Duration = 2
+        Title = "Gemini System",
+        Text = msg,
+        Duration = 2,
     })
+end
+
+-- Nút mở bảng Home
+createButton("🏠 Danh Sách Home", Color3.fromRGB(45, 45, 45), function()
+    -- Xóa bảng cũ nếu đang tồn tại
+    if game.Players.LocalPlayer.PlayerGui:FindFirstChild("HomeGui") then
+        game.Players.LocalPlayer.PlayerGui.HomeGui:Destroy()
+    end
+
+    local ScreenGui = Instance.new("ScreenGui", game.Players.LocalPlayer.PlayerGui)
+    ScreenGui.Name = "HomeGui"
+    
+    local Frame = Instance.new("Frame", ScreenGui)
+    Frame.Size = UDim2.new(0, 250, 0, 350); Frame.Position = UDim2.new(0.5, -125, 0.5, -175)
+    Frame.BackgroundColor3 = Color3.fromRGB(30, 30, 30); Frame.Active = true; Frame.Draggable = true
+    Instance.new("UICorner", Frame).CornerRadius = UDim.new(0, 12)
+    Instance.new("UIStroke", Frame).Color = Color3.fromRGB(0, 150, 255)
+
+    local Title = Instance.new("TextLabel", Frame)
+    Title.Size = UDim2.new(1, 0, 0, 40); Title.Text = "🏠 HOME SYSTEM"; Title.TextColor3 = Color3.new(1, 1, 1)
+    Title.BackgroundTransparency = 1; Title.Font = Enum.Font.GothamBold
+
+    local List = Instance.new("ScrollingFrame", Frame)
+    List.Size = UDim2.new(0.9, 0, 0.5, 0); List.Position = UDim2.new(0.05, 0, 0.15, 0)
+    List.BackgroundTransparency = 1; List.ScrollBarThickness = 4
+
+    local NameBox = Instance.new("TextBox", Frame)
+    NameBox.Size = UDim2.new(0.8, 0, 0, 30); NameBox.Position = UDim2.new(0.1, 0, 0.7, 0)
+    NameBox.PlaceholderText = "Nhập tên Home..."; NameBox.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+    Instance.new("UICorner", NameBox)
+
+    local SaveBtn = Instance.new("TextButton", Frame)
+    SaveBtn.Size = UDim2.new(0.8, 0, 0, 35); SaveBtn.Position = UDim2.new(0.1, 0, 0.85, 0)
+    SaveBtn.Text = "📌 Save home"; SaveBtn.BackgroundColor3 = Color3.fromRGB(0, 150, 255)
+    Instance.new("UICorner", SaveBtn)
+
+    local function RefreshList()
+        List:ClearAllChildren()
+        for i, data in pairs(_G.HomeList) do
+            local Btn = Instance.new("TextButton", List)
+            Btn.Size = UDim2.new(1, 0, 0, 30); Btn.Position = UDim2.new(0, 0, 0, (i-1)*35)
+            Btn.Text = data.Name; Btn.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+            Instance.new("UICorner", Btn)
+            Btn.MouseButton1Click:Connect(function()
+                game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = data.CFrame
+            end)
+        end
+    end
+
+    SaveBtn.MouseButton1Click:Connect(function()
+        local rawName = NameBox.Text ~= "" and NameBox.Text or "Home"
+        local finalName = "🏠 " .. rawName
+        table.insert(_G.HomeList, {Name = finalName, CFrame = game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame})
+        RefreshList()
+        ModernNotify("Đã lưu: " .. finalName)
+    end)
+    
+    RefreshList()
 end)
 
 -- CLOSE BUTTON
