@@ -1136,7 +1136,6 @@ createToggle("🛡️ Chống Kick", function(state) AntiKick_Active = state end
 createToggle("📱 Shift Lock Mobile", function(state)
     local Players = game:GetService("Players")
     local RunService = game:GetService("RunService")
-
     local Player = Players.LocalPlayer  
     local PlayerGui = Player:WaitForChild("PlayerGui")  
     local Camera = workspace.CurrentCamera  
@@ -1144,14 +1143,8 @@ createToggle("📱 Shift Lock Mobile", function(state)
     _G.MobileShiftLock = _G.MobileShiftLock or {}  
 
     if state then  
-        if _G.MobileShiftLock.Enabled then  
-            return  
-        end  
-
+        if _G.MobileShiftLock.Enabled then return end  
         _G.MobileShiftLock.Enabled = true  
-
-        local Character = Player.Character or Player.CharacterAdded:Wait()  
-        local Humanoid = Character:WaitForChild("Humanoid")  
 
         local Gui = Instance.new("ScreenGui")  
         Gui.Name = "MobileShiftLock"  
@@ -1161,75 +1154,49 @@ createToggle("📱 Shift Lock Mobile", function(state)
 
         local Crosshair = Instance.new("ImageLabel")  
         Crosshair.Parent = Gui  
-        Crosshair.Size = UDim2.new(0,30,0,30)  
-        Crosshair.Position = UDim2.new(0.5,-15,0.5,-15)  
+        Crosshair.Size = UDim2.new(0, 30, 0, 30)  
+        Crosshair.Position = UDim2.new(0.5, -15, 0.5, -15) -- Căn giữa chuẩn xác
         Crosshair.BackgroundTransparency = 1  
         Crosshair.Image = "rbxthumb://type=Asset&id=120266558538428&w=150&h=150"  
+        Crosshair.Visible = false -- Mặc định ẩn
+        _G.MobileShiftLock.Crosshair = Crosshair
 
         local Button = Instance.new("ImageButton")  
         Button.Parent = Gui  
-        Button.Size = UDim2.new(0,50,0,50)  
-        -- Thay đổi vị trí tại đây để không vướng nút nhảy
-        Button.Position = UDim2.new(0.75, 0, 0.40, 0)  
+        Button.Size = UDim2.new(0, 50, 0, 50)  
+        Button.Position = UDim2.new(0.75, 0, 0.40, 0) -- Vị trí đã chỉnh
         Button.BackgroundTransparency = 1  
-
-        local Lock = false  
         Button.Image = "rbxthumb://type=Asset&id=16812589035&w=150&h=150" -- OFF  
 
+        local Lock = false  
         Button.MouseButton1Click:Connect(function()  
             Lock = not Lock  
-
-            if Lock then  
-                Button.Image = "rbxthumb://type=Asset&id=16812591449&w=150&h=150" -- ON  
-            else  
-                Button.Image = "rbxthumb://type=Asset&id=16812589035&w=150&h=150" -- OFF  
-            end  
+            Crosshair.Visible = Lock -- Tự động ẩn/hiện theo nút
+            Button.Image = Lock and "rbxthumb://type=Asset&id=16812591449&w=150&h=150" or "rbxthumb://type=Asset&id=16812589035&w=150&h=150"
         end)  
 
         _G.MobileShiftLock.Connection = RunService.RenderStepped:Connect(function()  
-            if not _G.MobileShiftLock.Enabled then  
-                return  
-            end  
-
-            Character = Player.Character or Character  
-            local Root = Character:FindFirstChild("HumanoidRootPart")  
-            Humanoid = Character:FindFirstChild("Humanoid")  
+            if not _G.MobileShiftLock.Enabled then return end  
+            local Character = Player.Character  
+            local Root = Character and Character:FindFirstChild("HumanoidRootPart")  
+            local Humanoid = Character and Character:FindFirstChild("Humanoid")  
 
             if Root and Humanoid then  
                 if Lock then  
                     Humanoid.AutoRotate = false  
-
                     local Look = Camera.CFrame.LookVector  
-                    Root.CFrame = CFrame.new(  
-                        Root.Position,  
-                        Root.Position + Vector3.new(Look.X,0,Look.Z)  
-                    )  
+                    Root.CFrame = CFrame.new(Root.Position, Root.Position + Vector3.new(Look.X, 0, Look.Z))  
                 else  
                     Humanoid.AutoRotate = true  
                 end  
             end  
         end)  
-
     else  
         _G.MobileShiftLock.Enabled = false  
-
-        if _G.MobileShiftLock.Connection then  
-            _G.MobileShiftLock.Connection:Disconnect()  
-            _G.MobileShiftLock.Connection = nil  
-        end  
-
-        if _G.MobileShiftLock.Gui then  
-            _G.MobileShiftLock.Gui:Destroy()  
-            _G.MobileShiftLock.Gui = nil  
-        end  
-
+        if _G.MobileShiftLock.Connection then _G.MobileShiftLock.Connection:Disconnect() end  
+        if _G.MobileShiftLock.Gui then _G.MobileShiftLock.Gui:Destroy() end  
         local Character = Player.Character  
-        if Character then  
-            local Humanoid = Character:FindFirstChild("Humanoid")  
-            if Humanoid then  
-                Humanoid.AutoRotate = true  
-            end  
-        end  
+        if Character and Character:FindFirstChild("Humanoid") then Character.Humanoid.AutoRotate = true end  
     end
 end)
 
