@@ -366,38 +366,6 @@ Grid:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
     GridScrollFrame.CanvasSize = UDim2.new(0, 0, 0, Grid.AbsoluteContentSize.Y + 20)
 end)
 
--- TẠO Ô TÌM KIẾM CẢI TIẾN
-local SearchBox = Instance.new("TextBox", MainFrame)
-SearchBox.Name = "SearchBox"
-SearchBox.Size = UDim2.new(0.9, 0, 0, 35)
-SearchBox.Position = UDim2.new(0.5, 0, 0, IsMobile and 170 or 260)
-SearchBox.AnchorPoint = Vector2.new(0.5, 0)
-SearchBox.PlaceholderText = "🔍 Tìm kiếm tính năng..."
-SearchBox.PlaceholderColor3 = Color3.fromRGB(150, 150, 150)
-SearchBox.BackgroundColor3 = Color3.fromRGB(20, 25, 40)
-SearchBox.TextColor3 = Color3.new(1, 1, 1)
-SearchBox.Font = Enum.Font.Gotham
-SearchBox.TextSize = 12
-createCorner(SearchBox, 8)
-
-local SearchStroke = Instance.new("UIStroke", SearchBox)
-SearchStroke.Color = Color3.fromRGB(0, 150, 200)
-SearchStroke.Thickness = 1.5
-
--- HÀM LỌC TÌM KIẾM ĐÃ SỬA LỖI
-SearchBox:GetPropertyChangedSignal("Text"):Connect(function()
-    local filter = SearchBox.Text:lower()
-    for _, btn in pairs(GridScrollFrame:GetChildren()) do
-        if btn:IsA("TextButton") then
-            if filter == "" or btn.Text:lower():find(filter) then
-                btn.Visible = true
-            else
-                btn.Visible = false
-            end
-        end
-    end
-end)
-
 -- UI Creation Helpers
 local function createToggle(text, callback)
     local Btn = Instance.new("TextButton", GridScrollFrame)
