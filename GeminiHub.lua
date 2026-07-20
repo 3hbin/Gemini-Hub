@@ -1166,13 +1166,13 @@ createToggle("📱 Shift Lock Mobile", function(state)
         Button.Size = UDim2.new(0, 50, 0, 50)  
         Button.Position = UDim2.new(0.75, 0, 0.40, 0) -- Vị trí đã chỉnh
         Button.BackgroundTransparency = 1  
-        Button.Image = "rbxthumb://type=Asset&id=16812589035&w=150&h=150" -- OFF  
+        Button.Image = "rbxthumb://type=Asset&id=83349936062601&w=150&h=150" -- OFF  
 
         local Lock = false  
         Button.MouseButton1Click:Connect(function()  
             Lock = not Lock  
             Crosshair.Visible = Lock -- Tự động ẩn/hiện theo nút
-            Button.Image = Lock and "rbxthumb://type=Asset&id=16812591449&w=150&h=150" or "rbxthumb://type=Asset&id=16812589035&w=150&h=150"
+            Button.Image = Lock and "rbxthumb://type=Asset&id=72173899346121&w=150&h=150" or "rbxthumb://type=Asset&id=83349936062601&w=150&h=150"
         end)  
 
         _G.MobileShiftLock.Connection = RunService.RenderStepped:Connect(function()  
