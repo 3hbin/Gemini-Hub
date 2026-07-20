@@ -4948,78 +4948,66 @@ createButton("⌨️ Bàn Phím Ảo", Color3.fromRGB(85, 85, 85), function()
 end)
 
 -- Khởi tạo biến toàn cục cho Home
-_G.HomeList = _G.HomeList or {} -- Giữ lại dữ liệu cũ nếu đã có
+_G.HomeList = _G.HomeList or {}
 
 local function ModernNotify(msg)
-    game:GetService("StarterGui"):SetCore("SendNotification", {
-        Title = "🏠 Home System",
-        Text = msg,
-        Duration = 2,
-    })
+    game:GetService("StarterGui"):SetCore("SendNotification", {Title = "🏠 Home System", Text = msg, Duration = 2})
 end
 
-createButton("🏠 Danh Sách Home", Color3.fromRGB(45, 45, 45), function()
-    if game.Players.LocalPlayer.PlayerGui:FindFirstChild("HomeGui") then
-        game.Players.LocalPlayer.PlayerGui.HomeGui:Destroy()
-    end
+createButton("🏠 Danh Sách Home", Color3.fromRGB(35, 35, 35), function()
+    if game.Players.LocalPlayer.PlayerGui:FindFirstChild("HomeGui") then game.Players.LocalPlayer.PlayerGui.HomeGui:Destroy() end
 
     local ScreenGui = Instance.new("ScreenGui", game.Players.LocalPlayer.PlayerGui)
     ScreenGui.Name = "HomeGui"
     
     local Frame = Instance.new("Frame", ScreenGui)
-    Frame.Size = UDim2.new(0, 250, 0, 350); Frame.Position = UDim2.new(0.5, -125, 0.5, -175)
-    Frame.BackgroundColor3 = Color3.fromRGB(30, 30, 30); Frame.Active = true; Frame.Draggable = true
-    Instance.new("UICorner", Frame).CornerRadius = UDim.new(0, 12)
-    Instance.new("UIStroke", Frame).Color = Color3.fromRGB(0, 150, 255)
+    Frame.Size = UDim2.new(0, 280, 0, 380); Frame.Position = UDim2.new(0.5, -140, 0.5, -190)
+    Frame.BackgroundColor3 = Color3.fromRGB(25, 25, 25); Frame.Active = true; Frame.Draggable = true
+    Instance.new("UICorner", Frame).CornerRadius = UDim.new(0, 15)
+    Instance.new("UIStroke", Frame).Color = Color3.fromRGB(60, 60, 60); Instance.new("UIStroke", Frame).Thickness = 2
 
-    -- Tiêu đề
+    -- Tiêu đề & Nút Đóng
     local Title = Instance.new("TextLabel", Frame)
-    Title.Size = UDim2.new(1, 0, 0, 40); Title.Text = "🏠 HOME SYSTEM"; Title.TextColor3 = Color3.new(1, 1, 1)
-    Title.BackgroundTransparency = 1; Title.Font = Enum.Font.GothamBold
+    Title.Size = UDim2.new(1, 0, 0, 50); Title.Text = "QUẢN LÝ HOME"; Title.TextColor3 = Color3.new(1, 1, 1)
+    Title.BackgroundTransparency = 1; Title.Font = Enum.Font.GothamBold; Title.TextSize = 18
 
-    -- Nút Đóng (X)
     local CloseBtn = Instance.new("TextButton", Frame)
-    CloseBtn.Size = UDim2.new(0, 30, 0, 30); CloseBtn.Position = UDim2.new(0.85, 0, 0, 5)
-    CloseBtn.Text = "X"; CloseBtn.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
-    CloseBtn.TextColor3 = Color3.new(1, 1, 1); CloseBtn.Font = Enum.Font.GothamBold
+    CloseBtn.Size = UDim2.new(0, 30, 0, 30); CloseBtn.Position = UDim2.new(0.88, 0, 0, 10)
+    CloseBtn.Text = "✕"; CloseBtn.BackgroundColor3 = Color3.fromRGB(150, 40, 40); CloseBtn.TextColor3 = Color3.new(1,1,1)
     Instance.new("UICorner", CloseBtn).CornerRadius = UDim.new(1, 0)
     CloseBtn.MouseButton1Click:Connect(function() ScreenGui:Destroy() end)
 
-    -- Danh sách
     local List = Instance.new("ScrollingFrame", Frame)
     List.Size = UDim2.new(0.9, 0, 0.5, 0); List.Position = UDim2.new(0.05, 0, 0.15, 0)
     List.BackgroundTransparency = 1; List.ScrollBarThickness = 4
 
     local NameBox = Instance.new("TextBox", Frame)
-    NameBox.Size = UDim2.new(0.8, 0, 0, 30); NameBox.Position = UDim2.new(0.1, 0, 0.7, 0)
-    NameBox.PlaceholderText = "Nhập tên Home..."; NameBox.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+    NameBox.Size = UDim2.new(0.8, 0, 0, 40); NameBox.Position = UDim2.new(0.1, 0, 0.7, 0)
+    NameBox.PlaceholderText = "Tên Home..."; NameBox.BackgroundColor3 = Color3.fromRGB(40, 40, 40); NameBox.TextColor3 = Color3.new(1,1,1)
     Instance.new("UICorner", NameBox)
 
     local SaveBtn = Instance.new("TextButton", Frame)
-    SaveBtn.Size = UDim2.new(0.8, 0, 0, 35); SaveBtn.Position = UDim2.new(0.1, 0, 0.85, 0)
-    SaveBtn.Text = "📌 LƯU HOME"; SaveBtn.BackgroundColor3 = Color3.fromRGB(0, 150, 255)
+    SaveBtn.Size = UDim2.new(0.8, 0, 0, 40); SaveBtn.Position = UDim2.new(0.1, 0, 0.85, 0)
+    SaveBtn.Text = "LƯU VỊ TRÍ"; SaveBtn.BackgroundColor3 = Color3.fromRGB(0, 120, 255); SaveBtn.TextColor3 = Color3.new(1,1,1)
     Instance.new("UICorner", SaveBtn)
 
-    -- Hàm cập nhật danh sách
     local function RefreshList()
         List:ClearAllChildren()
         for i, data in pairs(_G.HomeList) do
-            local Btn = Instance.new("TextButton", List)
-            Btn.Size = UDim2.new(1, 0, 0, 30); Btn.Position = UDim2.new(0, 0, 0, (i-1)*35)
-            Btn.Text = data.Name; Btn.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-            Instance.new("UICorner", Btn)
-            Btn.MouseButton1Click:Connect(function()
-                game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = data.CFrame
-            end)
+            local Holder = Instance.new("Frame", List); Holder.Size = UDim2.new(1, 0, 0, 35); Holder.Position = UDim2.new(0, 0, 0, (i-1)*40); Holder.BackgroundTransparency = 1
+            
+            local Btn = Instance.new("TextButton", Holder); Btn.Size = UDim2.new(0.75, 0, 1, 0); Btn.Text = data.Name; Btn.BackgroundColor3 = Color3.fromRGB(50, 50, 50); Btn.TextColor3 = Color3.new(1,1,1)
+            Instance.new("UICorner", Btn); Btn.MouseButton1Click:Connect(function() game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = data.CFrame end)
+            
+            local Del = Instance.new("TextButton", Holder); Del.Size = UDim2.new(0.2, 0, 1, 0); Del.Position = UDim2.new(0.8, 0, 0, 0); Del.Text = "Xóa"; Del.BackgroundColor3 = Color3.fromRGB(150, 40, 40); Del.TextColor3 = Color3.new(1,1,1)
+            Instance.new("UICorner", Del); Del.MouseButton1Click:Connect(function() table.remove(_G.HomeList, i); RefreshList() end)
         end
     end
 
     SaveBtn.MouseButton1Click:Connect(function()
-        local rawName = NameBox.Text ~= "" and NameBox.Text or "Home"
-        local finalName = "🏠 " .. rawName
-        table.insert(_G.HomeList, {Name = finalName, CFrame = game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame})
-        RefreshList()
-        ModernNotify("Đã lưu: " .. finalName)
+        local name = (NameBox.Text ~= "" and NameBox.Text or "Home")
+        table.insert(_G.HomeList, {Name = "🏠 " .. name, CFrame = game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame})
+        RefreshList(); NameBox.Text = ""
     end)
     
     RefreshList()
