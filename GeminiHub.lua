@@ -4948,20 +4948,17 @@ createButton("⌨️ Bàn Phím Ảo", Color3.fromRGB(85, 85, 85), function()
 end)
 
 -- Khởi tạo biến toàn cục cho Home
-_G.HomeList = {}
+_G.HomeList = _G.HomeList or {} -- Giữ lại dữ liệu cũ nếu đã có
 
--- Hàm tạo thông báo
 local function ModernNotify(msg)
     game:GetService("StarterGui"):SetCore("SendNotification", {
-        Title = "Gemini System",
+        Title = "🏠 Home System",
         Text = msg,
         Duration = 2,
     })
 end
 
--- Nút mở bảng Home
 createButton("🏠 Danh Sách Home", Color3.fromRGB(45, 45, 45), function()
-    -- Xóa bảng cũ nếu đang tồn tại
     if game.Players.LocalPlayer.PlayerGui:FindFirstChild("HomeGui") then
         game.Players.LocalPlayer.PlayerGui.HomeGui:Destroy()
     end
@@ -4975,10 +4972,20 @@ createButton("🏠 Danh Sách Home", Color3.fromRGB(45, 45, 45), function()
     Instance.new("UICorner", Frame).CornerRadius = UDim.new(0, 12)
     Instance.new("UIStroke", Frame).Color = Color3.fromRGB(0, 150, 255)
 
+    -- Tiêu đề
     local Title = Instance.new("TextLabel", Frame)
     Title.Size = UDim2.new(1, 0, 0, 40); Title.Text = "🏠 HOME SYSTEM"; Title.TextColor3 = Color3.new(1, 1, 1)
     Title.BackgroundTransparency = 1; Title.Font = Enum.Font.GothamBold
 
+    -- Nút Đóng (X)
+    local CloseBtn = Instance.new("TextButton", Frame)
+    CloseBtn.Size = UDim2.new(0, 30, 0, 30); CloseBtn.Position = UDim2.new(0.85, 0, 0, 5)
+    CloseBtn.Text = "X"; CloseBtn.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
+    CloseBtn.TextColor3 = Color3.new(1, 1, 1); CloseBtn.Font = Enum.Font.GothamBold
+    Instance.new("UICorner", CloseBtn).CornerRadius = UDim.new(1, 0)
+    CloseBtn.MouseButton1Click:Connect(function() ScreenGui:Destroy() end)
+
+    -- Danh sách
     local List = Instance.new("ScrollingFrame", Frame)
     List.Size = UDim2.new(0.9, 0, 0.5, 0); List.Position = UDim2.new(0.05, 0, 0.15, 0)
     List.BackgroundTransparency = 1; List.ScrollBarThickness = 4
@@ -4990,9 +4997,10 @@ createButton("🏠 Danh Sách Home", Color3.fromRGB(45, 45, 45), function()
 
     local SaveBtn = Instance.new("TextButton", Frame)
     SaveBtn.Size = UDim2.new(0.8, 0, 0, 35); SaveBtn.Position = UDim2.new(0.1, 0, 0.85, 0)
-    SaveBtn.Text = "📌 Save home"; SaveBtn.BackgroundColor3 = Color3.fromRGB(0, 150, 255)
+    SaveBtn.Text = "📌 LƯU HOME"; SaveBtn.BackgroundColor3 = Color3.fromRGB(0, 150, 255)
     Instance.new("UICorner", SaveBtn)
 
+    -- Hàm cập nhật danh sách
     local function RefreshList()
         List:ClearAllChildren()
         for i, data in pairs(_G.HomeList) do
