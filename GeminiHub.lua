@@ -366,35 +366,33 @@ Grid:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
     GridScrollFrame.CanvasSize = UDim2.new(0, 0, 0, Grid.AbsoluteContentSize.Y + 20)
 end)
 
-local TweenService = game:GetService("TweenService")
--- Tốc độ nhanh hơn (0.15 giây)
-local info = TweenInfo.new(0.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
-
--- Tạo ô tìm kiếm
+-- TẠO Ô TÌM KIẾM CẢI TIẾN
 local SearchBox = Instance.new("TextBox", MainFrame)
 SearchBox.Name = "SearchBox"
-SearchBox.Size = UDim2.new(0.9, 0, 0, 30)
-SearchBox.LayoutOrder = 0
-SearchBox.PlaceholderText = "Tìm kiếm nhanh..."
-SearchBox.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+SearchBox.Size = UDim2.new(0.9, 0, 0, 35)
+SearchBox.Position = UDim2.new(0.5, 0, 0, IsMobile and 170 or 260)
+SearchBox.AnchorPoint = Vector2.new(0.5, 0)
+SearchBox.PlaceholderText = "🔍 Tìm kiếm tính năng..."
+SearchBox.PlaceholderColor3 = Color3.fromRGB(150, 150, 150)
+SearchBox.BackgroundColor3 = Color3.fromRGB(20, 25, 40)
 SearchBox.TextColor3 = Color3.new(1, 1, 1)
+SearchBox.Font = Enum.Font.Gotham
+SearchBox.TextSize = 12
+createCorner(SearchBox, 8)
 
--- Hàm lọc với hiệu ứng nhanh
+local SearchStroke = Instance.new("UIStroke", SearchBox)
+SearchStroke.Color = Color3.fromRGB(0, 150, 200)
+SearchStroke.Thickness = 1.5
+
+-- HÀM LỌC TÌM KIẾM ĐÃ SỬA LỖI
 SearchBox:GetPropertyChangedSignal("Text"):Connect(function()
     local filter = SearchBox.Text:lower()
-    for _, btn in pairs(MainFrame:GetChildren()) do
-        if btn:IsA("TextButton") and btn ~= SearchBox then
+    for _, btn in pairs(GridScrollFrame:GetChildren()) do
+        if btn:IsA("TextButton") then
             if filter == "" or btn.Text:lower():find(filter) then
                 btn.Visible = true
-                TweenService:Create(btn, info, {BackgroundTransparency = 0, TextTransparency = 0}):Play()
             else
-                local t = TweenService:Create(btn, info, {BackgroundTransparency = 1, TextTransparency = 1})
-                t:Play()
-                t.Completed:Connect(function() 
-                    if btn.BackgroundTransparency >= 1 then 
-                        btn.Visible = false 
-                    end 
-                end)
+                btn.Visible = false
             end
         end
     end
