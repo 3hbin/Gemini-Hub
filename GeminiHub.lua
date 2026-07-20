@@ -366,6 +366,40 @@ Grid:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
     GridScrollFrame.CanvasSize = UDim2.new(0, 0, 0, Grid.AbsoluteContentSize.Y + 20)
 end)
 
+local TweenService = game:GetService("TweenService")
+-- Tốc độ nhanh hơn (0.15 giây)
+local info = TweenInfo.new(0.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
+
+-- Tạo ô tìm kiếm
+local SearchBox = Instance.new("TextBox", MainFrame)
+SearchBox.Name = "SearchBox"
+SearchBox.Size = UDim2.new(0.9, 0, 0, 30)
+SearchBox.LayoutOrder = 0
+SearchBox.PlaceholderText = "Tìm kiếm nhanh..."
+SearchBox.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+SearchBox.TextColor3 = Color3.new(1, 1, 1)
+
+-- Hàm lọc với hiệu ứng nhanh
+SearchBox:GetPropertyChangedSignal("Text"):Connect(function()
+    local filter = SearchBox.Text:lower()
+    for _, btn in pairs(MainFrame:GetChildren()) do
+        if btn:IsA("TextButton") and btn ~= SearchBox then
+            if filter == "" or btn.Text:lower():find(filter) then
+                btn.Visible = true
+                TweenService:Create(btn, info, {BackgroundTransparency = 0, TextTransparency = 0}):Play()
+            else
+                local t = TweenService:Create(btn, info, {BackgroundTransparency = 1, TextTransparency = 1})
+                t:Play()
+                t.Completed:Connect(function() 
+                    if btn.BackgroundTransparency >= 1 then 
+                        btn.Visible = false 
+                    end 
+                end)
+            end
+        end
+    end
+end)
+
 -- UI Creation Helpers
 local function createToggle(text, callback)
     local Btn = Instance.new("TextButton", GridScrollFrame)
