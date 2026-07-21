@@ -551,12 +551,8 @@ end)
 
 -- ============== CÁC TÍNH NĂNG MỚI & SỬA ĐỔI ==============
 
-----------------------------------------------------------------------
--- 0.NÚT TÌM KIẾM NÚT (SEARCH BUTTONS)
-----------------------------------------------------------------------
-createButton("🔍 Tìm Kiếm Chức Năng", Color3.fromRGB(150, 0, 200), function(scrollFrame)
-    local targetScroll = scrollFrame -- Thay thế biến này bằng đường dẫn đến ScrollFrame thực tế của Hub nếu cần
-    
+-- 0. NÚT TÌM KIẾM NÚT (SEARCH BUTTONS) - PHIÊN BẢN SỬA
+createButton("🔍 Tìm Kiếm Chức Năng", Color3.fromRGB(150, 0, 200), function()
     local ScreenGui = Instance.new("ScreenGui", game.CoreGui)
     ScreenGui.Name = "GeminiSearchUI"
     ScreenGui.ResetOnSpawn = false
@@ -584,6 +580,8 @@ createButton("🔍 Tìm Kiếm Chức Năng", Color3.fromRGB(150, 0, 200), funct
     InputBox.Text = ""
     InputBox.BackgroundColor3 = Color3.fromRGB(40, 40, 45)
     InputBox.TextColor3 = Color3.new(1, 1, 1)
+    InputBox.Font = Enum.Font.Gotham
+    InputBox.TextSize = 10
     createCorner(InputBox, 5)
     
     local ResultLabel = Instance.new("TextLabel", Frame)
@@ -594,6 +592,7 @@ createButton("🔍 Tìm Kiếm Chức Năng", Color3.fromRGB(150, 0, 200), funct
     ResultLabel.TextColor3 = Color3.fromRGB(180, 180, 180)
     ResultLabel.Font = Enum.Font.Gotham
     ResultLabel.TextSize = 10
+    ResultLabel.TextWrapped = true
     
     local CloseBtn = Instance.new("TextButton", Frame)
     CloseBtn.Size = UDim2.new(0.8, 0, 0, 30)
@@ -601,31 +600,30 @@ createButton("🔍 Tìm Kiếm Chức Năng", Color3.fromRGB(150, 0, 200), funct
     CloseBtn.Text = "ĐÓNG"
     CloseBtn.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
     CloseBtn.TextColor3 = Color3.new(1, 1, 1)
+    CloseBtn.Font = Enum.Font.GothamBold
+    CloseBtn.TextSize = 10
     createCorner(CloseBtn, 5)
     
     InputBox:GetPropertyChangedSignal("Text"):Connect(function()
-        if not targetScroll then return end
         local keyword = string.lower(InputBox.Text)
         local matchCount = 0
         
-        for _, obj in ipairs(targetScroll:GetDescendants()) do
-            if obj:IsA("TextButton") or obj:IsA("ImageButton") then
-                local btnText = obj:IsA("TextButton") and obj.Text or ""
-                if btnText == "" then
-                    local label = obj:FindFirstChildOfClass("TextLabel")
-                    if label then btnText = label.Text end
-                end
-                
-                local btnName = string.lower(btnText ~= "" and btnText or obj.Name)
-                
-                if keyword == "" then
-                    obj.Visible = true
-                else
-                    if string.find(btnName, keyword) then
+        -- Tìm kiếm trong GridScrollFrame chính của Hub
+        if GridScrollFrame then
+            for _, obj in ipairs(GridScrollFrame:GetChildren()) do
+                if obj:IsA("TextButton") then
+                    local btnText = obj.Text or ""
+                    local btnName = string.lower(btnText ~= "" and btnText or obj.Name)
+                    
+                    if keyword == "" then
                         obj.Visible = true
-                        matchCount = matchCount + 1
                     else
-                        obj.Visible = false
+                        if string.find(btnName, keyword) then
+                            obj.Visible = true
+                            matchCount = matchCount + 1
+                        else
+                            obj.Visible = false
+                        end
                     end
                 end
             end
@@ -635,9 +633,10 @@ createButton("🔍 Tìm Kiếm Chức Năng", Color3.fromRGB(150, 0, 200), funct
     end)
     
     CloseBtn.MouseButton1Click:Connect(function()
-        if targetScroll then
-            for _, obj in ipairs(targetScroll:GetDescendants()) do
-                if obj:IsA("TextButton") or obj:IsA("ImageButton") then
+        -- Hiển thị lại tất cả các nút khi đóng
+        if GridScrollFrame then
+            for _, obj in ipairs(GridScrollFrame:GetChildren()) do
+                if obj:IsA("TextButton") then
                     obj.Visible = true
                 end
             end
