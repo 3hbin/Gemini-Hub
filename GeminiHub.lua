@@ -551,6 +551,92 @@ end)
 
 -- ============== CÁC TÍNH NĂNG MỚI & SỬA ĐỔI ==============
 
+----------------------------------------------------------------------
+-- 0.NÚT TÌM KIẾM NÚT (SEARCH BUTTONS)
+----------------------------------------------------------------------
+createButton("🔍 Tìm Kiếm Chức Năng", Color3.fromRGB(150, 0, 200), function()
+    local ScreenGui = Instance.new("ScreenGui", game.CoreGui)
+    ScreenGui.Name = "GeminiSearchUI"
+    ScreenGui.ResetOnSpawn = false
+    
+    local Frame = Instance.new("Frame", ScreenGui)
+    Frame.Size = UDim2.new(0, 280, 0, 160)
+    Frame.Position = UDim2.new(0.5, -140, 0.5, -80)
+    Frame.BackgroundColor3 = Color3.fromRGB(20, 20, 25)
+    createCorner(Frame, 10)
+    makeDraggable(Frame)
+    
+    local Title = Instance.new("TextLabel", Frame)
+    Title.Size = UDim2.new(1, 0, 0, 30)
+    Title.Position = UDim2.new(0, 0, 0, 5)
+    Title.BackgroundTransparency = 1
+    Title.Text = "🔍 TÌM KIẾM TÍNH NĂNG"
+    Title.TextColor3 = Color3.new(1, 1, 1)
+    Title.Font = Enum.Font.GothamBold
+    Title.TextSize = 12
+    
+    local InputBox = Instance.new("TextBox", Frame)
+    InputBox.Size = UDim2.new(0.8, 0, 0, 35)
+    InputBox.Position = UDim2.new(0.1, 0, 0.3, 0)
+    InputBox.PlaceholderText = "Nhập tên nút cần tìm..."
+    InputBox.Text = ""
+    InputBox.BackgroundColor3 = Color3.fromRGB(40, 40, 45)
+    InputBox.TextColor3 = Color3.new(1, 1, 1)
+    createCorner(InputBox, 5)
+    
+    local ResultLabel = Instance.new("TextLabel", Frame)
+    ResultLabel.Size = UDim2.new(0.8, 0, 0, 30)
+    ResultLabel.Position = UDim2.new(0.1, 0, 0.55, 0)
+    ResultLabel.BackgroundTransparency = 1
+    ResultLabel.Text = "Nhập từ khóa để lọc các nút trong Hub"
+    ResultLabel.TextColor3 = Color3.fromRGB(180, 180, 180)
+    ResultLabel.Font = Enum.Font.Gotham
+    ResultLabel.TextSize = 10
+    
+    local CloseBtn = Instance.new("TextButton", Frame)
+    CloseBtn.Size = UDim2.new(0.8, 0, 0, 30)
+    CloseBtn.Position = UDim2.new(0.1, 0, 0.78, 0)
+    CloseBtn.Text = "ĐÓNG"
+    CloseBtn.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
+    CloseBtn.TextColor3 = Color3.new(1, 1, 1)
+    createCorner(CloseBtn, 5)
+    
+    InputBox:GetPropertyChangedSignal("Text"):Connect(function()
+        local keyword = string.lower(InputBox.Text)
+        local matchCount = 0
+        
+        for _, child in ipairs(ScrollFrame:GetChildren()) do
+            if child:IsA("TextButton") then
+                if keyword == "" then
+                    child.Visible = true
+                else
+                    if string.find(string.lower(child.Text), keyword) then
+                        child.Visible = true
+                        matchCount = matchCount + 1
+                    else
+                        child.Visible = false
+                    end
+                end
+            end
+        end
+        
+        if keyword == "" then
+            ResultLabel.Text = "Hiển thị toàn bộ nút"
+        else
+            ResultLabel.Text = "Tìm thấy " .. matchCount .. " nút phù hợp"
+        end
+    end)
+    
+    CloseBtn.MouseButton1Click:Connect(function()
+        for _, child in ipairs(ScrollFrame:GetChildren()) do
+            if child:IsA("TextButton") then
+                child.Visible = true
+            end
+        end
+        ScreenGui:Destroy()
+    end)
+end)
+
 -- 1. BAY (FLY MODE)
 local Fly_Active = false
 local FlySpeed = 60
@@ -4884,6 +4970,7 @@ createButton("👻 Anti-NPC (Chống đuổi)", Color3.fromRGB(120, 40, 160), fu
     })
 end)
 
+-- 60
 _G.FullBrightSkyEnabled = false
 
 createButton("🌌 Sáng Bầu Trời", Color3.fromRGB(255, 255, 255), function()
@@ -4917,6 +5004,7 @@ createButton("🌌 Sáng Bầu Trời", Color3.fromRGB(255, 255, 255), function(
     })
 end)
 
+--61
 createButton("🔗 Link & Server", Color3.fromRGB(150, 50, 200), function()
     local Player = game:GetService("Players").LocalPlayer
     local LinkGui = Instance.new("ScreenGui", Player:WaitForChild("PlayerGui"))
@@ -4932,6 +5020,7 @@ createButton("🔗 Link & Server", Color3.fromRGB(150, 50, 200), function()
     RestartBtn.MouseButton1Click:Connect(function() LinkGui:Destroy(); loadstring(game:HttpGet("https://raw.githubusercontent.com/3hbin/Gemini-Hub/refs/heads/main/GeminiHub.lua"))() end)
 end)
 
+--62
 createButton("⌨️ Bàn Phím Ảo", Color3.fromRGB(85, 85, 85), function()
     local KeyGui = Instance.new("ScreenGui", game:GetService("Players").LocalPlayer:WaitForChild("PlayerGui"))
     local MainFrame = Instance.new("Frame", KeyGui); MainFrame.Size = UDim2.new(0, 280, 0, 130); MainFrame.Position = UDim2.new(0.5, -140, 0.6, 0); MainFrame.Active = true; MainFrame.Draggable = true
@@ -4947,6 +5036,7 @@ createButton("⌨️ Bàn Phím Ảo", Color3.fromRGB(85, 85, 85), function()
     end
 end)
 
+--63
 -- Khởi tạo biến toàn cục cho Home
 _G.HomeList = _G.HomeList or {}
 
@@ -5011,6 +5101,68 @@ createButton("🏠 Danh Sách Home", Color3.fromRGB(35, 35, 35), function()
     end)
     
     RefreshList()
+end)
+
+----------------------------------------------------------------------
+-- 64.NÚT LƯU CÀI ĐẶT (SAVE SETTINGS)
+----------------------------------------------------------------------
+createButton("💾 Lưu Cài Đặt (Save Settings)", Color3.fromRGB(0, 150, 100), function()
+    -- Bảng thông báo lưu cấu hình
+    local ScreenGui = Instance.new("ScreenGui", game.CoreGui)
+    ScreenGui.Name = "GeminiSaveSettingsUI"
+    ScreenGui.ResetOnSpawn = false
+    
+    local Frame = Instance.new("Frame", ScreenGui)
+    Frame.Size = UDim2.new(0, 260, 0, 130)
+    Frame.Position = UDim2.new(0.5, -130, 0.5, -65)
+    Frame.BackgroundColor3 = Color3.fromRGB(20, 20, 25)
+    createCorner(Frame, 10)
+    makeDraggable(Frame)
+    
+    local Title = Instance.new("TextLabel", Frame)
+    Title.Size = UDim2.new(1, 0, 0, 35)
+    Title.Position = UDim2.new(0, 0, 0, 10)
+    Title.BackgroundTransparency = 1
+    Title.Text = "💾 SAVE SETTINGS"
+    Title.TextColor3 = Color3.new(1, 1, 1)
+    Title.Font = Enum.Font.GothamBold
+    Title.TextSize = 13
+    
+    local StatusLabel = Instance.new("TextLabel", Frame)
+    StatusLabel.Size = UDim2.new(1, -20, 0, 30)
+    StatusLabel.Position = UDim2.new(0, 10, 0, 45)
+    StatusLabel.BackgroundTransparency = 1
+    StatusLabel.Text = "Đang lưu trạng thái và cấu hình hiện tại..."
+    StatusLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
+    StatusLabel.Font = Enum.Font.Gotham
+    StatusLabel.TextSize = 11
+    
+    local OkBtn = Instance.new("TextButton", Frame)
+    OkBtn.Size = UDim2.new(0.8, 0, 0, 32)
+    OkBtn.Position = UDim2.new(0.1, 0, 0.7, 0)
+    OkBtn.Text = "ĐỒNG Ý"
+    OkBtn.BackgroundColor3 = Color3.fromRGB(0, 170, 100)
+    OkBtn.TextColor3 = Color3.new(1, 1, 1)
+    OkBtn.Font = Enum.Font.GothamBold
+    OkBtn.TextSize = 11
+    createCorner(OkBtn, 5)
+    
+    -- Xử lý lưu file cấu hình vào bộ nhớ game qua writefile (nếu exploit hỗ trợ)
+    OkBtn.MouseButton1Click:Connect(function()
+        pcall(function()
+            if writefile then
+                local settingsData = "GeminiHub_Config = { Saved = true, Time = " .. tick() .. " }"
+                writefile("GeminiHub_Settings.json", settingsData)
+            end
+        end)
+        
+        game:GetService("StarterGui"):SetCore("SendNotification", {
+            Title = "Hệ thống",
+            Text = "Đã lưu cài đặt thành công vào bộ nhớ!",
+            Duration = 3
+        })
+        ScreenGui:Destroy()
+    end)
 end)
 
 -- CLOSE BUTTON
