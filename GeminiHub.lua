@@ -601,11 +601,14 @@ createButton("🔍 Tìm Kiếm Chức Năng", Color3.fromRGB(150, 0, 200), funct
     CloseBtn.TextColor3 = Color3.new(1, 1, 1)
     createCorner(CloseBtn, 5)
     
+    -- Sửa lại biến ScrollFrame trỏ đúng vào khung chứa các nút chính của Hub bạn
+    local targetScroll = YourMainHub.ScrollFrame -- Thay YourMainHub thành biến chứa UI chính của bạn
+    
     InputBox:GetPropertyChangedSignal("Text"):Connect(function()
         local keyword = string.lower(InputBox.Text)
         local matchCount = 0
         
-        for _, child in ipairs(ScrollFrame:GetChildren()) do
+        for _, child in ipairs(targetScroll:GetChildren()) do
             if child:IsA("TextButton") then
                 if keyword == "" then
                     child.Visible = true
@@ -628,9 +631,11 @@ createButton("🔍 Tìm Kiếm Chức Năng", Color3.fromRGB(150, 0, 200), funct
     end)
     
     CloseBtn.MouseButton1Click:Connect(function()
-        for _, child in ipairs(ScrollFrame:GetChildren()) do
-            if child:IsA("TextButton") then
-                child.Visible = true
+        if targetScroll then
+            for _, child in ipairs(targetScroll:GetChildren()) do
+                if child:IsA("TextButton") then
+                    child.Visible = true
+                end
             end
         end
         ScreenGui:Destroy()
