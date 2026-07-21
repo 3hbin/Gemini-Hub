@@ -2158,7 +2158,6 @@ createButton("🎭 Biểu Cảm", Color3.fromRGB(170, 85, 255), function()
         track:Play()
         
         -- KÍCH HOẠT TÍNH NĂNG TỰ NGỪNG KHI DI CHUYỂN:
-        -- Khi tốc độ di chuyển (speed) lớn hơn 0.1, lập tức dừng Anim biểu cảm
         local moveConnection
         moveConnection = humanoid.Running:Connect(function(speed)
             if speed > 0.1 then
@@ -2169,12 +2168,30 @@ createButton("🎭 Biểu Cảm", Color3.fromRGB(170, 85, 255), function()
             end
         end)
         
-        -- Nếu nhân vật bị chết/reset, tự hủy kết nối để tránh rác bộ nhớ
         track.Stopped:Connect(function()
-            if moveConnection then moveConnection:Disconnect() end
+            if moveConnection then
+                moveConnection:Disconnect()
+            end
         end)
     end
-    
+
+    for _, data in ipairs(emotes) do
+        local Btn = Instance.new("TextButton", ListScroll)
+        Btn.Size = UDim2.new(1, -10, 0, 35)
+        Btn.BackgroundColor3 = Color3.fromRGB(50, 40, 70)
+        createCorner(Btn, 6)
+        
+        Btn.Text = data.Name
+        Btn.TextColor3 = Color3.new(1, 1, 1)
+        Btn.Font = Enum.Font.GothamBold
+        Btn.TextSize = 11
+        
+        Btn.MouseButton1Click:Connect(function()
+            PlayEmote(data.R6, data.R15)
+        end)
+    end
+end)
+
     -- Tạo danh sách nút bấm
     for i, emote in ipairs(emotes) do
         local Btn = Instance.new("TextButton", ListScroll)
