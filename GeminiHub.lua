@@ -551,15 +551,15 @@ end)
 
 -- ============== CÁC TÍNH NĂNG MỚI & SỬA ĐỔI ==============
 
--- 0. NÚT TÌM KIẾM NÚT (SEARCH BUTTONS) - PHIÊN BẢN SỬA
+-- 0. NÚT TÌM KIẾM NÚT (SEARCH BUTTONS) - PHIÊN BẢN CÓ DEBUG
 createButton("🔍 Tìm Kiếm Chức Năng", Color3.fromRGB(150, 0, 200), function()
     local ScreenGui = Instance.new("ScreenGui", game.CoreGui)
     ScreenGui.Name = "GeminiSearchUI"
     ScreenGui.ResetOnSpawn = false
     
     local Frame = Instance.new("Frame", ScreenGui)
-    Frame.Size = UDim2.new(0, 280, 0, 160)
-    Frame.Position = UDim2.new(0.5, -140, 0.5, -80)
+    Frame.Size = UDim2.new(0, 300, 0, 200)
+    Frame.Position = UDim2.new(0.5, -150, 0.5, -100)
     Frame.BackgroundColor3 = Color3.fromRGB(20, 20, 25)
     createCorner(Frame, 10)
     makeDraggable(Frame)
@@ -574,9 +574,9 @@ createButton("🔍 Tìm Kiếm Chức Năng", Color3.fromRGB(150, 0, 200), funct
     Title.TextSize = 12
     
     local InputBox = Instance.new("TextBox", Frame)
-    InputBox.Size = UDim2.new(0.8, 0, 0, 35)
-    InputBox.Position = UDim2.new(0.1, 0, 0.3, 0)
-    InputBox.PlaceholderText = "Nhập tên nút cần tìm..."
+    InputBox.Size = UDim2.new(0.9, 0, 0, 35)
+    InputBox.Position = UDim2.new(0.05, 0, 0.2, 0)
+    InputBox.PlaceholderText = "Ví dụ: Bay, Fling, Speed, ESP..."
     InputBox.Text = ""
     InputBox.BackgroundColor3 = Color3.fromRGB(40, 40, 45)
     InputBox.TextColor3 = Color3.new(1, 1, 1)
@@ -585,18 +585,19 @@ createButton("🔍 Tìm Kiếm Chức Năng", Color3.fromRGB(150, 0, 200), funct
     createCorner(InputBox, 5)
     
     local ResultLabel = Instance.new("TextLabel", Frame)
-    ResultLabel.Size = UDim2.new(0.8, 0, 0, 30)
-    ResultLabel.Position = UDim2.new(0.1, 0, 0.55, 0)
-    ResultLabel.BackgroundTransparency = 1
-    ResultLabel.Text = "Nhập từ khóa để lọc các nút trong Hub"
+    ResultLabel.Size = UDim2.new(0.9, 0, 0, 50)
+    ResultLabel.Position = UDim2.new(0.05, 0, 0.4, 0)
+    ResultLabel.BackgroundColor3 = Color3.fromRGB(30, 30, 35)
+    ResultLabel.Text = "Danh sách nút sẽ hiển thị ở đây"
     ResultLabel.TextColor3 = Color3.fromRGB(180, 180, 180)
     ResultLabel.Font = Enum.Font.Gotham
-    ResultLabel.TextSize = 10
+    ResultLabel.TextSize = 9
     ResultLabel.TextWrapped = true
+    createCorner(ResultLabel, 5)
     
     local CloseBtn = Instance.new("TextButton", Frame)
-    CloseBtn.Size = UDim2.new(0.8, 0, 0, 30)
-    CloseBtn.Position = UDim2.new(0.1, 0, 0.78, 0)
+    CloseBtn.Size = UDim2.new(0.9, 0, 0, 30)
+    CloseBtn.Position = UDim2.new(0.05, 0, 0.82, 0)
     CloseBtn.Text = "ĐÓNG"
     CloseBtn.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
     CloseBtn.TextColor3 = Color3.new(1, 1, 1)
@@ -606,21 +607,21 @@ createButton("🔍 Tìm Kiếm Chức Năng", Color3.fromRGB(150, 0, 200), funct
     
     InputBox:GetPropertyChangedSignal("Text"):Connect(function()
         local keyword = string.lower(InputBox.Text)
-        local matchCount = 0
+        local matchList = {}
         
-        -- Tìm kiếm trong GridScrollFrame chính của Hub
+        -- Quét tất cả nút trong GridScrollFrame
         if GridScrollFrame then
             for _, obj in ipairs(GridScrollFrame:GetChildren()) do
                 if obj:IsA("TextButton") then
-                    local btnText = obj.Text or ""
-                    local btnName = string.lower(btnText ~= "" and btnText or obj.Name)
+                    local btnText = string.lower(obj.Text or "")
                     
                     if keyword == "" then
                         obj.Visible = true
                     else
-                        if string.find(btnName, keyword) then
+                        -- Tìm kiếm bằng cách so khớp từng ký tự
+                        if string.find(btnText, keyword, 1, true) then
                             obj.Visible = true
-                            matchCount = matchCount + 1
+                            table.insert(matchList, obj.Text)
                         else
                             obj.Visible = false
                         end
@@ -629,11 +630,30 @@ createButton("🔍 Tìm Kiếm Chức Năng", Color3.fromRGB(150, 0, 200), funct
             end
         end
         
-        ResultLabel.Text = (keyword == "") and "Hiển thị toàn bộ nút" or ("Tìm thấy " .. matchCount .. " nút phù hợp")
+        -- Hiển thị kết quả
+        if keyword == "" then
+            ResultLabel.Text = "Hiển thị toàn bộ nút (gõ từ khóa để lọc)"
+            ResultLabel.TextColor3 = Color3.fromRGB(100, 200, 100)
+        elseif #matchList == 0 then
+            ResultLabel.Text = "❌ Không tìm thấy nút nào khớp với: \"" .. InputBox.Text .. "\""
+            ResultLabel.TextColor3 = Color3.fromRGB(255, 100, 100)
+        else
+            local displayText = "✅ Tìm thấy " .. tostring(#matchList) .. " nút:\n\n"
+            for i, name in ipairs(matchList) do
+                if i <= 5 then
+                    displayText = displayText .. "• " .. name .. "\n"
+                end
+            end
+            if #matchList > 5 then
+                displayText = displayText .. "... và " .. (#matchList - 5) .. " nút khác"
+            end
+            ResultLabel.Text = displayText
+            ResultLabel.TextColor3 = Color3.fromRGB(100, 220, 255)
+        end
     end)
     
     CloseBtn.MouseButton1Click:Connect(function()
-        -- Hiển thị lại tất cả các nút khi đóng
+        -- Hiển thị lại tất cả nút
         if GridScrollFrame then
             for _, obj in ipairs(GridScrollFrame:GetChildren()) do
                 if obj:IsA("TextButton") then
