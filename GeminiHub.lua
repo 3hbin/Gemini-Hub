@@ -554,7 +554,10 @@ end)
 ----------------------------------------------------------------------
 -- 0.NÚT TÌM KIẾM NÚT (SEARCH BUTTONS)
 ----------------------------------------------------------------------
-createButton("🔍 Tìm Kiếm Chức Năng", Color3.fromRGB(150, 0, 200), function()
+createButton("🔍 Tìm Kiếm Chức Năng", Color3.fromRGB(150, 0, 200), function(scrollFrame)
+    -- Nếu hàm createButton không tự truyền scrollFrame, bạn có thể thay biến bên dưới bằng đường dẫn ScrollFrame của bạn:
+    local targetScroll = scrollFrame -- hoặc script.Parent.ScrollFrame / MainFrame.ScrollFrame
+
     local ScreenGui = Instance.new("ScreenGui", game.CoreGui)
     ScreenGui.Name = "GeminiSearchUI"
     ScreenGui.ResetOnSpawn = false
@@ -601,14 +604,12 @@ createButton("🔍 Tìm Kiếm Chức Năng", Color3.fromRGB(150, 0, 200), funct
     CloseBtn.TextColor3 = Color3.new(1, 1, 1)
     createCorner(CloseBtn, 5)
     
-    -- Sửa lại biến ScrollFrame trỏ đúng vào khung chứa các nút chính của Hub bạn
-    local targetScroll = YourMainHub.ScrollFrame -- Thay YourMainHub thành biến chứa UI chính của bạn
-    
     InputBox:GetPropertyChangedSignal("Text"):Connect(function()
+        if not targetScroll then return end
         local keyword = string.lower(InputBox.Text)
         local matchCount = 0
         
-        for _, child in ipairs(targetScroll:GetChildren()) do
+        for _, child in ipairs(targetScroll:GetDescendants()) do
             if child:IsA("TextButton") then
                 if keyword == "" then
                     child.Visible = true
@@ -632,7 +633,7 @@ createButton("🔍 Tìm Kiếm Chức Năng", Color3.fromRGB(150, 0, 200), funct
     
     CloseBtn.MouseButton1Click:Connect(function()
         if targetScroll then
-            for _, child in ipairs(targetScroll:GetChildren()) do
+            for _, child in ipairs(targetScroll:GetDescendants()) do
                 if child:IsA("TextButton") then
                     child.Visible = true
                 end
