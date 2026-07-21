@@ -2049,11 +2049,8 @@ createToggle("🛡️ Khóa Nhân Vật (Anti-Slap)", function(state)
     end
 end)
 
--- 32. BIỂU CẢM (EMOTES R6/R15 - TỰ NGỪNG KHI DI CHUYỂN)
+-- 32. BIỂU CẢM (EMOTES)
 createButton("🎭 Biểu Cảm", Color3.fromRGB(170, 85, 255), function()
-    local Players = game:GetService("Players")
-    local LocalPlayer = Players.LocalPlayer
-    
     local EmoteGui = Instance.new("ScreenGui", game.CoreGui)
     EmoteGui.Name = "EmoteMenu"
     EmoteGui.ResetOnSpawn = false
@@ -2090,6 +2087,7 @@ createButton("🎭 Biểu Cảm", Color3.fromRGB(170, 85, 255), function()
     local CloseEmote = Instance.new("TextButton", EmoteHeader)
     CloseEmote.Size = UDim2.new(0, 30, 1, 0)
     CloseEmote.Position = UDim2.new(1, -35, 0, 0)
+    CloseEmTe = CloseEmote -- dummy
     CloseEmote.BackgroundTransparency = 0.5
     CloseEmote.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
     CloseEmote.Text = "✕"
@@ -2125,7 +2123,6 @@ createButton("🎭 Biểu Cảm", Color3.fromRGB(170, 85, 255), function()
         {Name = "🙌 Cổ Vũ (Cheer)", R6 = 129423030, R15 = 507770677}
     }
     
-    -- Hàm quét và tắt toàn bộ biểu cảm đang chạy
     local function StopAllEmotes()
         local character = LocalPlayer.Character
         if not character then return end
@@ -2139,7 +2136,6 @@ createButton("🎭 Biểu Cảm", Color3.fromRGB(170, 85, 255), function()
         end
     end
     
-    -- Hàm chạy Animation mới
     local function PlayEmote(r6Id, r15Id)
         local character = LocalPlayer.Character
         if not character then return end
@@ -2147,8 +2143,7 @@ createButton("🎭 Biểu Cảm", Color3.fromRGB(170, 85, 255), function()
         if not humanoid then return end
         
         local animId = (humanoid.RigType == Enum.HumanoidRigType.R6) and r6Id or r15Id
-        
-        StopAllEmotes() -- Tắt biểu cảm cũ trước khi chạy cái mới
+        StopAllEmotes()
         
         local anim = Instance.new("Animation")
         anim.Name = "CustomEmote"
@@ -2157,62 +2152,27 @@ createButton("🎭 Biểu Cảm", Color3.fromRGB(170, 85, 255), function()
         local track = humanoid:LoadAnimation(anim)
         track:Play()
         
-        -- KÍCH HOẠT TÍNH NĂNG TỰ NGỪNG KHI DI CHUYỂN:
         local moveConnection
         moveConnection = humanoid.Running:Connect(function(speed)
             if speed > 0.1 then
                 track:Stop()
-                if moveConnection then
-                    moveConnection:Disconnect()
-                end
-            end
-        end)
-        
-        track.Stopped:Connect(function()
-            if moveConnection then
-                moveConnection:Disconnect()
+                if moveConnection then moveConnection:Disconnect() end
             end
         end)
     end
-
-    for _, data in ipairs(emotes) do
-        local Btn = Instance.new("TextButton", ListScroll)
-        Btn.Size = UDim2.new(1, -10, 0, 35)
-        Btn.BackgroundColor3 = Color3.fromRGB(50, 40, 70)
-        createCorner(Btn, 6)
+    
+    for _, em in ipairs(emotes) do
+        local EmoteBtn = Instance.new("TextButton", ListScroll)
+        EmoteBtn.Size = UDim2.new(1, -10, 0, 35)
+        EmoteBtn.BackgroundColor3 = Color3.fromRGB(60, 40, 80)
+        EmoteBtn.TextColor3 = Color3.new(1, 1, 1)
+        EmoteBtn.Font = Enum.Font.GothamBold
+        EmoteBtn.TextSize = 11
+        EmoteBtn.Text = em.Name
+        createCorner(EmoteBtn, 6)
         
-        Btn.Text = data.Name
-        Btn.TextColor3 = Color3.new(1, 1, 1)
-        Btn.Font = Enum.Font.GothamBold
-        Btn.TextSize = 11
-        
-        Btn.MouseButton1Click:Connect(function()
-            PlayEmote(data.R6, data.R15)
-        end)
-    end
-end)
-
-    -- Tạo danh sách nút bấm
-    for i, emote in ipairs(emotes) do
-        local Btn = Instance.new("TextButton", ListScroll)
-        Btn.Size = UDim2.new(1, -10, 0, 40)
-        Btn.BackgroundColor3 = Color3.fromRGB(50, 40, 60)
-        Btn.TextColor3 = Color3.new(1, 1, 1)
-        Btn.Font = Enum.Font.GothamBold
-        Btn.TextSize = 11
-        Btn.Text = emote.Name
-        createCorner(Btn, 8)
-        
-        local Stroke = Instance.new("UIStroke", Btn)
-        Stroke.Color = Color3.fromRGB(170, 85, 255)
-        Stroke.Thickness = 1
-        Stroke.Enabled = false
-        
-        Btn.MouseEnter:Connect(function() Stroke.Enabled = true end)
-        Btn.MouseLeave:Connect(function() Stroke.Enabled = false end)
-        
-        Btn.MouseButton1Click:Connect(function()
-            PlayEmote(emote.R6, emote.R15)
+        EmoteBtn.MouseButton1Click:Connect(function()
+            PlayEmote(em.R6, em.R15)
         end)
     end
 end)
