@@ -555,9 +555,8 @@ end)
 -- 0.NÚT TÌM KIẾM NÚT (SEARCH BUTTONS)
 ----------------------------------------------------------------------
 createButton("🔍 Tìm Kiếm Chức Năng", Color3.fromRGB(150, 0, 200), function(scrollFrame)
-    -- Nếu hàm createButton không tự truyền scrollFrame, bạn có thể thay biến bên dưới bằng đường dẫn ScrollFrame của bạn:
-    local targetScroll = scrollFrame -- hoặc script.Parent.ScrollFrame / MainFrame.ScrollFrame
-
+    local targetScroll = scrollFrame -- Thay thế biến này bằng đường dẫn đến ScrollFrame thực tế của Hub nếu cần
+    
     local ScreenGui = Instance.new("ScreenGui", game.CoreGui)
     ScreenGui.Name = "GeminiSearchUI"
     ScreenGui.ResetOnSpawn = false
@@ -609,33 +608,37 @@ createButton("🔍 Tìm Kiếm Chức Năng", Color3.fromRGB(150, 0, 200), funct
         local keyword = string.lower(InputBox.Text)
         local matchCount = 0
         
-        for _, child in ipairs(targetScroll:GetDescendants()) do
-            if child:IsA("TextButton") then
+        for _, obj in ipairs(targetScroll:GetDescendants()) do
+            if obj:IsA("TextButton") or obj:IsA("ImageButton") then
+                local btnText = obj:IsA("TextButton") and obj.Text or ""
+                if btnText == "" then
+                    local label = obj:FindFirstChildOfClass("TextLabel")
+                    if label then btnText = label.Text end
+                end
+                
+                local btnName = string.lower(btnText ~= "" and btnText or obj.Name)
+                
                 if keyword == "" then
-                    child.Visible = true
+                    obj.Visible = true
                 else
-                    if string.find(string.lower(child.Text), keyword) then
-                        child.Visible = true
+                    if string.find(btnName, keyword) then
+                        obj.Visible = true
                         matchCount = matchCount + 1
                     else
-                        child.Visible = false
+                        obj.Visible = false
                     end
                 end
             end
         end
         
-        if keyword == "" then
-            ResultLabel.Text = "Hiển thị toàn bộ nút"
-        else
-            ResultLabel.Text = "Tìm thấy " .. matchCount .. " nút phù hợp"
-        end
+        ResultLabel.Text = (keyword == "") and "Hiển thị toàn bộ nút" or ("Tìm thấy " .. matchCount .. " nút phù hợp")
     end)
     
     CloseBtn.MouseButton1Click:Connect(function()
         if targetScroll then
-            for _, child in ipairs(targetScroll:GetDescendants()) do
-                if child:IsA("TextButton") then
-                    child.Visible = true
+            for _, obj in ipairs(targetScroll:GetDescendants()) do
+                if obj:IsA("TextButton") or obj:IsA("ImageButton") then
+                    obj.Visible = true
                 end
             end
         end
