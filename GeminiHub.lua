@@ -604,31 +604,43 @@ task.spawn(function()
     UIStrokeToggle.Thickness = 2
     UIStrokeToggle.Parent = ToggleBtn
 
-    -- Hàm hỗ trợ kéo thả nút (Draggable đơn giản)
-    local dragging, dragInput, dragStart, startPos
+    -- ====== HÀM KÉO THẢ NÚT - FIXED ======
+    local dragging = false
+    local dragStart = nil
+    local startPos = nil
+    local isClicking = false  -- Flag để phân biệt click vs drag
+
     ToggleBtn.InputBegan:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
             dragging = true
+            isClicking = true
             dragStart = input.Position
             startPos = ToggleBtn.Position
-            input.Changed:Connect(function()
-                if input.UserInputState == Enum.UserInputState.End then
-                    dragging = false
-                end
-            end)
+        end
+    end)
+
+    UserInputService.InputEnded:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            dragging = false
+            task.wait(0.1)
+            isClicking = false
         end
     end)
 
     UserInputService.InputChanged:Connect(function(input)
         if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
             local delta = input.Position - dragStart
-            ToggleBtn.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+            -- Kiểm tra nếu di chuyển > 5 pixel thì coi là drag, không phải click
+            if math.abs(delta.X) > 5 or math.abs(delta.Y) > 5 then
+                isClicking = false
+                ToggleBtn.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+            end
         end
     end)
 
-    -- Sự kiện bấm nút Toggle để ẩn/hiện MainFrame
+    -- Sự kiện bấm nút Toggle để ẩn/hiện MainFrame - CHỈ kích hoạt nếu là click thực
     ToggleBtn.MouseButton1Click:Connect(function()
-        if GuiLocked then return end
+        if GuiLocked or not isClicking then return end
         MainFrame.Visible = not MainFrame.Visible 
     end)
 end)
