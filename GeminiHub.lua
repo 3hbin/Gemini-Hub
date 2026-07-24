@@ -493,156 +493,60 @@ local function createButton(text, color, callback)
     end)
 end
 
--- =================================================================
--- BƯỚC 1: HÀM HIỂN THỊ MÀN HÌNH LOADING VÀ ĐỢI HOÀN TẤT
--- =================================================================
+-- 1. Định nghĩa hàm Loading trước (nhưng chưa gọi ngay)
 local function ShowLoading()
-    local Players = game:GetService("Players")
-    local LocalPlayer = Players.LocalPlayer
-    local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
+    local Player = game:GetService("Players").LocalPlayer
+    local PlayerGui = Player:WaitForChild("PlayerGui")
     
-    -- Xóa màn hình loading cũ nếu có để tránh trùng lặp
-    if PlayerGui:FindFirstChild("GeminiLoading") then
-        PlayerGui.GeminiLoading:Destroy()
-    end
-    
-    local ScreenGui = Instance.new("ScreenGui")
+    local ScreenGui = Instance.new("ScreenGui", PlayerGui)
     ScreenGui.Name = "GeminiLoading"
-    ScreenGui.ResetOnSpawn = false
-    ScreenGui.Parent = PlayerGui
     
-    local Frame = Instance.new("Frame")
-    Frame.Size = UDim2.new(0, 220, 0, 60)
-    Frame.Position = UDim2.new(0.5, -110, 0.5, -30)
+    local Frame = Instance.new("Frame", ScreenGui)
+    Frame.Size = UDim2.new(0, 200, 0, 50)
+    Frame.Position = UDim2.new(0.5, -100, 0.5, -25)
     Frame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
-    Frame.Parent = ScreenGui
+    Instance.new("UICorner", Frame).CornerRadius = UDim.new(0, 10)
     
-    local UICorner = Instance.new("UICorner")
-    UICorner.CornerRadius = UDim.new(0, 10)
-    UICorner.Parent = Frame
-    
-    local Label = Instance.new("TextLabel")
+    local Label = Instance.new("TextLabel", Frame)
     Label.Size = UDim2.new(1, 0, 1, 0)
     Label.Text = "Gemini Hub Loading... 0%"
-    Label.TextColor3 = Color3.fromRGB(255, 255, 255)
+    Label.TextColor3 = Color3.new(1, 1, 1)
     Label.BackgroundTransparency = 1
     Label.Font = Enum.Font.GothamBold
-    Label.TextSize = 14
-    Label.Parent = Frame
     
-    -- Chạy hiệu ứng % từ 1 đến 100
+    -- Chạy hiệu ứng %
     for i = 1, 100, 5 do
         Label.Text = "Gemini Hub Loading... " .. i .. "%"
-        task.wait(0.04)
+        task.wait(0.05)
     end
     
     Label.Text = "Gemini Hub Loaded!"
-    task.wait(0.4)
-    
-    -- Xóa màn hình loading sau khi hoàn tất
+    task.wait(0.5)
     ScreenGui:Destroy()
 end
 
--- =================================================================
--- BƯỚC 2: KHỞI TẠO GIAO DIỆN CHÍNH (CHẠY SAU KHI LOADING XONG)
--- =================================================================
-task.spawn(function()
-    -- Gọi hàm loading và bắt buộc script phải ĐỢI chạy xong mới làm tiếp
-    ShowLoading()
+-- 2. Gọi hàm Loading (dùng task.spawn để nó chạy song song, không làm đơ script)
+task.spawn(ShowLoading)
 
-    -- Khai báo các dịch vụ và biến cơ bản
-    local Players = game:GetService("Players")
-    local LocalPlayer = Players.LocalPlayer
-    local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
-    local UserInputService = game:GetService("UserInputService")
+-- 3. Sau đó mới chạy code tạo giao diện chính
+local ButtonSize = IsMobile and 45 or 65
+ToggleBtn = Instance.new("TextButton", ScreenGui)
+ToggleBtn.Size = UDim2.new(0, ButtonSize, 0, ButtonSize)
+ToggleBtn.Position = UDim2.new(0, 15, 0.4, 0)
+ToggleBtn.BackgroundColor3 = Color3.fromRGB(0, 150, 255)
+ToggleBtn.Text = "📜"
+ToggleBtn.TextColor3 = Color3.new(1, 1, 1)
+ToggleBtn.TextSize = IsMobile and 24 or 30
+createCorner(ToggleBtn, ButtonSize / 2)
+makeDraggable(ToggleBtn)
 
-    -- Kiểm tra thiết bị (Điện thoại hay Máy tính)
-    local IsMobile = UserInputService.TouchEnabled and not UserInputService.KeyboardEnabled
+local UIStrokeToggle = Instance.new("UIStroke", ToggleBtn)
+UIStrokeToggle.Color = Color3.fromRGB(0, 200, 255)
+UIStrokeToggle.Thickness = 2
 
-    -- Tạo ScreenGui chính cho Menu
-    local MainScreenGui = Instance.new("ScreenGui")
-    MainScreenGui.Name = "GeminiHubMain"
-    MainScreenGui.ResetOnSpawn = false
-    MainScreenGui.Parent = PlayerGui
-
-    -- Trạng thái khóa giao diện
-    local GuiLocked = false
-
-    -- Khung Menu Chính (MainFrame)
-    local MainFrame = Instance.new("Frame")
-    MainFrame.Size = UDim2.new(0, 400, 0, 300)
-    MainFrame.Position = UDim2.new(0.5, -200, 0.5, -150)
-    MainFrame.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
-    MainFrame.Visible = false -- Mặc định ẩn, bấm nút mở lên
-    MainFrame.Parent = MainScreenGui
-
-    local MainCorner = Instance.new("UICorner")
-    MainCorner.CornerRadius = UDim.new(0, 10)
-    MainCorner.Parent = MainFrame
-
-    -- Kích thước nút bấm theo thiết bị
-    local ButtonSize = IsMobile and 45 or 65
-    
-    -- Tạo nút Toggle mở/đóng Menu
-    local ToggleBtn = Instance.new("TextButton")
-    ToggleBtn.Size = UDim2.new(0, ButtonSize, 0, ButtonSize)
-    ToggleBtn.Position = UDim2.new(0, 15, 0.4, 0)
-    ToggleBtn.BackgroundColor3 = Color3.fromRGB(0, 150, 255)
-    ToggleBtn.Text = "📜"
-    ToggleBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-    ToggleBtn.TextSize = IsMobile and 24 or 30
-    ToggleBtn.Parent = MainScreenGui
-
-    -- Bo góc nút Toggle
-    local ToggleCorner = Instance.new("UICorner")
-    ToggleCorner.CornerRadius = UDim.new(1, 0) -- Bo tròn hoàn toàn
-    ToggleCorner.Parent = ToggleBtn
-
-    -- Viền sáng cho nút Toggle
-    local UIStrokeToggle = Instance.new("UIStroke")
-    UIStrokeToggle.Color = Color3.fromRGB(0, 200, 255)
-    UIStrokeToggle.Thickness = 2
-    UIStrokeToggle.Parent = ToggleBtn
-
-    -- ====== HÀM KÉO THẢ NÚT - FIXED ======
-    local dragging = false
-    local dragStart = nil
-    local startPos = nil
-    local isClicking = false  -- Flag để phân biệt click vs drag
-
-    ToggleBtn.InputBegan:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-            dragging = true
-            isClicking = true
-            dragStart = input.Position
-            startPos = ToggleBtn.Position
-        end
-    end)
-
-    UserInputService.InputEnded:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-            dragging = false
-            task.wait(0.1)
-            isClicking = false
-        end
-    end)
-
-    UserInputService.InputChanged:Connect(function(input)
-        if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
-            local delta = input.Position - dragStart
-            -- Kiểm tra nếu di chuyển > 5 pixel thì coi là drag, không phải click
-            if math.abs(delta.X) > 5 or math.abs(delta.Y) > 5 then
-                isClicking = false
-                ToggleBtn.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
-            end
-        end
-    end)
-
-    -- Sự kiện bấm nút Toggle để ẩn/hiện MainFrame - CHỈ kích hoạt nếu là click thực
-    ToggleBtn.MouseButton1Click:Connect(function()
-        if GuiLocked or not isClicking then return end
-        MainFrame.Visible = not MainFrame.Visible 
-    end)
+ToggleBtn.MouseButton1Click:Connect(function()
+    if GuiLocked then return end
+    MainFrame.Visible = not MainFrame.Visible 
 end)
 
 -- ============== CÁC TÍNH NĂNG MỚI & SỬA ĐỔI ==============
@@ -764,122 +668,54 @@ end)
 -- 1. BAY (FLY MODE)
 local Fly_Active = false
 local FlySpeed = 60
-local FlyConnection = nil
+local FlyConnection
 
--- =================================================================
--- BƯỚC 2: HÀM DỪNG BAY (STOP FLY)
--- Giải phóng bộ nhớ, hủy kết nối vòng lặp và xóa lực di chuyển
--- =================================================================
-local function StopFly()
-    Fly_Active = false
-    
-    -- Ngắt kết nối vòng lặp RenderStepped
-    if FlyConnection then 
-        FlyConnection:Disconnect() 
-        FlyConnection = nil
-    end
-    
-    -- Trả nhân vật về trạng thái vật lý bình thường
-    if LocalPlayer.Character then
-        local HRP = LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
-        local Humanoid = LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
-        
-        if HRP and HRP:FindFirstChild("FlyVelocity") then
-            HRP.FlyVelocity:Destroy()
-        end
-        
-        if Humanoid then
-            Humanoid.PlatformStand = false
-        end
-    end
-end
-
--- =================================================================
--- BƯỚC 3: HÀM BẮT ĐẦU BAY (START FLY)
--- Tự động tương thích với cả Cần Gạt Điện Thoại và Phím Bấm PC
--- =================================================================
 local function StartFly()
-    -- Luôn dọn dẹp trạng thái cũ trước khi bật lượt mới
-    StopFly()
-    
-    local Character = LocalPlayer.Character
-    if not Character then return end
-    
-    local HRP = Character:FindFirstChild("HumanoidRootPart")
-    local Humanoid = Character:FindFirstChildOfClass("Humanoid")
-    if not HRP or not Humanoid then return end
-
-    -- Xử lý nếu nhân vật đang ngồi (trên ghế/xe)
-    if Humanoid.Sit then
-        Humanoid.Sit = false
-        task.wait(0.1)
-    end
-
-    Fly_Active = true
-    Humanoid.PlatformStand = true
-
-    -- Tạo lực đẩy vật lý BodyVelocity
-    local BV = Instance.new("BodyVelocity")
+    if not LocalPlayer.Character or not LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then return end
+    local HRP = LocalPlayer.Character.HumanoidRootPart
+    local Humanoid = LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
+    local BV = Instance.new("BodyVelocity", HRP)
     BV.Name = "FlyVelocity"
     BV.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
     BV.Velocity = Vector3.new(0, 0, 0)
-    BV.Parent = HRP
+    Humanoid.PlatformStand = true
 
-    -- Vòng lặp cập nhật vị trí theo khung hình
     FlyConnection = RunService.RenderStepped:Connect(function()
         if Fly_Active and HRP and Humanoid then
-            -- Ép nhân vật không bị rơi vào trạng thái ngồi khi đang bay
-            if Humanoid.Sit then
-                Humanoid.Sit = false
-            end
-
-            -- MoveDirection tự động nhận diện từ Cần gạt Mobile hoặc Phím WASD PC
             local moveDir = Humanoid.MoveDirection
-            
             if moveDir.Magnitude > 0 then
-                -- Tính toán hướng di chuyển dựa theo góc nhìn Camera
                 local look = Camera.CFrame.LookVector
                 local right = Camera.CFrame.RightVector
-                
                 local forwardAmount = moveDir:Dot(CFrame.new(Camera.CFrame.Position, Camera.CFrame.Position + Vector3.new(look.X, 0, look.Z)).LookVector)
                 local sideAmount = moveDir:Dot(CFrame.new(Camera.CFrame.Position, Camera.CFrame.Position + Vector3.new(look.X, 0, look.Z)).RightVector)
-                
                 BV.Velocity = (look * forwardAmount * FlySpeed) + (right * sideAmount * FlySpeed)
             else 
-                -- Đứng yên trên không khi không chạm cần gạt / không bấm phím
                 BV.Velocity = Vector3.new(0, 0, 0) 
             end
-            
-            -- Xoay nhân vật theo hướng nhìn của Camera
             HRP.CFrame = CFrame.new(HRP.Position, HRP.Position + Camera.CFrame.LookVector)
         end
     end)
 end
 
--- =================================================================
--- BƯỚC 4: TÍCH HỢP UI TOGGLE & SLIDER
--- =================================================================
+local function StopFly()
+    Fly_Active = false
+    if FlyConnection then FlyConnection:Disconnect() end
+    pcall(function() LocalPlayer.Character.HumanoidRootPart.FlyVelocity:Destroy() end)
+    pcall(function() LocalPlayer.Character:FindFirstChildOfClass("Humanoid").PlatformStand = false end)
+end
+
 local setFlyToggle = createToggle("✈️ Bay", function(state)
-    if state then 
-        StartFly() 
-    else 
-        StopFly() 
-    end
+    Fly_Active = state
+    if Fly_Active then StartFly() else StopFly() end
 end)
 
-createSlider("Tốc Độ Bay", 20, 300, FlySpeed, function(val) 
-    FlySpeed = val 
-end)
+createSlider("Tốc Độ Bay", 20, 300, FlySpeed, function(val) FlySpeed = val end)
 
 -- 2. FLING & FLY FLING (Vật lý văng cao cấp)
--- =================================================================
--- KHAI BÁO CÁC BIẾN TRẠNG THÁI FLING
--- =================================================================
 local Fling_Active = false
 local FlyFling_Active = false
-local Fling_Power = 15000 -- Tăng nhẹ độ giật mặc định để tạo lực văng tốt hơn
+local Fling_Power = 10000
 
--- Hàm tìm người chơi gần nhất còn sống
 local function GetClosestPlayer()
     local target = nil
     local maxDist = math.huge
@@ -895,60 +731,43 @@ local function GetClosestPlayer()
     return target
 end
 
--- =================================================================
--- VÒNG LẶP XỬ LÝ FLING ĐÃ ĐƯỢC TỐI ƯU HÓA CHỐNG DÍNH
--- =================================================================
+-- Vòng lặp Fling
 task.spawn(function()
     while true do
         task.wait()
-        
-        local Character = LocalPlayer.Character
-        if (Fling_Active or FlyFling_Active) and Character and Character:FindFirstChild("HumanoidRootPart") then
-            local HRP = Character.HumanoidRootPart
+        if (Fling_Active or FlyFling_Active) and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+            local HRP = LocalPlayer.Character.HumanoidRootPart
             
-            -- 1. Thiết lập Vận tốc góc xoay cực đại (Tạo lực quay Fling)
-            local bAV = HRP:FindFirstChild("FlingAngVel") or Instance.new("BodyAngularVelocity")
+            -- Ép vận tốc góc xoay cực đại để va chạm mạnh
+            local bAV = HRP:FindFirstChild("FlingAngVel") or Instance.new("BodyAngularVelocity", HRP)
             bAV.Name = "FlingAngVel"
             bAV.MaxTorque = Vector3.new(math.huge, math.huge, math.huge)
             bAV.AngularVelocity = Vector3.new(0, Fling_Power, 0)
-            bAV.Parent = HRP
             
-            -- 2. Thiết lập Vận tốc tuyến tính (Đẩy hướng di chuyển)
-            local bV = HRP:FindFirstChild("FlingVel") or Instance.new("BodyVelocity")
+            -- Vận tốc tuyến tính đẩy mục tiêu
+            local bV = HRP:FindFirstChild("FlingVel") or Instance.new("BodyVelocity", HRP)
             bV.Name = "FlingVel"
-            bV.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
-            bV.Parent = HRP
+            bV.MaxForce = Vector3.new(math.huge, 0, math.huge)
             
             if Fling_Active then
                 local target = GetClosestPlayer()
                 if target and target.Character and target.Character:FindFirstChild("HumanoidRootPart") then
                     local targetHRP = target.Character.HumanoidRootPart
-                    
-                    -- Tính toán khoảng cách tới mục tiêu
-                    local distance = (targetHRP.Position - HRP.Position).Magnitude
-                    
-                    if distance > 4 then
-                        -- Nếu ở xa: Lao thẳng tới mục tiêu với tốc độ cao
-                        bV.Velocity = (targetHRP.Position - HRP.Position).Unit * 100
-                    else
-                        -- Nếu ở gần (Đã chạm): Cho vận tốc xoay vòng tròn quanh mục tiêu thay vì ép cứng CFrame
-                        -- Điều này giúp triệt tiêu hoàn toàn lỗi dính người (sticky glitch)
-                        bV.Velocity = Vector3.new(math.sin(tick() * 20) * 50, 25, math.cos(tick() * 20) * 50)
-                    end
+                    bV.Velocity = (targetHRP.Position - HRP.Position).Unit * 150
+                    HRP.CFrame = targetHRP.CFrame * CFrame.new(0, 0, 0.5) -- Áp sát mục tiêu
                 else
                     bV.Velocity = Vector3.new(0, 0, 0)
                 end
             elseif FlyFling_Active then
-                -- Chế độ Fly Fling: Kết hợp giữ lực xoay Fling trong khi đang sử dụng tính năng Bay
-                bV.Velocity = Vector3.new(0, 0, 0)
+                -- Nếu đang Bay Fling thì chỉ kích hoạt xoay bAV, di chuyển vẫn do Fly Mode kiểm soát
                 if not HRP:FindFirstChild("FlyVelocity") then
                     StartFly()
                     Fly_Active = true
-                    if setFlyToggle then setFlyToggle(true) end
+                    setFlyToggle(true)
                 end
             end
         else
-            -- Dọn dẹp tài nguyên vật lý khi tắt Fling
+            -- Cleanup khi tắt
             pcall(function()
                 if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
                     local HRP = LocalPlayer.Character.HumanoidRootPart
@@ -960,24 +779,15 @@ task.spawn(function()
     end
 end)
 
--- =================================================================
--- TÍCH HỢP GIAO DIỆN UI (TOGGLE & SLIDER)
--- =================================================================
-createToggle("🌀 Fling", function(state) 
-    Fling_Active = state 
-end)
-
+createToggle("🌀 Fling", function(state) Fling_Active = state end)
 createToggle("🚀 Fly Fling", function(state) 
     FlyFling_Active = state 
     if not state then
         StopFly()
-        if setFlyToggle then setFlyToggle(false) end
+        setFlyToggle(false)
     end
 end)
-
-createSlider("⚡ Tốc Độ Fling", 1000, 50000, Fling_Power, function(val) 
-    Fling_Power = val 
-end)
+createSlider("⚡ Tốc Độ Fling", 1000, 50000, Fling_Power, function(val) Fling_Power = val end)
 
 -- 3. CHỐNG NGÃ (ANTI-RAGDOLL / ANTI-FALL)
 local AntiRagdoll_Active = false
@@ -1468,14 +1278,14 @@ createToggle("📱 Shift Lock Mobile", function(state)
         local Button = Instance.new("ImageButton")  
         Button.Parent = Gui  
         Button.Size = UDim2.new(0, 50, 0, 50)  
-        Button.Position = UDim2.new(0.75, 0, 0.40, 0) -- Vị trí nút bấm
+        Button.Position = UDim2.new(0.75, 0, 0.40, 0) -- Vị trí đã chỉnh
         Button.BackgroundTransparency = 1  
-        Button.Image = "rbxthumb://type=Asset&id=83349936062601&w=150&h=150" -- Ảnh trạng thái OFF  
+        Button.Image = "rbxthumb://type=Asset&id=83349936062601&w=150&h=150" -- OFF  
 
         local Lock = false  
         Button.MouseButton1Click:Connect(function()  
             Lock = not Lock  
-            Crosshair.Visible = Lock -- Tự động ẩn/hiện tâm ngắm theo nút
+            Crosshair.Visible = Lock -- Tự động ẩn/hiện theo nút
             Button.Image = Lock and "rbxthumb://type=Asset&id=72173899346121&w=150&h=150" or "rbxthumb://type=Asset&id=83349936062601&w=150&h=150"
         end)  
 
@@ -1487,14 +1297,9 @@ createToggle("📱 Shift Lock Mobile", function(state)
 
             if Root and Humanoid then  
                 if Lock then  
-                    -- Nếu nhân vật đang ngồi, tạm thời bỏ qua khóa góc quay để không bị lỗi xung đột với Fling/Ghế
-                    if Humanoid.Sit then
-                        Humanoid.AutoRotate = true
-                    else
-                        Humanoid.AutoRotate = false  
-                        local Look = Camera.CFrame.LookVector  
-                        Root.CFrame = CFrame.new(Root.Position, Root.Position + Vector3.new(Look.X, 0, Look.Z))  
-                    end
+                    Humanoid.AutoRotate = false  
+                    local Look = Camera.CFrame.LookVector  
+                    Root.CFrame = CFrame.new(Root.Position, Root.Position + Vector3.new(Look.X, 0, Look.Z))  
                 else  
                     Humanoid.AutoRotate = true  
                 end  
